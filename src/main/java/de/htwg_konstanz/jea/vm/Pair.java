@@ -1,8 +1,8 @@
 package de.htwg_konstanz.jea.vm;
 
 public class Pair<T, K> {
-	private T value1;
-	private K value2;
+	private final T value1;
+	private final K value2;
 
 	public Pair(T value1, K value2) {
 		if (value1 == null || value2 == null)

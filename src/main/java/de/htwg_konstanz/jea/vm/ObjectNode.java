@@ -2,24 +2,25 @@ package de.htwg_konstanz.jea.vm;
 
 public class ObjectNode implements Node {
 	private final String id;
-	private final boolean isPhantom;
 
-	public ObjectNode(int id, boolean isPhantom) {
-		this.id = isPhantom ? "p" + id : "i" + id;
-		this.isPhantom = isPhantom;
+	private ObjectNode(String id) {
+		this.id = id;
 	}
 
-	private ObjectNode(String id, boolean isPhantom) {
-		this.id = id;
-		this.isPhantom = isPhantom;
+	public static ObjectNode newPhantomObjectNode(int id) {
+		return new ObjectNode("p" + id);
+	}
+
+	public static ObjectNode newInternalObjectNode(int id) {
+		return new ObjectNode("i" + id);
+	}
+
+	public static ObjectNode newSubObjectNode(ObjectNode origin, String fieldName) {
+		return new ObjectNode(origin.id + "." + fieldName);
 	}
 
 	public String getID() {
 		return id;
-	}
-
-	public static ObjectNode newSubObjectNode(ObjectNode origin, String fieldName) {
-		return new ObjectNode(origin.id + "." + fieldName, true);
 	}
 
 	@Override

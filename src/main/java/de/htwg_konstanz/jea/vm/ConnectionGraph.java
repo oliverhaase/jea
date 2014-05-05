@@ -19,14 +19,14 @@ public final class ConnectionGraph {
 
 	public ConnectionGraph(Set<Integer> indexes, Slot[] vars) {
 		for (Integer index : indexes) {
-			vars[index] = mutableAddObjectNode(index, true);
-			// ReferenceNode arg = new ReferenceNode(index);
-			// referenceNodes.add(arg);
-			// ObjectNode phantom = new ObjectNode(index, true);
-			// objectNodes.add(phantom);
-			// pointsToEdges.add(new Pair<NonObjectNode, ObjectNode>(arg,
-			// phantom));
-			// vars[index] = arg;
+			ObjectNode obj = ObjectNode.newPhantomObjectNode(index);
+			ReferenceNode ref = new ReferenceNode(index, Category.ARG);
+
+			referenceNodes.add(ref);
+			objectNodes.add(obj);
+			pointsToEdges.add(new Pair<NonObjectNode, ObjectNode>(ref, obj));
+
+			vars[index] = ref;
 		}
 	}
 
@@ -74,16 +74,12 @@ public final class ConnectionGraph {
 		return result;
 	}
 
-	public ReferenceNode mutableAddObjectNode(int id, boolean isPhantom) {
-		ObjectNode obj = new ObjectNode(id, isPhantom);
-		objectNodes.add(obj);
-
-		ReferenceNode ref = new ReferenceNode(id, isPhantom ? Category.ARG : Category.LOCAL);
-		referenceNodes.add(ref);
-
-		pointsToEdges.add(new Pair<NonObjectNode, ObjectNode>(ref, obj));
-
-		return ref;
+	public ConnectionGraph addReferenceAndTarget(ReferenceNode ref, ObjectNode obj) {
+		ConnectionGraph result = new ConnectionGraph(this);
+		result.referenceNodes.add(ref);
+		result.objectNodes.add(obj);
+		result.pointsToEdges.add(new Pair<NonObjectNode, ObjectNode>(ref, obj));
+		return result;
 	}
 
 	public ConnectionGraph addReferenceToTargets(ReferenceNode ref, Set<ObjectNode> targets) {

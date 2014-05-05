@@ -142,12 +142,12 @@ aspect State {
 			
 	syn Set<Frame> NewInstruction.framesOut() {
 		return Frames.processFrames(framesIn(), new FrameProcessor() {
-			@Override public Frame process(Frame original) {	
-				ConnectionGraph cg = new ConnectionGraph(original.getCG());
-				ReferenceNode ref = cg.mutableAddObjectNode(getPosition(), false);
-				
-				return new Frame(original.getLocalVars(), original.getOpStack().push(ref), 
-					cg); 
+			@Override public Frame process(Frame original) {
+				ConnectionGraph cg = original.getCG();
+				ObjectNode obj = ObjectNode.newInternalObjectNode(getPosition());
+				ReferenceNode ref = new ReferenceNode(getPosition(), Category.LOCAL);
+				cg = cg.addReferenceAndTarget(ref, obj); 
+				return new Frame(original.getLocalVars(), original.getOpStack().push(ref), cg); 
 			}
 		});
 	}

@@ -29,7 +29,7 @@ public class ReferenceNode implements NonObjectNode, Slot {
 
 	@Override
 	public String toString() {
-		return "(" + id + ")";
+		return category.toString() + id;
 	}
 
 	@Override
