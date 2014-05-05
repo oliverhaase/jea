@@ -1,0 +1,34 @@
+<!-- Targets for working from terminal window:
+       build (default) - generates java files and compiles them
+       test            - runs junit test cases
+       clean           - removes all generated files and class files
+       doc             - generates API documentation
+     Targets for working from Eclipse:
+       gen             - generates java files
+       genClean        - removes all generated files and their class files
+ -->
+
+<!--project name="Compiler" default="build" basedir="."-->
+<project name="jea">
+
+<!-- "jastadd" is an ant task class in jastadd2.jar -->
+<taskdef classname="jastadd.JastAddTask" name="jastadd" classpath="./tools/jastadd2.jar" />
+
+
+<!-- TARGET gen: generate source files -->
+<target name="basicgen">
+   <!-- run jastadd to generate AST files -->
+    <jastadd package="de/htwg_konstanz/jea/gen" beaver="false" outdir="./java" lineColumnNumbers="true">
+        <fileset dir=".">
+            <include name="**/spec/*.ast"/>
+            <include name="**/spec/*.jrag"/>
+            <include name="**/spec/*.jadd"/>
+        </fileset>
+    </jastadd>
+</target>
+
+<target name="clean">
+    <delete dir="./java/de/htwg_konstanz/jea/gen"/>
+</target>
+
+</project>

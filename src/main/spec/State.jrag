@@ -1,0 +1,283 @@
+
+aspect State {
+
+/*
+	public int Method.numArgSlots() {
+		int result = getIsStatic() ? 0 : 1;
+		
+		for (org.apache.bcel.generic.Type type : getArgTypes())
+			result += type.getSize();
+			
+		return result;
+	}
+
+*/
+
+	public Set<Frame> Method.createFrames() {
+		Set<Frame> result = new HashSet<Frame>();
+
+		int index = 0;	
+		Set<Integer> indexes = new HashSet<Integer>();
+		
+		if ( !getIsStatic() ) 
+			indexes.add(index++);
+			
+		for ( org.apache.bcel.generic.Type argType : getArgTypes() ) {
+			if ( argType instanceof org.apache.bcel.generic.ReferenceType ) 
+				indexes.add(index);
+			index++;	
+		}	
+
+		result.add(new Frame(indexes, getMaxLocals()));
+		return result;
+	}
+	
+
+	coll Set<Frame> Instruction.framesIn() circular [new HashSet<Frame>()] with addAll;
+	Instruction contributes framesOut() to Instruction.framesIn() for each successors();
+
+	syn Set<Frame> EntryPoint.framesIn() {
+		return method().createFrames();
+	}
+	
+	syn Set<Frame> Instruction.framesOut() {
+		return Frames.processFrames(framesIn(), new FrameProcessor() {
+			@Override public Frame process(Frame original) {
+				OpStack opStack = original.getOpStack();
+				
+				if ( getProduceStack() > getConsumeStack() ) 
+					for ( int i = 0; i < getProduceStack() - getConsumeStack(); i++ ) 
+						opStack = opStack.push(DontCareSlot.NORMAL_SLOT);
+				else
+					opStack = opStack.pop(getConsumeStack() - getProduceStack());
+
+				if ( !opStack.equals(original.getOpStack()) ) 
+					return new Frame(original.getLocalVars(), opStack, original.getCG());
+				else 
+					return original;	
+			}
+		});
+	}
+	
+	
+	syn ReferenceNode FieldAssignmentInstruction.getStoreObjectRef(Frame frame) {
+		return null;
+	}
+	
+	syn ReferenceNode PutField.getStoreObjectRef(Frame frame) {
+		return (ReferenceNode) frame.getOpStack().get(frame.getOpStack().size() -2);
+	}
+
+	syn ReferenceNode Aastore.getStoreObjectRef(Frame frame) {
+		return (ReferenceNode) frame.getOpStack().get(frame.getOpStack().size() -3);
+	}		
+	
+	syn Set<Frame> FieldAssignmentInstruction.framesOut() {
+		// notation: obj.field = value
+		return Frames.processFrames(framesIn(), new FrameProcessor() {
+			@Override public Frame process(Frame original) {
+				OpStack opStack = original.getOpStack();
+				ConnectionGraph cg = original.getCG();
+				
+				// inspect type of value 
+				Slot value = opStack.peek();
+				
+				if ( value instanceof ReferenceNode ) {
+					Set<ObjectNode> referredValues = cg.dereference((ReferenceNode) value);
+					
+					for ( ObjectNode obj : cg.dereference(getStoreObjectRef(original)) ) 
+						for ( ObjectNode referredValue : referredValues ) 
+							cg = cg.addField(obj, getFieldName(), referredValue);
+				}
+				
+				return new Frame(original.getLocalVars(), opStack.pop(getConsumeStack()), cg);
+			}
+		});	
+	}
+	
+	
+	syn ReferenceNode FieldLoadInstruction.getLoadObjectRef(Frame frame) {
+		return null;
+	}
+	
+	syn ReferenceNode GetField.getLoadObjectRef(Frame frame) {
+		return (ReferenceNode) frame.getOpStack().get(frame.getOpStack().size() -1);
+	}
+
+	syn ReferenceNode Aaload.getLoadObjectRef(Frame frame) {
+		return (ReferenceNode) frame.getOpStack().get(frame.getOpStack().size() -2);
+	}		
+	
+
+
+	syn Set<Frame> FieldLoadInstruction.framesOut() {
+		// notation: load obj.field 
+		return Frames.processFrames(framesIn(), new FrameProcessor() {
+			@Override public Frame process(Frame original) {
+				OpStack opStack = original.getOpStack();
+				ConnectionGraph cg = original.getCG();
+				Slot result;
+				
+				if ( getFieldType() instanceof org.apache.bcel.generic.ReferenceType ) {
+					result = new ReferenceNode(getPosition(), Category.LOCAL);
+					Set<ObjectNode> targets = new HashSet<ObjectNode>();
+
+					for ( ObjectNode obj :  cg.dereference(getLoadObjectRef(original))) {
+						if ( cg.getFieldNode(obj, getFieldName()) == null ) 
+							cg = cg.addField(obj, getFieldName(), ObjectNode.newSubObjectNode(obj, getFieldName()));
+						
+						targets.addAll(cg.dereference(cg.getFieldNode(obj, getFieldName())));
+					}
+							
+					cg = cg.addReferenceToTargets((ReferenceNode) result, targets);
+					
+				} else 
+					result = DontCareSlot.values()[getProduceStack()];					
+					
+				return new Frame(original.getLocalVars(), opStack.pop(getConsumeStack()).typedPush(result), cg);									
+			}
+		});	
+	}
+
+			
+	syn Set<Frame> NewInstruction.framesOut() {
+		return Frames.processFrames(framesIn(), new FrameProcessor() {
+			@Override public Frame process(Frame original) {	
+				ConnectionGraph cg = new ConnectionGraph(original.getCG());
+				ReferenceNode ref = cg.mutableAddObjectNode(getPosition(), false);
+				
+				return new Frame(original.getLocalVars(), original.getOpStack().push(ref), 
+					cg); 
+			}
+		});
+	}
+	
+
+	
+	/*
+	
+	syn Set<Frame> InvokeSpecial.framesOut() {
+
+		Set<OpStack> callerStacks = new HashSet<OpStack>();
+		for ( Frame callerFrame : framesIn() ) 
+			callerStacks.add(callerFrame.getOpStack());
+				
+		getTargetMethod().callerStacks = callerStacks;
+		
+		Set<Frame> result = new HashSet<Frame>();
+				
+		for ( Slot slot : getTargetMethod().results() ) {
+			final Slot resultSlot = slot;
+			result.addAll(Frames.processFrames(framesIn(), new FrameProcessor() {
+				@Override public Frame process(Frame original) {
+					return new Frame(original.getLocalVars(), 
+						original.getOpStack().pop(getConsumeStack()).typedPush(resultSlot));
+				}
+			}));
+		}
+		
+		return result; 
+	}
+	*/
+	
+	
+	syn Set<Frame> LoadInstruction.framesOut() {
+		return Frames.processFrames(framesIn(), new FrameProcessor() {
+			@Override public Frame process(Frame original) {
+				return new Frame(original.getLocalVars(), 
+					original.getOpStack().push(original.getLocalVars().get(getIndex())), original.getCG());
+			}
+		});
+	}
+	
+	syn Set<Frame> StoreInstruction.framesOut() {
+		return Frames.processFrames(framesIn(), new FrameProcessor() {
+			@Override public Frame process(Frame original) {
+				return new Frame(original.getLocalVars().set(getIndex(), original.getOpStack().peek()), 
+					original.getOpStack().pop(), original.getCG());
+			}
+		});
+	}
+	
+	syn Set<Frame> DUP.framesOut() {
+		return Frames.processFrames(framesIn(), new FrameProcessor() {
+			@Override public Frame process(Frame original) {
+				return new Frame(original.getLocalVars(), 
+					original.getOpStack().push(original.getOpStack().peek()), original.getCG());
+			}
+		});
+	}
+	
+	syn Set<Frame> DUP_X1.framesOut() {
+		return Frames.processFrames(framesIn(), new FrameProcessor() {
+			@Override public Frame process(Frame original) {				
+				return new Frame(original.getLocalVars(), 
+					original.getOpStack().pop().pop().push(original.getOpStack().peek())
+						.push(original.getOpStack().pop().peek()).push(original.getOpStack().peek()), original.getCG());
+			}
+		});
+	}
+	
+	syn Set<Frame> DUP_X2.framesOut() {
+		return Frames.processFrames(framesIn(), new FrameProcessor() {
+			@Override public Frame process(Frame original) {				
+				return new Frame(original.getLocalVars(), 
+					original.getOpStack().pop().pop().pop().push(original.getOpStack().peek())
+						.push(original.getOpStack().pop().pop().peek())
+						.push(original.getOpStack().pop().peek())
+						.push(original.getOpStack().peek()), original.getCG());
+			}
+		});
+	}
+	
+	syn Set<Frame> DUP2.framesOut() {
+		return Frames.processFrames(framesIn(), new FrameProcessor() {
+			@Override public Frame process(Frame original) {
+				return new Frame(original.getLocalVars(), 
+					original.getOpStack().push(original.getOpStack().pop().peek())
+						.push(original.getOpStack().peek()), original.getCG());
+			}
+		});
+	}
+	
+	syn Set<Frame> DUP2_X1.framesOut() {
+		return Frames.processFrames(framesIn(), new FrameProcessor() {
+			@Override public Frame process(Frame original) {
+				return new Frame(original.getLocalVars(), 
+					original.getOpStack().pop().pop().pop()
+						.push(original.getOpStack().pop().peek())
+						.push(original.getOpStack().peek())
+						.push(original.getOpStack().pop().pop().peek())
+						.push(original.getOpStack().pop().peek())
+						.push(original.getOpStack().peek()), original.getCG());
+			}
+		});
+	}
+	
+	syn Set<Frame> DUP2_X2.framesOut() {
+		return Frames.processFrames(framesIn(), new FrameProcessor() {
+			@Override public Frame process(Frame original) {
+				return new Frame(original.getLocalVars(), 
+					original.getOpStack().pop().pop().pop().pop()
+						.push(original.getOpStack().pop().peek())
+						.push(original.getOpStack().peek())
+						.push(original.getOpStack().pop().pop().pop().peek())
+						.push(original.getOpStack().pop().pop().peek())
+						.push(original.getOpStack().pop().peek())
+						.push(original.getOpStack().peek()), original.getCG());
+			}
+		});
+	}
+	
+	syn Set<Frame> SWAP.framesOut() {
+		return Frames.processFrames(framesIn(), new FrameProcessor() {
+			@Override public Frame process(Frame original) {
+				return new Frame(original.getLocalVars(), 
+					original.getOpStack().pop().pop()
+						.push(original.getOpStack().peek())
+						.push(original.getOpStack().pop().peek()), original.getCG());
+			}
+		});
+	}
+	
+}

@@ -1,0 +1,64 @@
+
+aspect DynamicOrder {
+	
+	syn Instruction Method.lookup(int position) {
+		for ( Instruction instruction : getInstructions() ) 
+			if ( instruction.getPosition() == position ) 
+				return instruction;
+		return null;
+	}
+	
+	inh Instruction Instruction.localLookup(int position);
+	
+	eq Method.getInstruction(int i).localLookup(int position) {
+		return lookup(position);
+	}	
+	
+	syn Instruction BranchInstruction.target() {
+		return localLookup(getTargetPosition());
+	}
+	
+	syn Set<Instruction> SelectInstruction.targets() {
+		Set<Instruction> targets = new HashSet<Instruction>();
+		for ( int targetPos : getTargetPositions() ) 
+			targets.add(localLookup(targetPos)); 
+		return targets;	
+	}
+	
+	syn Set<Instruction> Instruction.successors() {
+		Set<Instruction> result = new HashSet<Instruction>();
+		if ( next() != null )
+			result.add(next());
+		return result;
+	}
+	
+	syn Set<Instruction> ReturnInstruction.successors() {
+		Set<Instruction> result = new HashSet<Instruction>();
+		result.add(method().exitPoint());
+		return result;
+	}
+	
+	syn Set<Instruction> BranchInstruction.successors() {
+		Set<Instruction> result = super.successors();
+		result.add(target());
+		return result;
+	}
+	
+	syn Set<Instruction> SelectInstruction.successors() {
+		Set<Instruction> result = super.successors();
+		result.addAll(targets());
+		return result;
+	}
+	
+	coll Set<Instruction> Instruction.predecessors() [new HashSet<Instruction>()] with add;
+  
+  	Instruction contributes this
+    	to Instruction.predecessors()
+    	for each successors();
+    	
+    syn Method InvokeInstruction.getTargetMethod() {
+    	return method().clazz().program().getClass(getLoadClass())
+    		.lookup(getMethodName(), getArgTypes());
+    }	
+    	
+}

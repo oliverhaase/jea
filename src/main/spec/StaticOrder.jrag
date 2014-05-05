@@ -1,0 +1,61 @@
+
+aspect StaticOrder {
+
+	inh Instruction Instruction.next();
+	
+	eq Method.getInstruction(int i).next() {
+		if ( i < getNumInstruction() -1 ) 
+			return getInstruction(i + 1);
+		else 
+			return null;
+	}
+	
+	inh Instruction Instruction.previous();
+	
+	eq Method.getInstruction(int i).previous() {
+		if ( i > 0 ) 
+			return getInstruction(i - 1);
+		else 
+			return null;
+	}
+	 
+	syn boolean Method.matches(String methodName, org.apache.bcel.generic.Type[] argTypes) {
+		if ( !methodName.equals(getMethodName()) || argTypes.length != getArgTypes().length )
+			return false;
+			
+		for ( int i = 0; i < argTypes.length; i++ ) 
+			if (!argTypes[i].equals(getArgTypes()[i])) 
+				return false;
+			
+		return true;
+	}
+	
+	syn Method ByteCodeClass.lookup(String methodName, org.apache.bcel.generic.Type[] argTypes) {
+		for ( Method method : getMethods() )
+			if ( method.matches(methodName, argTypes))
+				return method;
+		return null;
+	}
+						
+	inh Method Instruction.method();
+	
+	eq Method.getInstruction(int i).method() {
+		return this;
+	}
+	
+	inh ByteCodeClass Method.clazz();
+	
+	eq ByteCodeClass.getMethod(int i).clazz() {
+		return this;
+	}
+	
+	inh Program ByteCodeClass.program();
+	
+	eq Program.getChild(). program() {
+		return this;
+	}
+	
+	syn Instruction Method.exitPoint() {
+		return getInstruction(getNumInstruction() -1);
+	}
+}

@@ -1,0 +1,18 @@
+# Eclipse
+.cache
+.classpath
+.project
+.settings
+doc
+
+# Mac
+.DS_Store
+
+# Maven
+/log.txt
+target
+
+#JastAdd
+gen
+
+

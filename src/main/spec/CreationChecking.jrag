@@ -1,0 +1,38 @@
+
+import java.util.Set;
+import java.util.HashSet;
+
+
+aspect CreationChecking {
+
+	public Set<String> Program.checkCreation(String creature) {
+		Set<String> result = new HashSet<String>();
+		for ( ByteCodeClass clazz : getByteCodeClasss() ) 
+			result.addAll(clazz.checkCreation(creature));
+		return result;		
+	}
+
+	public Set<String> ByteCodeClass.checkCreation(String creature) {
+		Set<String> result = new HashSet<String>();
+		for ( Method method : getMethods() ) 
+			if ( method.checkCreation(creature) )
+				result.add(method.getMethodName());
+		return result;		
+	}
+
+	syn boolean Method.checkCreation(String creature) {
+		for ( Instruction instruction : getInstructions() )
+			if ( instruction.creates(creature) )
+				return true;
+		return false;
+	}		
+	
+	syn boolean Instruction.creates(String creature) {
+		return false;
+	}
+	
+	syn boolean New.creates(String creature) {
+		return creature.equals(getType());
+	}
+
+}
