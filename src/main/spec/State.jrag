@@ -146,6 +146,20 @@ aspect State {
 		});	
 	}
 
+	syn Set<Frame> Ldc.framesOut() {
+		return Frames.processFrames(framesIn(), new FrameProcessor() {
+			@Override public Frame process(Frame original) {			
+				return new Frame(
+					original.getLocalVars(), 
+					original.getOpStack().typedPush(
+						(getConstantType() instanceof org.apache.bcel.generic.ReferenceType ) ? 
+						original.getCG().getGlobalReference() 
+						: DontCareSlot.values()[getProduceStack()]), 
+					original.getCG());
+			}
+		});	
+	}
+
 			
 	syn Set<Frame> NewInstruction.framesOut() {
 		return Frames.processFrames(framesIn(), new FrameProcessor() {

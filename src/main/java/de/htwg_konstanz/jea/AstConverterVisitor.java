@@ -25,6 +25,7 @@ import de.htwg_konstanz.jea.gen.InvokeSpecial;
 import de.htwg_konstanz.jea.gen.InvokeStatic;
 import de.htwg_konstanz.jea.gen.InvokeVirtual;
 import de.htwg_konstanz.jea.gen.JsrInstruction;
+import de.htwg_konstanz.jea.gen.Ldc;
 import de.htwg_konstanz.jea.gen.LoadInstruction;
 import de.htwg_konstanz.jea.gen.Lreturn;
 import de.htwg_konstanz.jea.gen.MultiANewArray;
@@ -99,6 +100,13 @@ public class AstConverterVisitor extends EmptyVisitor {
 		GetStatic instruction = new GetStatic();
 		instruction.setFieldName(bcelInstruction.getFieldName(cpg));
 		instruction.setFieldType(bcelInstruction.getFieldType(cpg));
+		this.instruction = instruction;
+	}
+
+	@Override
+	public void visitLDC(org.apache.bcel.generic.LDC bcelInstruction) {
+		Ldc instruction = new Ldc();
+		instruction.setConstantType(bcelInstruction.getType(cpg));
 		this.instruction = instruction;
 	}
 

@@ -20,11 +20,12 @@ PutField : FieldAssignmentInstruction;
 Aastore : FieldAssignmentInstruction;
 PutStatic : FieldAssignmentInstruction;
 
-
 abstract FieldLoadInstruction : Instruction ::= <FieldName:String> <FieldType:org.apache.bcel.generic.Type>;
 GetField : FieldLoadInstruction;
 Aaload : FieldLoadInstruction;
 GetStatic : FieldLoadInstruction;
+
+Ldc : Instruction ::= <ConstantType:org.apache.bcel.generic.Type>;
 
 abstract BranchInstruction : Instruction ::= <TargetPosition:int>;
 GotoInstruction : BranchInstruction;
