@@ -1,11 +1,9 @@
 package de.htwg_konstanz.jea.vm;
 
 public class ReferenceNode implements NonObjectNode, Slot {
-	// private final static ReferenceNode NULL_REFERENCE = new
-	// ReferenceNode(-1);
 
 	public static enum Category {
-		ARG, LOCAL;
+		ARG, LOCAL, GLOBAL;
 	};
 
 	private final Category category;
@@ -18,14 +16,6 @@ public class ReferenceNode implements NonObjectNode, Slot {
 		this.id = id;
 		this.category = category;
 	}
-
-	// public ReferenceNode getNullReference() {
-	// return NULL_REFERENCE;
-	// }
-	//
-	// public boolean isNullReference() {
-	// return this == NULL_REFERENCE;
-	// }
 
 	@Override
 	public String toString() {

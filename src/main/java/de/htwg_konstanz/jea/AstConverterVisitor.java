@@ -74,6 +74,7 @@ public class AstConverterVisitor extends EmptyVisitor {
 	@Override
 	public void visitPUTSTATIC(org.apache.bcel.generic.PUTSTATIC bcelInstruction) {
 		PutStatic instruction = new PutStatic();
+		instruction.setFieldName(bcelInstruction.getFieldName(cpg));
 		this.instruction = instruction;
 	}
 
@@ -96,6 +97,8 @@ public class AstConverterVisitor extends EmptyVisitor {
 	@Override
 	public void visitGETSTATIC(org.apache.bcel.generic.GETSTATIC bcelInstruction) {
 		GetStatic instruction = new GetStatic();
+		instruction.setFieldName(bcelInstruction.getFieldName(cpg));
+		instruction.setFieldType(bcelInstruction.getFieldType(cpg));
 		this.instruction = instruction;
 	}
 

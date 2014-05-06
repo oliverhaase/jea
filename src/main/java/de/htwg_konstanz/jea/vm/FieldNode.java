@@ -1,5 +1,6 @@
 package de.htwg_konstanz.jea.vm;
 
+
 public class FieldNode implements NonObjectNode {
 	private final String name;
 	private final String originID;

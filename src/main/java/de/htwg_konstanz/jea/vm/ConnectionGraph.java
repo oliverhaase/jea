@@ -8,19 +8,29 @@ import de.htwg_konstanz.jea.vm.ReferenceNode.Category;
 public final class ConnectionGraph {
 	private final Set<ObjectNode> objectNodes = new HashSet<ObjectNode>();
 	private final Set<ReferenceNode> referenceNodes = new HashSet<ReferenceNode>();
-	private final Set<FieldNode> nonStaticFieldNodes = new HashSet<FieldNode>();
-	private final Set<FieldNode> staticFieldNodes = new HashSet<FieldNode>();
+	// private final Set<FieldNode> nonStaticFieldNodes = new
+	// HashSet<FieldNode>();
+	// private final Set<FieldNode> staticFieldNodes = new HashSet<FieldNode>();
+	private final Set<FieldNode> fieldNodes = new HashSet<FieldNode>();
 
 	private final Set<Pair<NonObjectNode, ObjectNode>> pointsToEdges = new HashSet<Pair<NonObjectNode, ObjectNode>>();
 	private final Set<Pair<ObjectNode, FieldNode>> fieldEdges = new HashSet<Pair<ObjectNode, FieldNode>>();
+	private final ReferenceNode globalRef;
 
 	// public ConnectionGraph() {
 	// }
 
 	public ConnectionGraph(Set<Integer> indexes, Slot[] vars) {
+		globalRef = new ReferenceNode(-1, Category.GLOBAL);
+		ObjectNode globalObj = ObjectNode.newGlobalObjectNode();
+
+		referenceNodes.add(globalRef);
+		objectNodes.add(globalObj);
+		pointsToEdges.add(new Pair<NonObjectNode, ObjectNode>(globalRef, globalObj));
+
 		for (Integer index : indexes) {
-			ObjectNode obj = ObjectNode.newPhantomObjectNode(index);
 			ReferenceNode ref = new ReferenceNode(index, Category.ARG);
+			ObjectNode obj = ObjectNode.newPhantomObjectNode(index);
 
 			referenceNodes.add(ref);
 			objectNodes.add(obj);
@@ -28,16 +38,24 @@ public final class ConnectionGraph {
 
 			vars[index] = ref;
 		}
+
 	}
 
 	public ConnectionGraph(ConnectionGraph original) {
+		globalRef = original.globalRef;
+
 		objectNodes.addAll(original.objectNodes);
 		referenceNodes.addAll(original.referenceNodes);
-		nonStaticFieldNodes.addAll(original.nonStaticFieldNodes);
-		staticFieldNodes.addAll(original.staticFieldNodes);
+		// nonStaticFieldNodes.addAll(original.nonStaticFieldNodes);
+		// staticFieldNodes.addAll(original.staticFieldNodes);
+		fieldNodes.addAll(original.fieldNodes);
 
 		pointsToEdges.addAll(original.pointsToEdges);
 		fieldEdges.addAll(original.fieldEdges);
+	}
+
+	public ReferenceNode getGlobalReference() {
+		return globalRef;
 	}
 
 	public Set<ObjectNode> dereference(NonObjectNode ref) {
@@ -65,7 +83,8 @@ public final class ConnectionGraph {
 
 		if (fieldNode == null) {
 			fieldNode = new FieldNode(fieldName, obj.getID());
-			result.nonStaticFieldNodes.add(fieldNode);
+			// result.nonStaticFieldNodes.add(fieldNode);
+			result.fieldNodes.add(fieldNode);
 			result.fieldEdges.add(new Pair<ObjectNode, FieldNode>(obj, fieldNode));
 		}
 
@@ -158,11 +177,12 @@ public final class ConnectionGraph {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + fieldEdges.hashCode();
-		result = prime * result + nonStaticFieldNodes.hashCode();
+		// result = prime * result + nonStaticFieldNodes.hashCode();
 		result = prime * result + objectNodes.hashCode();
 		result = prime * result + pointsToEdges.hashCode();
 		result = prime * result + referenceNodes.hashCode();
-		result = prime * result + staticFieldNodes.hashCode();
+		result = prime * result + fieldNodes.hashCode();
+		// result = prime * result + staticFieldNodes.hashCode();
 		return result;
 	}
 
@@ -176,10 +196,12 @@ public final class ConnectionGraph {
 
 		ConnectionGraph other = (ConnectionGraph) obj;
 
-		return objectNodes.equals(other.objectNodes) && referenceNodes.equals(other.referenceNodes)
-				&& nonStaticFieldNodes.equals(other.nonStaticFieldNodes)
-				&& staticFieldNodes.equals(other.staticFieldNodes)
-				&& pointsToEdges.equals(other.pointsToEdges) && fieldEdges.equals(other.fieldEdges);
+		return objectNodes.equals(other.objectNodes)
+				&& referenceNodes.equals(other.referenceNodes)
+				// && nonStaticFieldNodes.equals(other.nonStaticFieldNodes)
+				// && staticFieldNodes.equals(other.staticFieldNodes)
+				&& fieldNodes.equals(other.fieldNodes) && pointsToEdges.equals(other.pointsToEdges)
+				&& fieldEdges.equals(other.fieldEdges);
 	}
 
 	// public static void main(String[] args) {

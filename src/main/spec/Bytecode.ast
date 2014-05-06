@@ -18,16 +18,13 @@ SimpleInstruction : Instruction;
 abstract FieldAssignmentInstruction : Instruction ::= <FieldName:String>;
 PutField : FieldAssignmentInstruction;
 Aastore : FieldAssignmentInstruction;
-
-PutStatic : Instruction;
+PutStatic : FieldAssignmentInstruction;
 
 
 abstract FieldLoadInstruction : Instruction ::= <FieldName:String> <FieldType:org.apache.bcel.generic.Type>;
 GetField : FieldLoadInstruction;
 Aaload : FieldLoadInstruction;
-
-GetStatic : Instruction;
-
+GetStatic : FieldLoadInstruction;
 
 abstract BranchInstruction : Instruction ::= <TargetPosition:int>;
 GotoInstruction : BranchInstruction;

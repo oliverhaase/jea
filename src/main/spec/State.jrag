@@ -70,8 +70,12 @@ aspect State {
 
 	syn ReferenceNode Aastore.getStoreObjectRef(Frame frame) {
 		return (ReferenceNode) frame.getOpStack().get(frame.getOpStack().size() -3);
-	}		
+	}
 	
+	syn ReferenceNode PutStatic.getStoreObjectRef(Frame frame) {
+		return frame.getCG().getGlobalReference();
+	}
+				
 	syn Set<Frame> FieldAssignmentInstruction.framesOut() {
 		// notation: obj.field = value
 		return Frames.processFrames(framesIn(), new FrameProcessor() {
@@ -108,7 +112,10 @@ aspect State {
 		return (ReferenceNode) frame.getOpStack().get(frame.getOpStack().size() -2);
 	}		
 	
-
+	syn ReferenceNode GetStatic.getLoadObjectRef(Frame frame) {
+		return frame.getCG().getGlobalReference();
+	}
+	
 
 	syn Set<Frame> FieldLoadInstruction.framesOut() {
 		// notation: load obj.field 
