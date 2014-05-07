@@ -27,8 +27,10 @@ GetStatic : FieldLoadInstruction;
 
 Ldc : Instruction ::= <ConstantType:org.apache.bcel.generic.Type>;
 
-abstract BranchInstruction : Instruction ::= <TargetPosition:int>;
-GotoInstruction : BranchInstruction;
+abstract InstructionWithTarget : Instruction ::= <TargetPosition:int>;
+GotoInstruction : InstructionWithTarget;
+
+abstract BranchInstruction : InstructionWithTarget;
 IfInstruction : BranchInstruction;
 JsrInstruction : BranchInstruction;
 SelectInstruction : BranchInstruction ::= <TargetPositions:int[]>;

@@ -14,7 +14,7 @@ aspect DynamicOrder {
 		return lookup(position);
 	}	
 	
-	syn Instruction BranchInstruction.target() {
+	syn Instruction InstructionWithTarget.target() {
 		return localLookup(getTargetPosition());
 	}
 	
@@ -25,12 +25,20 @@ aspect DynamicOrder {
 		return targets;	
 	}
 	
+	// successors 
+	
 	syn Set<Instruction> Instruction.successors() {
 		Set<Instruction> result = new HashSet<Instruction>();
-		if ( next() != null )
-			result.add(next());
+		result.add(next());
 		return result;
 	}
+	
+	syn Set<Instruction> GotoInstruction.successors() {
+		Set<Instruction> result = new HashSet<Instruction>();
+		result.add(target());
+		return result;
+	}
+	
 	
 	syn Set<Instruction> ReturnInstruction.successors() {
 		Set<Instruction> result = new HashSet<Instruction>();
@@ -50,6 +58,12 @@ aspect DynamicOrder {
 		return result;
 	}
 	
+	syn Set<Instruction> ExitPoint.successors() {
+		return new HashSet<Instruction>();
+	}
+	
+	// predecessors 
+
 	coll Set<Instruction> Instruction.predecessors() [new HashSet<Instruction>()] with add;
   
   	Instruction contributes this
