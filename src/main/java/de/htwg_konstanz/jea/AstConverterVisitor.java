@@ -13,8 +13,6 @@ import de.htwg_konstanz.jea.gen.DUP2_X1;
 import de.htwg_konstanz.jea.gen.DUP2_X2;
 import de.htwg_konstanz.jea.gen.DUP_X1;
 import de.htwg_konstanz.jea.gen.DUP_X2;
-import de.htwg_konstanz.jea.gen.Dreturn;
-import de.htwg_konstanz.jea.gen.Freturn;
 import de.htwg_konstanz.jea.gen.GetField;
 import de.htwg_konstanz.jea.gen.GetStatic;
 import de.htwg_konstanz.jea.gen.GotoInstruction;
@@ -27,13 +25,12 @@ import de.htwg_konstanz.jea.gen.InvokeVirtual;
 import de.htwg_konstanz.jea.gen.JsrInstruction;
 import de.htwg_konstanz.jea.gen.Ldc;
 import de.htwg_konstanz.jea.gen.LoadInstruction;
-import de.htwg_konstanz.jea.gen.Lreturn;
 import de.htwg_konstanz.jea.gen.MultiANewArray;
 import de.htwg_konstanz.jea.gen.New;
 import de.htwg_konstanz.jea.gen.NewArray;
 import de.htwg_konstanz.jea.gen.PutField;
 import de.htwg_konstanz.jea.gen.PutStatic;
-import de.htwg_konstanz.jea.gen.Return;
+import de.htwg_konstanz.jea.gen.ReturnInstruction;
 import de.htwg_konstanz.jea.gen.SWAP;
 import de.htwg_konstanz.jea.gen.SelectInstruction;
 import de.htwg_konstanz.jea.gen.StoreInstruction;
@@ -257,30 +254,42 @@ public class AstConverterVisitor extends EmptyVisitor {
 	@Override
 	public void visitARETURN(org.apache.bcel.generic.ARETURN bcelInstruction) {
 		Areturn instruction = new Areturn();
+		instruction.setSize(bcelInstruction.getType(cpg).getSize());
 		this.instruction = instruction;
 	}
 
 	@Override
 	public void visitDRETURN(org.apache.bcel.generic.DRETURN bcelInstruction) {
-		Dreturn instruction = new Dreturn();
+		ReturnInstruction instruction = new ReturnInstruction();
+		instruction.setSize(bcelInstruction.getType(cpg).getSize());
 		this.instruction = instruction;
 	}
 
 	@Override
 	public void visitFRETURN(org.apache.bcel.generic.FRETURN bcelInstruction) {
-		Freturn instruction = new Freturn();
+		ReturnInstruction instruction = new ReturnInstruction();
+		instruction.setSize(bcelInstruction.getType(cpg).getSize());
+		this.instruction = instruction;
+	}
+
+	@Override
+	public void visitIRETURN(org.apache.bcel.generic.IRETURN bcelInstruction) {
+		ReturnInstruction instruction = new ReturnInstruction();
+		instruction.setSize(bcelInstruction.getType(cpg).getSize());
 		this.instruction = instruction;
 	}
 
 	@Override
 	public void visitLRETURN(org.apache.bcel.generic.LRETURN bcelInstruction) {
-		Lreturn instruction = new Lreturn();
+		ReturnInstruction instruction = new ReturnInstruction();
+		instruction.setSize(bcelInstruction.getType(cpg).getSize());
 		this.instruction = instruction;
 	}
 
 	@Override
 	public void visitRETURN(org.apache.bcel.generic.RETURN bcelInstruction) {
-		Return instruction = new Return();
+		ReturnInstruction instruction = new ReturnInstruction();
+		instruction.setSize(bcelInstruction.getType(cpg).getSize());
 		this.instruction = instruction;
 	}
 }

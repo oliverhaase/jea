@@ -6,6 +6,7 @@ public final class Frame {
 	private final LocalVars localVars;
 	private final OpStack opStack;
 	private final ConnectionGraph cg;
+	private Slot returnValue;
 
 	public Frame(LocalVars localVars, OpStack opStack, ConnectionGraph cg) {
 		if (localVars == null || opStack == null || cg == null)
@@ -28,6 +29,12 @@ public final class Frame {
 
 		localVars = new LocalVars(vars);
 		opStack = new OpStack();
+	}
+
+	public Frame setReturnValue(Slot returnValue) {
+		Frame result = new Frame(this.localVars, this.opStack, this.cg);
+		result.returnValue = returnValue;
+		return result;
 	}
 
 	// public Frame(int maxLocals, OpStack opStack, int numArgSlots) {
@@ -56,7 +63,8 @@ public final class Frame {
 
 	@Override
 	public String toString() {
-		return localVars + "| " + opStack + "| " + cg;
+		return localVars + "| " + opStack + "| " + cg
+				+ ((returnValue != null) ? (", " + returnValue) : "");
 	}
 
 	@Override

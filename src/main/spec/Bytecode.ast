@@ -59,13 +59,8 @@ DUP2_X1 : StackInstruction;
 DUP2_X2 : StackInstruction;
 SWAP : StackInstruction;
 
-abstract ReturnInstruction : Instruction;
+ReturnInstruction : Instruction ::= <Size:int>;
 Areturn : ReturnInstruction;
-Dreturn : ReturnInstruction;
-Freturn : ReturnInstruction;
-Ireturn : ReturnInstruction;
-Lreturn : ReturnInstruction;
-Return : ReturnInstruction;
 
 
 ExitPoint : Instruction;

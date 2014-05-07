@@ -301,4 +301,16 @@ aspect State {
 		});
 	}
 	
+	syn Set<Frame> ReturnInstruction.framesOut() {
+		return Frames.processFrames(framesIn(), new FrameProcessor() {
+			@Override public Frame process(Frame original) {
+				Frame result = new Frame(
+					original.getLocalVars(), 
+					original.getOpStack().pop(getConsumeStack()), 
+					original.getCG());
+				return result.setReturnValue(DontCareSlot.values()[getSize()]);
+			}
+		});
+	}
+	
 }
