@@ -8,12 +8,13 @@ public final class Frame {
 	private final ConnectionGraph cg;
 	private Slot returnValue;
 
-	public Frame(LocalVars localVars, OpStack opStack, ConnectionGraph cg) {
+	public Frame(LocalVars localVars, OpStack opStack, ConnectionGraph cg, Slot returnValue) {
 		if (localVars == null || opStack == null || cg == null)
 			throw new NullPointerException("params to Frame.<init> must not be null");
 		this.localVars = localVars;
 		this.opStack = opStack;
 		this.cg = cg;
+		this.returnValue = returnValue;
 	}
 
 	public Frame(Set<Integer> indexes, int maxLocals) {
@@ -31,24 +32,6 @@ public final class Frame {
 		opStack = new OpStack();
 	}
 
-	public Frame setReturnValue(Slot returnValue) {
-		Frame result = new Frame(this.localVars, this.opStack, this.cg);
-		result.returnValue = returnValue;
-		return result;
-	}
-
-	// public Frame(int maxLocals, OpStack opStack, int numArgSlots) {
-	// Slot[] vars = new Slot[maxLocals];
-	//
-	// for (int i = numArgSlots - 1; i >= 0; i--) {
-	// vars[i] = opStack.peek();
-	// opStack = opStack.pop();
-	// }
-	//
-	// localVars = new LocalVars(vars);
-	// this.opStack = new OpStack();
-	// }
-
 	public OpStack getOpStack() {
 		return opStack;
 	}
@@ -59,6 +42,10 @@ public final class Frame {
 
 	public ConnectionGraph getCG() {
 		return cg;
+	}
+
+	public Slot getReturnValue() {
+		return returnValue;
 	}
 
 	@Override

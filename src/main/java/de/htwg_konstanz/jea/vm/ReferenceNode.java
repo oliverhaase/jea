@@ -3,7 +3,7 @@ package de.htwg_konstanz.jea.vm;
 public class ReferenceNode implements NonObjectNode, Slot {
 
 	public static enum Category {
-		ARG, LOCAL, GLOBAL;
+		ARG, LOCAL, GLOBAL
 	};
 
 	private final Category category;

@@ -26,16 +26,26 @@ aspect Print {
   	}
   	    
   	public void Instruction.printInstruction() { 
-  		System.out.println(framesIn());
+  		if ( predecessors().size() > 1)
+	  		System.out.println(framesIn());
     	System.out.println("instruction: " + getLabel());	
     	System.out.println(framesOut());
     	System.out.println();
   	}
   	
   	public void InvokeInstruction.printInstruction() {
-  	  	System.out.println(framesIn());
+   		if ( predecessors().size() > 1)
+	  		System.out.println(framesIn());
     	System.out.println("instruction: " + getLabel() + " " + getLoadClass() + "." + getMethodName());	
     	System.out.println(framesOut());
+    	System.out.println();
+  	}
+  	
+  	  public void ExitPoint.printInstruction() {
+   		if ( predecessors().size() > 1)
+	  		System.out.println(framesIn());
+    	System.out.println("instruction: " + getLabel());	
+    	System.out.println(methodSummary());
     	System.out.println();
   	}
   	

@@ -1,20 +1,21 @@
 package de.htwg_konstanz.jea.vm;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import de.htwg_konstanz.jea.vm.ReferenceNode.Category;
 
 public final class ConnectionGraph {
-	private final Set<ObjectNode> objectNodes = new HashSet<ObjectNode>();
-	private final Set<ReferenceNode> referenceNodes = new HashSet<ReferenceNode>();
+	private final Set<ObjectNode> objectNodes = new HashSet<>();
+	private final Set<ReferenceNode> referenceNodes = new HashSet<>();
 	// private final Set<FieldNode> nonStaticFieldNodes = new
 	// HashSet<FieldNode>();
 	// private final Set<FieldNode> staticFieldNodes = new HashSet<FieldNode>();
-	private final Set<FieldNode> fieldNodes = new HashSet<FieldNode>();
+	private final Set<FieldNode> fieldNodes = new HashSet<>();
 
-	private final Set<Pair<NonObjectNode, ObjectNode>> pointsToEdges = new HashSet<Pair<NonObjectNode, ObjectNode>>();
-	private final Set<Pair<ObjectNode, FieldNode>> fieldEdges = new HashSet<Pair<ObjectNode, FieldNode>>();
+	private final Set<Pair<NonObjectNode, ObjectNode>> pointsToEdges = new HashSet<>();
+	private final Set<Pair<ObjectNode, FieldNode>> fieldEdges = new HashSet<>();
 	private final ReferenceNode globalRef;
 
 	// public ConnectionGraph() {
@@ -59,7 +60,7 @@ public final class ConnectionGraph {
 	}
 
 	public Set<ObjectNode> dereference(NonObjectNode ref) {
-		Set<ObjectNode> result = new HashSet<ObjectNode>();
+		Set<ObjectNode> result = new HashSet<>();
 		for (Pair<NonObjectNode, ObjectNode> pointsToEdge : pointsToEdges)
 			if (pointsToEdge.getValue1().equals(ref))
 				result.add(pointsToEdge.getValue2());
@@ -107,6 +108,23 @@ public final class ConnectionGraph {
 		for (ObjectNode target : targets)
 			result.pointsToEdges.add(new Pair<NonObjectNode, ObjectNode>(ref, target));
 
+		return result;
+	}
+
+	public ConnectionGraph removeReferenceNodesExcept(Slot returnValue) {
+		ConnectionGraph result = new ConnectionGraph(this);
+
+		for (Iterator<ReferenceNode> refIterator = result.referenceNodes.iterator(); refIterator
+				.hasNext();) {
+			ReferenceNode referenceNode = refIterator.next();
+			if (!referenceNode.equals(returnValue)) {
+				refIterator.remove();
+				for (Iterator<Pair<NonObjectNode, ObjectNode>> edgeIterator = result.pointsToEdges
+						.iterator(); edgeIterator.hasNext();)
+					if (edgeIterator.next().getValue1().equals(referenceNode))
+						edgeIterator.remove();
+			}
+		}
 		return result;
 	}
 
@@ -203,14 +221,5 @@ public final class ConnectionGraph {
 				&& fieldNodes.equals(other.fieldNodes) && pointsToEdges.equals(other.pointsToEdges)
 				&& fieldEdges.equals(other.fieldEdges);
 	}
-
-	// public static void main(String[] args) {
-	// Set<Integer> indexes = new HashSet<Integer>();
-	// indexes.add(0);
-	// indexes.add(2);
-	//
-	// ConnectionGraph cg = new ConnectionGraph(indexes);
-	//
-	// }
 
 }

@@ -29,6 +29,13 @@ public final class OpStack {
 		return result;
 	}
 
+	public OpStack push(Slot slot, int n) {
+		OpStack result = new OpStack(this);
+		for (int i = 0; i < n; i++)
+			result = result.push(slot);
+		return result;
+	}
+
 	public OpStack typedPush(Slot slot) {
 		if (slot == null)
 			throw new NullPointerException("slot must not be null");
@@ -47,15 +54,9 @@ public final class OpStack {
 		return result;
 	}
 
-	// public OpStack typedPop() {
-	// OpStack result = new OpStack(this);
-	// Slot slot = result.peek();
-	//
-	// for (int i = 0; i < slot.size(); i++)
-	// result.pop();
-	//
-	// return result;
-	// }
+	public OpStack typedPop() {
+		return pop(stack.peek().size());
+	}
 
 	public OpStack pop(int n) {
 		OpStack result = new OpStack(this);
