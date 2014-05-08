@@ -151,7 +151,7 @@ aspect State {
 					
 				return new Frame(
 					original.getLocalVars(), 
-					opStack.pop(getConsumeStack()).typedPush(result), 
+					opStack.pop(getConsumeStack()).push(result, getProduceStack()), 
 					cg,
 					original.getReturnValue());									
 			}
@@ -163,10 +163,10 @@ aspect State {
 			@Override public Frame process(Frame original) {			
 				return new Frame(
 					original.getLocalVars(), 
-					original.getOpStack().typedPush(
+					original.getOpStack().push(
 						(getConstantType() instanceof org.apache.bcel.generic.ReferenceType ) ? 
 						original.getCG().getGlobalReference() 
-						: DontCareSlot.values()[getProduceStack()]), 
+						: DontCareSlot.NORMAL_SLOT), 
 					original.getCG(),
 					original.getReturnValue());
 			}
