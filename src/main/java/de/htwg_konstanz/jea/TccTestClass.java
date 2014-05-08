@@ -51,4 +51,15 @@ public class TccTestClass {
 		Object ref = staticRef;
 	}
 
+	Object o(int number) {
+		Object x;
+
+		if (number == 42) {
+			x = new Double(3.14);
+			return x;
+		}
+		x = new Integer(2);
+		return x;
+	}
+
 }
