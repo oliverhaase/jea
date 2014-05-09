@@ -2,15 +2,23 @@ package de.htwg_konstanz.jea.vm;
 
 import java.util.Set;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+
+@EqualsAndHashCode
 public final class Frame {
+	@Getter
 	private final LocalVars localVars;
+	@Getter
 	private final OpStack opStack;
+	@Getter
 	private final ConnectionGraph cg;
+	@Getter
 	private Slot returnValue;
 
-	public Frame(LocalVars localVars, OpStack opStack, ConnectionGraph cg, Slot returnValue) {
-		if (localVars == null || opStack == null || cg == null)
-			throw new NullPointerException("params to Frame.<init> must not be null");
+	public Frame(@NonNull LocalVars localVars, @NonNull OpStack opStack,
+			@NonNull ConnectionGraph cg, Slot returnValue) {
 		this.localVars = localVars;
 		this.opStack = opStack;
 		this.cg = cg;
@@ -32,49 +40,10 @@ public final class Frame {
 		opStack = new OpStack();
 	}
 
-	public OpStack getOpStack() {
-		return opStack;
-	}
-
-	public LocalVars getLocalVars() {
-		return localVars;
-	}
-
-	public ConnectionGraph getCG() {
-		return cg;
-	}
-
-	public Slot getReturnValue() {
-		return returnValue;
-	}
-
 	@Override
 	public String toString() {
 		return localVars + "| " + opStack + "| " + cg
 				+ ((returnValue != null) ? (", " + returnValue) : "");
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + localVars.hashCode();
-		result = prime * result + opStack.hashCode();
-		result = prime * result + cg.hashCode();
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!(obj instanceof Frame))
-			return false;
-		Frame other = (Frame) obj;
-
-		return localVars.equals(other.localVars) && opStack.equals(other.opStack)
-				& cg.equals(other.cg);
-
 	}
 
 }

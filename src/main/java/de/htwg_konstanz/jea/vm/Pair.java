@@ -1,51 +1,24 @@
 package de.htwg_konstanz.jea.vm;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+
+@EqualsAndHashCode
 public class Pair<T, K> {
+	@Getter
 	private final T value1;
+	@Getter
 	private final K value2;
 
-	public Pair(T value1, K value2) {
-		if (value1 == null || value2 == null)
-			throw new NullPointerException("Pair components must not be null");
-
+	public Pair(@NonNull T value1, @NonNull K value2) {
 		this.value1 = value1;
 		this.value2 = value2;
-	}
-
-	public T getValue1() {
-		return value1;
-	}
-
-	public K getValue2() {
-		return value2;
 	}
 
 	@Override
 	public String toString() {
 		return "(" + value1 + ", " + value2 + ")";
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + value1.hashCode();
-		result = prime * result + value2.hashCode();
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-
-		if (!(obj instanceof Pair<?, ?>)) {
-			return false;
-		}
-		Pair<?, ?> other = (Pair<?, ?>) obj;
-
-		return value1.equals(other.value1) && value2.equals(other.value2);
 	}
 
 }

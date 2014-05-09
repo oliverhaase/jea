@@ -2,6 +2,9 @@ package de.htwg_konstanz.jea.vm;
 
 import java.util.Stack;
 
+import lombok.EqualsAndHashCode;
+
+@EqualsAndHashCode
 public final class OpStack {
 	private final Stack<Slot> stack;
 
@@ -75,24 +78,6 @@ public final class OpStack {
 		}
 		builder.append(">");
 		return new String(builder);
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + stack.hashCode();
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!(obj instanceof OpStack))
-			return false;
-		OpStack other = (OpStack) obj;
-		return stack.equals(other.stack);
 	}
 
 }

@@ -4,8 +4,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import de.htwg_konstanz.jea.vm.ReferenceNode.Category;
 
+@EqualsAndHashCode
 public final class ConnectionGraph {
 	private final Set<ObjectNode> objectNodes = new HashSet<>();
 	private final Set<ReferenceNode> referenceNodes = new HashSet<>();
@@ -16,18 +19,19 @@ public final class ConnectionGraph {
 
 	private final Set<Pair<NonObjectNode, ObjectNode>> pointsToEdges = new HashSet<>();
 	private final Set<Pair<ObjectNode, FieldNode>> fieldEdges = new HashSet<>();
-	private final ReferenceNode globalRef;
+	@Getter
+	private final ReferenceNode globalReference;
 
 	// public ConnectionGraph() {
 	// }
 
 	public ConnectionGraph(Set<Integer> indexes, Slot[] vars) {
-		globalRef = new ReferenceNode(-1, Category.GLOBAL);
+		globalReference = new ReferenceNode(-1, Category.GLOBAL);
 		ObjectNode globalObj = ObjectNode.newGlobalObjectNode();
 
-		referenceNodes.add(globalRef);
+		referenceNodes.add(globalReference);
 		objectNodes.add(globalObj);
-		pointsToEdges.add(new Pair<NonObjectNode, ObjectNode>(globalRef, globalObj));
+		pointsToEdges.add(new Pair<NonObjectNode, ObjectNode>(globalReference, globalObj));
 
 		for (Integer index : indexes) {
 			ReferenceNode ref = new ReferenceNode(index, Category.ARG);
@@ -43,7 +47,7 @@ public final class ConnectionGraph {
 	}
 
 	public ConnectionGraph(ConnectionGraph original) {
-		globalRef = original.globalRef;
+		globalReference = original.globalReference;
 
 		objectNodes.addAll(original.objectNodes);
 		referenceNodes.addAll(original.referenceNodes);
@@ -53,10 +57,6 @@ public final class ConnectionGraph {
 
 		pointsToEdges.addAll(original.pointsToEdges);
 		fieldEdges.addAll(original.fieldEdges);
-	}
-
-	public ReferenceNode getGlobalReference() {
-		return globalRef;
 	}
 
 	public Set<ObjectNode> dereference(NonObjectNode ref) {
@@ -83,7 +83,7 @@ public final class ConnectionGraph {
 		FieldNode fieldNode = getFieldNode(obj, fieldName);
 
 		if (fieldNode == null) {
-			fieldNode = new FieldNode(fieldName, obj.getID());
+			fieldNode = new FieldNode(fieldName, obj.getId());
 			// result.nonStaticFieldNodes.add(fieldNode);
 			result.fieldNodes.add(fieldNode);
 			result.fieldEdges.add(new Pair<ObjectNode, FieldNode>(obj, fieldNode));
@@ -187,39 +187,6 @@ public final class ConnectionGraph {
 	@Override
 	public String toString() {
 		return "CG(" + pointsToEdges + ", " + fieldEdges + ")";
-	}
-
-	//
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + fieldEdges.hashCode();
-		// result = prime * result + nonStaticFieldNodes.hashCode();
-		result = prime * result + objectNodes.hashCode();
-		result = prime * result + pointsToEdges.hashCode();
-		result = prime * result + referenceNodes.hashCode();
-		result = prime * result + fieldNodes.hashCode();
-		// result = prime * result + staticFieldNodes.hashCode();
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-
-		if (!(obj instanceof ConnectionGraph))
-			return false;
-
-		ConnectionGraph other = (ConnectionGraph) obj;
-
-		return objectNodes.equals(other.objectNodes)
-				&& referenceNodes.equals(other.referenceNodes)
-				// && nonStaticFieldNodes.equals(other.nonStaticFieldNodes)
-				// && staticFieldNodes.equals(other.staticFieldNodes)
-				&& fieldNodes.equals(other.fieldNodes) && pointsToEdges.equals(other.pointsToEdges)
-				&& fieldEdges.equals(other.fieldEdges);
 	}
 
 }

@@ -55,7 +55,7 @@ aspect State {
 					return new Frame(
 						original.getLocalVars(), 
 						opStack, 
-						original.getCG(), 
+						original.getCg(), 
 						original.getReturnValue());
 				else 
 					return original;	
@@ -77,7 +77,7 @@ aspect State {
 	}
 	
 	syn ReferenceNode PutStatic.getStoreObjectRef(Frame frame) {
-		return frame.getCG().getGlobalReference();
+		return frame.getCg().getGlobalReference();
 	}
 				
 	syn Set<Frame> FieldAssignmentInstruction.framesOut() {
@@ -85,7 +85,7 @@ aspect State {
 		return Frames.processFrames(framesIn(), new FrameProcessor() {
 			@Override public Frame process(Frame original) {
 				OpStack opStack = original.getOpStack();
-				ConnectionGraph cg = original.getCG();
+				ConnectionGraph cg = original.getCg();
 				
 				// inspect type of value 
 				Slot value = opStack.peek();
@@ -121,7 +121,7 @@ aspect State {
 	}		
 	
 	syn ReferenceNode GetStatic.getLoadObjectRef(Frame frame) {
-		return frame.getCG().getGlobalReference();
+		return frame.getCg().getGlobalReference();
 	}
 	
 
@@ -130,7 +130,7 @@ aspect State {
 		return Frames.processFrames(framesIn(), new FrameProcessor() {
 			@Override public Frame process(Frame original) {
 				OpStack opStack = original.getOpStack();
-				ConnectionGraph cg = original.getCG();
+				ConnectionGraph cg = original.getCg();
 				Slot result;
 				
 				if ( getFieldType() instanceof org.apache.bcel.generic.ReferenceType ) {
@@ -165,9 +165,9 @@ aspect State {
 					original.getLocalVars(), 
 					original.getOpStack().push(
 						(getConstantType() instanceof org.apache.bcel.generic.ReferenceType ) ? 
-						original.getCG().getGlobalReference() 
+						original.getCg().getGlobalReference() 
 						: DontCareSlot.NORMAL_SLOT), 
-					original.getCG(),
+					original.getCg(),
 					original.getReturnValue());
 			}
 		});	
@@ -177,7 +177,7 @@ aspect State {
 	syn Set<Frame> NewInstruction.framesOut() {
 		return Frames.processFrames(framesIn(), new FrameProcessor() {
 			@Override public Frame process(Frame original) {
-				ConnectionGraph cg = original.getCG();
+				ConnectionGraph cg = original.getCg();
 				ObjectNode obj = ObjectNode.newInternalObjectNode(getPosition());
 				ReferenceNode ref = new ReferenceNode(getPosition(), Category.LOCAL);
 				cg = cg.addReferenceAndTarget(ref, obj); 
@@ -226,7 +226,7 @@ aspect State {
 					original.getLocalVars(), 
 					original.getOpStack().push(original.getLocalVars().get(getIndex()), 
 						getProduceStack()), 
-					original.getCG(), 
+					original.getCg(), 
 					original.getReturnValue());
 			}
 		});
@@ -238,7 +238,7 @@ aspect State {
 				return new Frame(
 					original.getLocalVars().set(getIndex(), 
 					original.getOpStack().peek()), original.getOpStack().pop(getConsumeStack()), 
-					original.getCG(), 
+					original.getCg(), 
 					original.getReturnValue());
 			}
 		});
@@ -250,7 +250,7 @@ aspect State {
 				return new Frame(
 					original.getLocalVars(), 
 					original.getOpStack().push(original.getOpStack().peek()), 
-					original.getCG(), 
+					original.getCg(), 
 					original.getReturnValue());
 			}
 		});
@@ -263,7 +263,7 @@ aspect State {
 					original.getLocalVars(), 
 					original.getOpStack().pop().pop().push(original.getOpStack().peek())
 						.push(original.getOpStack().pop().peek()).push(original.getOpStack().peek()), 
-					original.getCG(), 
+					original.getCg(), 
 					original.getReturnValue());
 			}
 		});
@@ -278,7 +278,7 @@ aspect State {
 						.push(original.getOpStack().pop().pop().peek())
 						.push(original.getOpStack().pop().peek())
 						.push(original.getOpStack().peek()), 
-					original.getCG(), 
+					original.getCg(), 
 					original.getReturnValue());
 			}
 		});
@@ -291,7 +291,7 @@ aspect State {
 					original.getLocalVars(), 
 					original.getOpStack().push(original.getOpStack().pop().peek())
 						.push(original.getOpStack().peek()), 
-					original.getCG(), 
+					original.getCg(), 
 					original.getReturnValue());
 			}
 		});
@@ -308,7 +308,7 @@ aspect State {
 						.push(original.getOpStack().pop().pop().peek())
 						.push(original.getOpStack().pop().peek())
 						.push(original.getOpStack().peek()), 
-					original.getCG(), 
+					original.getCg(), 
 					original.getReturnValue());
 			}
 		});
@@ -325,7 +325,7 @@ aspect State {
 						.push(original.getOpStack().pop().pop().pop().peek())
 						.push(original.getOpStack().pop().pop().peek())
 						.push(original.getOpStack().pop().peek())
-						.push(original.getOpStack().peek()), original.getCG(), 
+						.push(original.getOpStack().peek()), original.getCg(), 
 					original.getReturnValue());
 			}
 		});
@@ -339,7 +339,7 @@ aspect State {
 					original.getOpStack().pop().pop()
 						.push(original.getOpStack().peek())
 						.push(original.getOpStack().pop().peek()), 
-					original.getCG(), 
+					original.getCg(), 
 					original.getReturnValue());
 			}
 		});
@@ -351,7 +351,7 @@ aspect State {
 				return new Frame(
 					original.getLocalVars(), 
 					original.getOpStack().pop(getConsumeStack()), 
-					original.getCG(),
+					original.getCg(),
 					DontCareSlot.values()[getSize()]);
 			}
 		});
@@ -363,7 +363,7 @@ aspect State {
 				return new Frame(
 					original.getLocalVars(), 
 					original.getOpStack().pop(), 
-					original.getCG(),
+					original.getCg(),
 					(ReferenceNode) original.getOpStack().peek());
 			}
 		});
