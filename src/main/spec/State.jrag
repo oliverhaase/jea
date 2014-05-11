@@ -55,8 +55,7 @@ aspect State {
 					return new Frame(
 						original.getLocalVars(), 
 						opStack, 
-						original.getCg(), 
-						original.getReturnValue());
+						original.getCg());
 				else 
 					return original;	
 			}
@@ -101,8 +100,7 @@ aspect State {
 				return new Frame(
 					original.getLocalVars(), 
 					opStack.pop(getConsumeStack()), 
-					cg, 
-					original.getReturnValue());
+					cg);
 			}
 		});	
 	}
@@ -152,8 +150,7 @@ aspect State {
 				return new Frame(
 					original.getLocalVars(), 
 					opStack.pop(getConsumeStack()).push(result, getProduceStack()), 
-					cg,
-					original.getReturnValue());									
+					cg);									
 			}
 		});	
 	}
@@ -167,8 +164,7 @@ aspect State {
 						(getConstantType() instanceof org.apache.bcel.generic.ReferenceType ) ? 
 						original.getCg().getGlobalReference() 
 						: DontCareSlot.NORMAL_SLOT), 
-					original.getCg(),
-					original.getReturnValue());
+					original.getCg());
 			}
 		});	
 	}
@@ -184,8 +180,7 @@ aspect State {
 				return new Frame(
 					original.getLocalVars(), 
 					original.getOpStack().push(ref), 
-					cg,
-					original.getReturnValue()); 
+					cg); 
 			}
 		});
 	}
@@ -226,8 +221,7 @@ aspect State {
 					original.getLocalVars(), 
 					original.getOpStack().push(original.getLocalVars().get(getIndex()), 
 						getProduceStack()), 
-					original.getCg(), 
-					original.getReturnValue());
+					original.getCg());
 			}
 		});
 	}
@@ -238,8 +232,7 @@ aspect State {
 				return new Frame(
 					original.getLocalVars().set(getIndex(), 
 					original.getOpStack().peek()), original.getOpStack().pop(getConsumeStack()), 
-					original.getCg(), 
-					original.getReturnValue());
+					original.getCg());
 			}
 		});
 	}
@@ -250,8 +243,7 @@ aspect State {
 				return new Frame(
 					original.getLocalVars(), 
 					original.getOpStack().push(original.getOpStack().peek()), 
-					original.getCg(), 
-					original.getReturnValue());
+					original.getCg());
 			}
 		});
 	}
@@ -263,8 +255,7 @@ aspect State {
 					original.getLocalVars(), 
 					original.getOpStack().pop().pop().push(original.getOpStack().peek())
 						.push(original.getOpStack().pop().peek()).push(original.getOpStack().peek()), 
-					original.getCg(), 
-					original.getReturnValue());
+					original.getCg());
 			}
 		});
 	}
@@ -278,8 +269,7 @@ aspect State {
 						.push(original.getOpStack().pop().pop().peek())
 						.push(original.getOpStack().pop().peek())
 						.push(original.getOpStack().peek()), 
-					original.getCg(), 
-					original.getReturnValue());
+					original.getCg());
 			}
 		});
 	}
@@ -291,8 +281,7 @@ aspect State {
 					original.getLocalVars(), 
 					original.getOpStack().push(original.getOpStack().pop().peek())
 						.push(original.getOpStack().peek()), 
-					original.getCg(), 
-					original.getReturnValue());
+					original.getCg());
 			}
 		});
 	}
@@ -308,8 +297,7 @@ aspect State {
 						.push(original.getOpStack().pop().pop().peek())
 						.push(original.getOpStack().pop().peek())
 						.push(original.getOpStack().peek()), 
-					original.getCg(), 
-					original.getReturnValue());
+					original.getCg());
 			}
 		});
 	}
@@ -325,8 +313,7 @@ aspect State {
 						.push(original.getOpStack().pop().pop().pop().peek())
 						.push(original.getOpStack().pop().pop().peek())
 						.push(original.getOpStack().pop().peek())
-						.push(original.getOpStack().peek()), original.getCg(), 
-					original.getReturnValue());
+						.push(original.getOpStack().peek()), original.getCg());
 			}
 		});
 	}
@@ -339,13 +326,13 @@ aspect State {
 					original.getOpStack().pop().pop()
 						.push(original.getOpStack().peek())
 						.push(original.getOpStack().pop().peek()), 
-					original.getCg(), 
-					original.getReturnValue());
+					original.getCg());
 			}
 		});
 	}
 	
 	syn Set<Frame> ReturnInstruction.framesOut() {
+	/*
 		return Frames.processFrames(framesIn(), new FrameProcessor() {
 			@Override public Frame process(Frame original) {
 				return new Frame(
@@ -355,9 +342,13 @@ aspect State {
 					DontCareSlot.values()[getSize()]);
 			}
 		});
+	*/
+		return null;
+		
 	}
 	
 	syn Set<Frame> Areturn.framesOut() {
+	/*
 		return Frames.processFrames(framesIn(), new FrameProcessor() {
 			@Override public Frame process(Frame original) {
 				return new Frame(
@@ -367,14 +358,9 @@ aspect State {
 					(ReferenceNode) original.getOpStack().peek());
 			}
 		});
+	*/
+		return null;	
 	}
-	
-	syn Set<MethodSummary> ExitPoint.methodSummary() {
-		Set<MethodSummary> result = new HashSet<MethodSummary>();
-		for ( Frame frame : framesIn() )
-			result.add(new MethodSummary(frame));
-		return result;
-	}
-	
+		
 	
 }

@@ -1,0 +1,30 @@
+
+aspect MethodSummary {
+	
+	syn Set<MethodSummary> Instruction.methodSummary() {
+		return null;
+	}
+	
+	syn Set<MethodSummary> ReturnInstruction.methodSummary() {
+		Set<MethodSummary> result = new HashSet<MethodSummary>();
+		for ( Frame frame : framesIn() )
+			result.add(new MethodSummary(frame.getCg()));
+		return result;	
+	}
+	
+	syn Set<MethodSummary> Areturn.methodSummary() {
+		Set<MethodSummary> result = new HashSet<MethodSummary>();
+		for ( Frame frame : framesIn() )
+			result.add(new MethodSummary(frame.getCg(), (ReferenceNode) frame.getOpStack().peek()));
+		return result;	
+	}
+		
+	
+	syn Set<MethodSummary> ExitPoint.methodSummary() {
+		Set<MethodSummary> result = new HashSet<MethodSummary>();
+		for ( Instruction predecessor : predecessors())
+			result.addAll(predecessor.methodSummary());
+		return result;
+	}	
+	
+}

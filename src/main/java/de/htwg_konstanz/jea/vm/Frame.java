@@ -14,15 +14,11 @@ public final class Frame {
 	private final OpStack opStack;
 	@Getter
 	private final ConnectionGraph cg;
-	@Getter
-	private Slot returnValue;
 
-	public Frame(@NonNull LocalVars localVars, @NonNull OpStack opStack,
-			@NonNull ConnectionGraph cg, Slot returnValue) {
+	public Frame(@NonNull LocalVars localVars, @NonNull OpStack opStack, @NonNull ConnectionGraph cg) {
 		this.localVars = localVars;
 		this.opStack = opStack;
 		this.cg = cg;
-		this.returnValue = returnValue;
 	}
 
 	public Frame(Set<Integer> indexes, int maxLocals) {
@@ -42,8 +38,6 @@ public final class Frame {
 
 	@Override
 	public String toString() {
-		return localVars + "| " + opStack + "| " + cg
-				+ ((returnValue != null) ? (", " + returnValue) : "");
+		return localVars + "| " + opStack + "| " + cg;
 	}
-
 }

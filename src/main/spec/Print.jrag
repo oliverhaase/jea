@@ -41,9 +41,17 @@ aspect Print {
     	System.out.println();
   	}
   	
-  	  public void ExitPoint.printInstruction() {
-   		if ( predecessors().size() > 1)
-	  		System.out.println(framesIn());
+  	
+ 	public void ReturnInstruction.printInstruction() {
+    	System.out.println("instruction: " + getLabel());	
+    	System.out.println(methodSummary());
+    	System.out.println();
+  	}
+  	 	
+  	
+  	public void ExitPoint.printInstruction() {
+//   		if ( predecessors().size() > 1)
+//	  		System.out.println(framesIn());
     	System.out.println("instruction: " + getLabel());	
     	System.out.println(methodSummary());
     	System.out.println();
