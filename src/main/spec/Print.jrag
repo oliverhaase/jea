@@ -44,7 +44,7 @@ aspect Print {
   	
  	public void ReturnInstruction.printInstruction() {
     	System.out.println("instruction: " + getLabel());	
-    	System.out.println(methodSummary());
+    	System.out.println(methodSummaries());
     	System.out.println();
   	}
   	 	

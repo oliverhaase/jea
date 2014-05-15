@@ -1,29 +1,31 @@
 
 aspect MethodSummary {
 	
-	syn Set<MethodSummary> Instruction.methodSummary() {
+	syn Set<MethodSummary> Instruction.methodSummaries() {
 		return null;
 	}
 	
-	syn Set<MethodSummary> ReturnInstruction.methodSummary() {
+	syn Set<MethodSummary> ReturnInstruction.methodSummaries() {
 		Set<MethodSummary> result = new HashSet<MethodSummary>();
 		for ( Frame frame : framesIn() )
-			result.add(new MethodSummary(frame.getCg()));
+			result.add(new MethodSummary(frame.getCg().extractSummaryGraph()));
 		return result;	
 	}
 	
-	syn Set<MethodSummary> Areturn.methodSummary() {
+	syn Set<MethodSummary> Areturn.methodSummaries() {
 		Set<MethodSummary> result = new HashSet<MethodSummary>();
-		for ( Frame frame : framesIn() )
-			result.add(new MethodSummary(frame.getCg(), (ReferenceNode) frame.getOpStack().peek()));
+		for ( Frame frame : framesIn() ) 
+			result.add(new MethodSummary(frame.getCg().extractSummaryGraph(), 
+				frame.getCg().dereference((ReferenceNode) frame.getOpStack().peek())));
 		return result;	
 	}
 		
 	
-	syn Set<MethodSummary> ExitPoint.methodSummary() {
-		Set<MethodSummary> result = new HashSet<MethodSummary>();
+	syn MethodSummary ExitPoint.methodSummary() {
+		MethodSummary result = new MethodSummary();
 		for ( Instruction predecessor : predecessors())
-			result.addAll(predecessor.methodSummary());
+			for ( MethodSummary predSummary : predecessor.methodSummaries() )
+				result.merge(predSummary);
 		return result;
 	}	
 	

@@ -1,27 +1,41 @@
 package de.htwg_konstanz.jea.vm;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode
 public class MethodSummary {
-	private final ConnectionGraph cg;
+	private final SummaryGraph sg;
 	private final Set<ObjectNode> result;
 
-	public MethodSummary(ConnectionGraph cg) {
-		this.cg = new ConnectionGraph(cg);
-		result = null;
+	public MethodSummary() {
+		sg = new SummaryGraph();
+		result = new HashSet<ObjectNode>();
 	}
 
-	public MethodSummary(ConnectionGraph cg, ReferenceNode returnValue) {
-		this.cg = new ConnectionGraph(cg);
-		result = cg.dereference(returnValue);
+	public MethodSummary(SummaryGraph sg) {
+		this.sg = sg;
+		result = new HashSet<ObjectNode>();
+	}
+
+	public MethodSummary(SummaryGraph sg, Set<ObjectNode> result) {
+		this.sg = sg;
+		this.result = result;
+	}
+
+	public MethodSummary merge(MethodSummary other) {
+		Set<ObjectNode> mergedResult = new HashSet<>();
+		mergedResult.addAll(this.result);
+		mergedResult.addAll(other.result);
+
+		return new MethodSummary(sg.merge(other.sg), mergedResult);
 	}
 
 	@Override
 	public String toString() {
-		return cg.toString() + ", " + result;
+		return sg.toString() + ", " + result;
 	}
 
 }

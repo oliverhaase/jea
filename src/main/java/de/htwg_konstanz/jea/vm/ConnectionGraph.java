@@ -8,17 +8,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import de.htwg_konstanz.jea.vm.ReferenceNode.Category;
 
-@EqualsAndHashCode
-public final class ConnectionGraph {
-	private final Set<ObjectNode> objectNodes = new HashSet<>();
+@EqualsAndHashCode(callSuper = true)
+public final class ConnectionGraph extends SummaryGraph {
 	private final Set<ReferenceNode> referenceNodes = new HashSet<>();
-	// private final Set<FieldNode> nonStaticFieldNodes = new
-	// HashSet<FieldNode>();
-	// private final Set<FieldNode> staticFieldNodes = new HashSet<FieldNode>();
-	private final Set<FieldNode> fieldNodes = new HashSet<>();
-
-	private final Set<Pair<NonObjectNode, ObjectNode>> pointsToEdges = new HashSet<>();
-	private final Set<Pair<ObjectNode, FieldNode>> fieldEdges = new HashSet<>();
 	@Getter
 	private final ReferenceNode globalReference;
 
@@ -57,6 +49,15 @@ public final class ConnectionGraph {
 
 		pointsToEdges.addAll(original.pointsToEdges);
 		fieldEdges.addAll(original.fieldEdges);
+	}
+
+	public SummaryGraph extractSummaryGraph() {
+		Set<Pair<NonObjectNode, ObjectNode>> fieldPointsToEdges = new HashSet<>();
+		for (Pair<NonObjectNode, ObjectNode> pointsToEdge : pointsToEdges)
+			if (pointsToEdge.getValue1() instanceof FieldNode)
+				fieldPointsToEdges.add(pointsToEdge);
+
+		return new SummaryGraph(objectNodes, fieldNodes, fieldPointsToEdges, fieldEdges);
 	}
 
 	public Set<ObjectNode> dereference(NonObjectNode ref) {
@@ -128,62 +129,6 @@ public final class ConnectionGraph {
 		return result;
 	}
 
-	//
-	// public void merge(ConnectionGraph other) {
-	// objectNodes.addAll(other.objectNodes);
-	// referenceNodes.addAll(other.referenceNodes);
-	// nonStaticFieldNodes.addAll(other.nonStaticFieldNodes);
-	// staticFieldNodes.addAll(other.staticFieldNodes);
-	//
-	// pointsToEdges.addAll(other.pointsToEdges);
-	// deferredEdges.addAll(other.deferredEdges);
-	// fieldEdges.addAll(other.fieldEdges);
-	// }
-	//
-	// public void bypass(NonObjectNode node) {
-	// Set<NonObjectNode> origins = new HashSet<NonObjectNode>();
-	// for (Iterator<Pair<NonObjectNode, NonObjectNode>> it =
-	// deferredEdges.iterator(); it
-	// .hasNext();) {
-	// Pair<NonObjectNode, NonObjectNode> edge = it.next();
-	// if (edge.getValue2().equals(node)) {
-	// origins.add(edge.getValue1());
-	// it.remove();
-	// }
-	// }
-	//
-	// Set<ObjectNode> pointedToDestinations = new HashSet<ObjectNode>();
-	// for (Iterator<Pair<NonObjectNode, ObjectNode>> it =
-	// pointsToEdges.iterator(); it.hasNext();) {
-	// Pair<NonObjectNode, ObjectNode> edge = it.next();
-	// if (edge.getValue1().equals(node)) {
-	// pointedToDestinations.add(edge.getValue2());
-	// it.remove();
-	// }
-	// }
-	//
-	// Set<NonObjectNode> deferredDestinations = new HashSet<NonObjectNode>();
-	// for (Iterator<Pair<NonObjectNode, NonObjectNode>> it =
-	// deferredEdges.iterator(); it
-	// .hasNext();) {
-	// Pair<NonObjectNode, NonObjectNode> edge = it.next();
-	// if (edge.getValue1().equals(node)) {
-	// deferredDestinations.add(edge.getValue2());
-	// it.remove();
-	// }
-	// }
-	//
-	// for (NonObjectNode origin : origins) {
-	// for (ObjectNode pointedToDestination : pointedToDestinations)
-	// pointsToEdges
-	// .add(new Pair<NonObjectNode, ObjectNode>(origin, pointedToDestination));
-	//
-	// for (NonObjectNode deferredDestination : deferredDestinations)
-	// deferredEdges.add(new Pair<NonObjectNode, NonObjectNode>(origin,
-	// deferredDestination));
-	// }
-	// }
-	//
 	@Override
 	public String toString() {
 		return "CG(" + pointsToEdges + ", " + fieldEdges + ")";
