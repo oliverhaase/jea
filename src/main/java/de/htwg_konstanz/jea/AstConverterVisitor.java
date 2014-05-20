@@ -157,6 +157,10 @@ public class AstConverterVisitor extends EmptyVisitor {
 	@Override
 	public void visitINVOKEINTERFACE(org.apache.bcel.generic.INVOKEINTERFACE bcelInstruction) {
 		InvokeInterface instruction = new InvokeInterface();
+		instruction.setLoadClass(bcelInstruction.getLoadClassType(cpg).toString());
+		instruction.setMethodName(bcelInstruction.getMethodName(cpg));
+		instruction.setArgTypes(bcelInstruction.getArgumentTypes(cpg));
+		instruction.setReturnType(bcelInstruction.getReturnType(cpg));
 		this.instruction = instruction;
 	}
 
@@ -166,6 +170,7 @@ public class AstConverterVisitor extends EmptyVisitor {
 		instruction.setLoadClass(bcelInstruction.getLoadClassType(cpg).toString());
 		instruction.setMethodName(bcelInstruction.getMethodName(cpg));
 		instruction.setArgTypes(bcelInstruction.getArgumentTypes(cpg));
+		instruction.setReturnType(bcelInstruction.getReturnType(cpg));
 		this.instruction = instruction;
 	}
 
@@ -175,12 +180,17 @@ public class AstConverterVisitor extends EmptyVisitor {
 		instruction.setLoadClass(bcelInstruction.getLoadClassType(cpg).toString());
 		instruction.setMethodName(bcelInstruction.getMethodName(cpg));
 		instruction.setArgTypes(bcelInstruction.getArgumentTypes(cpg));
+		instruction.setReturnType(bcelInstruction.getReturnType(cpg));
 		this.instruction = instruction;
 	}
 
 	@Override
 	public void visitINVOKEVIRTUAL(org.apache.bcel.generic.INVOKEVIRTUAL bcelInstruction) {
 		InvokeVirtual instruction = new InvokeVirtual();
+		instruction.setLoadClass(bcelInstruction.getLoadClassType(cpg).toString());
+		instruction.setMethodName(bcelInstruction.getMethodName(cpg));
+		instruction.setArgTypes(bcelInstruction.getArgumentTypes(cpg));
+		instruction.setReturnType(bcelInstruction.getReturnType(cpg));
 		this.instruction = instruction;
 	}
 
