@@ -25,7 +25,7 @@ aspect MethodSummary {
 		MethodSummary result = new MethodSummary();
 		for ( Instruction predecessor : predecessors())
 			for ( MethodSummary predSummary : predecessor.methodSummaries() )
-				result.merge(predSummary);
+				result = result.merge(predSummary);
 		return result;
 	}	
 	
