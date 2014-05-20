@@ -62,4 +62,8 @@ public class TccTestClass {
 		return x;
 	}
 
+	Object p(int number) {
+		return new Object();
+	}
+
 }
