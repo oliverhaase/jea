@@ -36,7 +36,7 @@ JsrInstruction : BranchInstruction;
 SelectInstruction : BranchInstruction ::= <TargetPositions:int[]>;
 
 abstract InvokeInstruction : Instruction ::= <LoadClass:String> <MethodName:String> 
-	<ArgTypes:org.apache.bcel.generic.Type[]>;
+	<ArgTypes:org.apache.bcel.generic.Type[]> <ReturnType:org.apache.bcel.generic.Type>;
 InvokeInterface : InvokeInstruction;
 InvokeSpecial : InvokeInstruction;
 InvokeStatic : InvokeInstruction;
