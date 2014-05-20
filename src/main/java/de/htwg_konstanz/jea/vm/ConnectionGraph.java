@@ -84,7 +84,7 @@ public final class ConnectionGraph extends SummaryGraph {
 		FieldNode fieldNode = getFieldNode(obj, fieldName);
 
 		if (fieldNode == null) {
-			fieldNode = new FieldNode(fieldName, obj.getId());
+			fieldNode = new FieldNode(fieldName, obj.getId(), obj.getEscapeState());
 			// result.nonStaticFieldNodes.add(fieldNode);
 			result.fieldNodes.add(fieldNode);
 			result.fieldEdges.add(new Pair<ObjectNode, FieldNode>(obj, fieldNode));
