@@ -8,7 +8,7 @@ public class ObjectNode implements Node {
 	@Getter
 	private final String id;
 	@Getter
-	private EscapeState escapeState;
+	private final EscapeState escapeState;
 
 	private ObjectNode(String id, EscapeState escapeState) {
 		this.id = id;

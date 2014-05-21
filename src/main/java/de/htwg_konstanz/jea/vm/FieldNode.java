@@ -10,7 +10,7 @@ public class FieldNode implements NonObjectNode {
 	private final String name;
 	private final String originID;
 	@Getter
-	private EscapeState escapeState;
+	private final EscapeState escapeState;
 
 	public FieldNode(@NonNull String name, @NonNull String originID,
 			@NonNull EscapeState escapeState) {
