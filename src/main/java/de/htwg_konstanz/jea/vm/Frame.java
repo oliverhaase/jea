@@ -36,9 +36,32 @@ public final class Frame {
 		opStack = new OpStack();
 	}
 
-	public Frame applyMethodSummary(MethodSummary summary, int consumeStack, int produceStack) {
-		return new Frame(localVars, opStack.pop(consumeStack).push(
-				DontCareSlot.values()[produceStack], produceStack), cg);
+	public Frame applyMethodSummary(MethodSummary summary, int consumeStack, int produceStack,
+			org.apache.bcel.generic.Type returnType) {
+		if (summary.isAlien()) {
+			OpStack opStack = this.opStack;
+			ConnectionGraph cg = this.cg;
+
+			for (int i = 0; i < consumeStack; i++) {
+				Slot arg = opStack.peek();
+				if (arg instanceof ReferenceNode) {
+					Set<ObjectNode> objects = cg.dereference((ReferenceNode) arg);
+					cg = cg.publish((ReferenceNode) arg);
+
+				}
+				opStack = opStack.pop();
+			}
+
+			if (returnType instanceof org.apache.bcel.generic.ReferenceType)
+				opStack.push(cg.getGlobalReference());
+			else
+				opStack.push(DontCareSlot.values()[produceStack], produceStack);
+
+			return new Frame(localVars, opStack, cg);
+		}
+
+		throw new AssertionError("not yet implemented");
+
 	}
 
 	@Override

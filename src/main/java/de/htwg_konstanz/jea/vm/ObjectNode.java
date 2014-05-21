@@ -31,9 +31,17 @@ public class ObjectNode implements Node {
 		return new ObjectNode("global", EscapeState.GLOBAL_ESCAPE);
 	}
 
+	public ObjectNode publish() {
+		return new ObjectNode(getId(), EscapeState.GLOBAL_ESCAPE);
+	}
+
 	@Override
 	public String toString() {
-		return id;
+		if (escapeState == EscapeState.GLOBAL_ESCAPE)
+			return id + "^";
+		if (escapeState == EscapeState.ARG_ESCAPE)
+			return id + ">";
+		return id + "v";
 	}
 
 }

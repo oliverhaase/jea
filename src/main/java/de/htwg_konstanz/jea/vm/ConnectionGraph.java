@@ -68,6 +68,45 @@ public final class ConnectionGraph extends SummaryGraph {
 		return result;
 	}
 
+	public ConnectionGraph publish(ReferenceNode ref) {
+		ConnectionGraph result = new ConnectionGraph(this);
+
+		for (ObjectNode object : dereference(ref)) {
+			result.objectNodes.remove(object);
+			result.objectNodes.add(object.publish());
+
+			Set<Pair<NonObjectNode, ObjectNode>> newPointsToEdges = new HashSet<>();
+
+			for (Iterator<Pair<NonObjectNode, ObjectNode>> it = result.pointsToEdges.iterator(); it
+					.hasNext();) {
+				Pair<NonObjectNode, ObjectNode> pointsToEdge = it.next();
+				if (pointsToEdge.getValue2().equals(object)) {
+					newPointsToEdges.add(new Pair<NonObjectNode, ObjectNode>(pointsToEdge
+							.getValue1(), pointsToEdge.getValue2().publish()));
+					it.remove();
+				}
+			}
+			result.pointsToEdges.addAll(newPointsToEdges);
+
+			Set<Pair<ObjectNode, FieldNode>> newFieldEdges = new HashSet<>();
+
+			for (Iterator<Pair<ObjectNode, FieldNode>> it = result.fieldEdges.iterator(); it
+					.hasNext();) {
+				Pair<ObjectNode, FieldNode> fieldEdge = it.next();
+				if (fieldEdge.getValue1().equals(object)) {
+					newFieldEdges.add(new Pair<ObjectNode, FieldNode>(fieldEdge.getValue1()
+							.publish(), fieldEdge.getValue2()));
+					it.remove();
+				}
+			}
+
+			result.fieldEdges.addAll(newFieldEdges);
+
+		}
+
+		return result;
+	}
+
 	public FieldNode getFieldNode(ObjectNode obj, String fieldName) {
 		for (Pair<ObjectNode, FieldNode> fieldEdge : fieldEdges)
 			if (fieldEdge.getValue1().equals(obj)

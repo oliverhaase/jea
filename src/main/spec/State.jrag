@@ -193,7 +193,11 @@ aspect State {
 			final Method target = targetMethod; 
 			result.addAll(Frames.processFrames(framesIn(), new FrameProcessor() {
 				@Override public Frame process(Frame original) {	
-					return original.applyMethodSummary(target.methodSummary(), getConsumeStack(), getProduceStack());
+					return original.applyMethodSummary(
+						target.methodSummary(), 
+						getConsumeStack(), 
+						getProduceStack(), 
+						getReturnType());
 				}
 			}));	
 		}
