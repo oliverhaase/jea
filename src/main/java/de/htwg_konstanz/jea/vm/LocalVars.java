@@ -3,15 +3,15 @@ package de.htwg_konstanz.jea.vm;
 import java.util.Arrays;
 
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import net.jcip.annotations.Immutable;
 
+@Immutable
 @EqualsAndHashCode
 public class LocalVars {
 	private final Slot[] vars;
 
-	public LocalVars(Slot[] vars) {
-		if (vars == null)
-			throw new NullPointerException("arg to LocalVars.<init> must not be null");
-
+	public LocalVars(@NonNull Slot[] vars) {
 		this.vars = new Slot[vars.length];
 
 		for (int i = 0; i < vars.length; i++)

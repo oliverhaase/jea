@@ -2,7 +2,9 @@ package de.htwg_konstanz.jea.vm;
 
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import net.jcip.annotations.Immutable;
 
+@Immutable
 @EqualsAndHashCode
 public class ReferenceNode implements NonObjectNode, Slot {
 	public static enum Category {

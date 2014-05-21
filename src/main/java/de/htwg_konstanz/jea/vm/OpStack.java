@@ -3,7 +3,10 @@ package de.htwg_konstanz.jea.vm;
 import java.util.Stack;
 
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import net.jcip.annotations.Immutable;
 
+@Immutable
 @EqualsAndHashCode
 public final class OpStack {
 	private final Stack<Slot> stack;
@@ -12,10 +15,7 @@ public final class OpStack {
 		stack = new Stack<Slot>();
 	}
 
-	public OpStack(OpStack original) {
-		if (original == null)
-			throw new NullPointerException("original stack must not be null");
-
+	public OpStack(@NonNull OpStack original) {
 		Slot[] stackArray = original.stack.toArray(new Slot[0]);
 		this.stack = new Stack<Slot>();
 		for (Slot slot : stackArray) {
@@ -23,10 +23,7 @@ public final class OpStack {
 		}
 	}
 
-	public OpStack push(Slot slot) {
-		if (slot == null)
-			throw new NullPointerException("slot must not be null");
-
+	public OpStack push(@NonNull Slot slot) {
 		OpStack result = new OpStack(this);
 		result.stack.push(slot);
 		return result;
