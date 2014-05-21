@@ -9,14 +9,10 @@ public class FieldNode implements NonObjectNode {
 	@Getter
 	private final String name;
 	private final String originID;
-	@Getter
-	private final EscapeState escapeState;
 
-	public FieldNode(@NonNull String name, @NonNull String originID,
-			@NonNull EscapeState escapeState) {
+	public FieldNode(@NonNull String name, @NonNull String originID) {
 		this.name = name;
 		this.originID = originID;
-		this.escapeState = escapeState;
 	}
 
 	@Override

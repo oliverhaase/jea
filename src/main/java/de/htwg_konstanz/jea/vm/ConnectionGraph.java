@@ -14,9 +14,6 @@ public final class ConnectionGraph extends SummaryGraph {
 	@Getter
 	private final ReferenceNode globalReference;
 
-	// public ConnectionGraph() {
-	// }
-
 	public ConnectionGraph(Set<Integer> indexes, Slot[] vars) {
 		globalReference = new ReferenceNode(-1, Category.GLOBAL);
 		ObjectNode globalObj = ObjectNode.newGlobalObjectNode();
@@ -43,8 +40,6 @@ public final class ConnectionGraph extends SummaryGraph {
 
 		objectNodes.addAll(original.objectNodes);
 		referenceNodes.addAll(original.referenceNodes);
-		// nonStaticFieldNodes.addAll(original.nonStaticFieldNodes);
-		// staticFieldNodes.addAll(original.staticFieldNodes);
 		fieldNodes.addAll(original.fieldNodes);
 
 		pointsToEdges.addAll(original.pointsToEdges);
@@ -123,8 +118,7 @@ public final class ConnectionGraph extends SummaryGraph {
 		FieldNode fieldNode = getFieldNode(obj, fieldName);
 
 		if (fieldNode == null) {
-			fieldNode = new FieldNode(fieldName, obj.getId(), obj.getEscapeState());
-			// result.nonStaticFieldNodes.add(fieldNode);
+			fieldNode = new FieldNode(fieldName, obj.getId());
 			result.fieldNodes.add(fieldNode);
 			result.fieldEdges.add(new Pair<ObjectNode, FieldNode>(obj, fieldNode));
 		}
