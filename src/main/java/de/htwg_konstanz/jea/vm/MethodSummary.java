@@ -7,6 +7,8 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode
 public class MethodSummary {
+	private final static MethodSummary ALIEN_SUMMARY = new MethodSummary();
+
 	private final SummaryGraph sg;
 	private final Set<ObjectNode> result;
 
@@ -23,6 +25,14 @@ public class MethodSummary {
 	public MethodSummary(SummaryGraph sg, Set<ObjectNode> result) {
 		this.sg = sg;
 		this.result = result;
+	}
+
+	public static MethodSummary getAlienSummary() {
+		return ALIEN_SUMMARY;
+	}
+
+	public boolean isAlien() {
+		return this == ALIEN_SUMMARY;
 	}
 
 	public MethodSummary merge(MethodSummary other) {

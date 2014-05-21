@@ -186,6 +186,22 @@ aspect State {
 	}
 	
 	
+	syn Set<Frame> InvokeInstruction.framesOut() {
+		Set<Frame> result = new HashSet<Frame>();
+		
+		for ( Method targetMethod : resolveTargetMethod() ) {
+			final Method target = targetMethod; 
+			result.addAll(Frames.processFrames(framesIn(), new FrameProcessor() {
+				@Override public Frame process(Frame original) {	
+					return original.applyMethodSummary(target.methodSummary(), getConsumeStack(), getProduceStack());
+				}
+			}));	
+		}
+		return result;
+		
+	}
+	
+	
 	/*
 	
 	syn Set<Frame> InvokeSpecial.framesOut() {

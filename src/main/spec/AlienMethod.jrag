@@ -1,0 +1,18 @@
+
+
+aspect AlienMethod {
+	syn nta AlienClass Program.alienClass() {
+		return new AlienClass();
+	}
+
+	syn nta AlienMethod AlienClass.alienMethod() {
+		return new AlienMethod();
+	}
+	
+	syn Set<Method> InvokeInstruction.resolveTargetMethod() {
+		Set<Method> result = new HashSet<Method>();
+		result.add(method().clazz().program().alienClass().alienMethod());
+		return result;
+	}
+		
+}

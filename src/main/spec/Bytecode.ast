@@ -3,11 +3,13 @@
 Program ::= ByteCodeClass*;
 
 ByteCodeClass ::= <Name:String> Field* Method*;
+AlienClass : ByteCodeClass;
 
 Field ::= <Name:String>;
 
 Method ::= <IsStatic:boolean> <IsAbstract:boolean> <IsNative:boolean> <MethodName:String>
 	<ArgTypes:org.apache.bcel.generic.Type[]> <MaxLocals:int> Instruction*;
+AlienMethod : Method;	
 
 abstract Instruction ::= <Label:String> <Position:int> <ConsumeStack:int> <ProduceStack:int>;
 

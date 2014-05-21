@@ -36,6 +36,11 @@ public final class Frame {
 		opStack = new OpStack();
 	}
 
+	public Frame applyMethodSummary(MethodSummary summary, int consumeStack, int produceStack) {
+		return new Frame(localVars, opStack.pop(consumeStack).push(
+				DontCareSlot.values()[produceStack], produceStack), cg);
+	}
+
 	@Override
 	public String toString() {
 		return localVars + "| " + opStack + "| " + cg;

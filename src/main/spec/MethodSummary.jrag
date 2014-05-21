@@ -5,6 +5,10 @@ aspect MethodSummary {
 		return null;
 	}
 	
+	syn MethodSummary Instruction.methodSummary() {
+		return null;
+	}
+	
 	syn Set<MethodSummary> ReturnInstruction.methodSummaries() {
 		Set<MethodSummary> result = new HashSet<MethodSummary>();
 		for ( Frame frame : framesIn() )
@@ -28,5 +32,13 @@ aspect MethodSummary {
 				result = result.merge(predSummary);
 		return result;
 	}	
+	
+	syn MethodSummary Method.methodSummary() {
+		return exitPoint().methodSummary();
+	}
+	
+	syn MethodSummary AlienMethod.methodSummary() {
+		return MethodSummary.getAlienSummary();
+	}
 	
 }
