@@ -1,0 +1,5 @@
+
+
+AlienClass : ByteCodeClass;	
+AlienMethod : Method;	
+	
