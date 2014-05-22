@@ -3,9 +3,11 @@ package de.htwg_konstanz.jea.vm;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Stack;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import de.htwg_konstanz.jea.vm.Node.EscapeState;
 import de.htwg_konstanz.jea.vm.ReferenceNode.Category;
 
 @EqualsAndHashCode(callSuper = true)
@@ -20,7 +22,7 @@ public final class ConnectionGraph extends SummaryGraph {
 
 		referenceNodes.add(globalReference);
 		objectNodes.add(globalObj);
-		pointsToEdges.add(new Pair<NonObjectNode, ObjectNode>(globalReference, globalObj));
+		pointsToEdges.add(new Pair<NonObjectNode, String>(globalReference, globalObj.getId()));
 
 		for (Integer index : indexes) {
 			ReferenceNode ref = new ReferenceNode(index, Category.ARG);
@@ -28,7 +30,7 @@ public final class ConnectionGraph extends SummaryGraph {
 
 			referenceNodes.add(ref);
 			objectNodes.add(obj);
-			pointsToEdges.add(new Pair<NonObjectNode, ObjectNode>(ref, obj));
+			pointsToEdges.add(new Pair<NonObjectNode, String>(ref, obj.getId()));
 
 			vars[index] = ref;
 		}
@@ -46,20 +48,45 @@ public final class ConnectionGraph extends SummaryGraph {
 		fieldEdges.addAll(original.fieldEdges);
 	}
 
+	public Set<ObjectNode> propagateEscapeState(Set<ObjectNode> objects, EscapeState escapeState) {
+		Set<ObjectNode> result = new HashSet<>();
+		result.addAll(objects);
+
+		Stack<ObjectNode> workingList = new Stack<>();
+		for (ObjectNode objectNode : result)
+			if (objectNode.getEscapeState() == escapeState)
+				workingList.push(objectNode);
+
+		while (!workingList.isEmpty()) {
+			ObjectNode current = workingList.pop();
+
+			for (ObjectNode subObject : getSubObjectsOf(current))
+				if (subObject.getEscapeState().moreConfinedThan(escapeState)) {
+					ObjectNode updatedSubObject = subObject.increaseEscapeState(escapeState);
+					result.remove(subObject);
+					result.add(updatedSubObject);
+					workingList.push(updatedSubObject);
+				}
+		}
+		return result;
+	}
+
 	public SummaryGraph extractSummaryGraph() {
-		Set<Pair<NonObjectNode, ObjectNode>> fieldPointsToEdges = new HashSet<>();
-		for (Pair<NonObjectNode, ObjectNode> pointsToEdge : pointsToEdges)
+		Set<Pair<NonObjectNode, String>> fieldPointsToEdges = new HashSet<>();
+		for (Pair<NonObjectNode, String> pointsToEdge : pointsToEdges)
 			if (pointsToEdge.getValue1() instanceof FieldNode)
 				fieldPointsToEdges.add(pointsToEdge);
 
-		return new SummaryGraph(objectNodes, fieldNodes, fieldPointsToEdges, fieldEdges);
+		return new SummaryGraph(propagateEscapeState(
+				propagateEscapeState(objectNodes, EscapeState.GLOBAL_ESCAPE),
+				EscapeState.ARG_ESCAPE), fieldNodes, fieldPointsToEdges, fieldEdges);
 	}
 
 	public Set<ObjectNode> dereference(NonObjectNode ref) {
 		Set<ObjectNode> result = new HashSet<>();
-		for (Pair<NonObjectNode, ObjectNode> pointsToEdge : pointsToEdges)
+		for (Pair<NonObjectNode, String> pointsToEdge : pointsToEdges)
 			if (pointsToEdge.getValue1().equals(ref))
-				result.add(pointsToEdge.getValue2());
+				result.add(getObjectNode(pointsToEdge.getValue2()));
 		return result;
 	}
 
@@ -68,43 +95,15 @@ public final class ConnectionGraph extends SummaryGraph {
 
 		for (ObjectNode object : dereference(ref)) {
 			result.objectNodes.remove(object);
-			result.objectNodes.add(object.publish());
-
-			Set<Pair<NonObjectNode, ObjectNode>> newPointsToEdges = new HashSet<>();
-
-			for (Iterator<Pair<NonObjectNode, ObjectNode>> it = result.pointsToEdges.iterator(); it
-					.hasNext();) {
-				Pair<NonObjectNode, ObjectNode> pointsToEdge = it.next();
-				if (pointsToEdge.getValue2().equals(object)) {
-					newPointsToEdges.add(new Pair<NonObjectNode, ObjectNode>(pointsToEdge
-							.getValue1(), pointsToEdge.getValue2().publish()));
-					it.remove();
-				}
-			}
-			result.pointsToEdges.addAll(newPointsToEdges);
-
-			Set<Pair<ObjectNode, FieldNode>> newFieldEdges = new HashSet<>();
-
-			for (Iterator<Pair<ObjectNode, FieldNode>> it = result.fieldEdges.iterator(); it
-					.hasNext();) {
-				Pair<ObjectNode, FieldNode> fieldEdge = it.next();
-				if (fieldEdge.getValue1().equals(object)) {
-					newFieldEdges.add(new Pair<ObjectNode, FieldNode>(fieldEdge.getValue1()
-							.publish(), fieldEdge.getValue2()));
-					it.remove();
-				}
-			}
-
-			result.fieldEdges.addAll(newFieldEdges);
-
+			result.objectNodes.add(object.increaseEscapeState(EscapeState.GLOBAL_ESCAPE));
 		}
 
 		return result;
 	}
 
 	public FieldNode getFieldNode(ObjectNode obj, String fieldName) {
-		for (Pair<ObjectNode, FieldNode> fieldEdge : fieldEdges)
-			if (fieldEdge.getValue1().equals(obj)
+		for (Pair<String, FieldNode> fieldEdge : fieldEdges)
+			if (fieldEdge.getValue1().equals(obj.getId())
 					&& fieldEdge.getValue2().getName().equals(fieldName))
 				return fieldEdge.getValue2();
 
@@ -120,10 +119,13 @@ public final class ConnectionGraph extends SummaryGraph {
 		if (fieldNode == null) {
 			fieldNode = new FieldNode(fieldName, obj.getId());
 			result.fieldNodes.add(fieldNode);
-			result.fieldEdges.add(new Pair<ObjectNode, FieldNode>(obj, fieldNode));
+			result.fieldEdges.add(new Pair<String, FieldNode>(obj.getId(), fieldNode));
 		}
 
-		result.pointsToEdges.add(new Pair<NonObjectNode, ObjectNode>(fieldNode, value));
+		if (!existsObject(value.getId()))
+			result.objectNodes.add(value);
+
+		result.pointsToEdges.add(new Pair<NonObjectNode, String>(fieldNode, value.getId()));
 
 		return result;
 	}
@@ -132,7 +134,7 @@ public final class ConnectionGraph extends SummaryGraph {
 		ConnectionGraph result = new ConnectionGraph(this);
 		result.referenceNodes.add(ref);
 		result.objectNodes.add(obj);
-		result.pointsToEdges.add(new Pair<NonObjectNode, ObjectNode>(ref, obj));
+		result.pointsToEdges.add(new Pair<NonObjectNode, String>(ref, obj.getId()));
 		return result;
 	}
 
@@ -140,7 +142,7 @@ public final class ConnectionGraph extends SummaryGraph {
 		ConnectionGraph result = new ConnectionGraph(this);
 		result.referenceNodes.add(ref);
 		for (ObjectNode target : targets)
-			result.pointsToEdges.add(new Pair<NonObjectNode, ObjectNode>(ref, target));
+			result.pointsToEdges.add(new Pair<NonObjectNode, String>(ref, target.getId()));
 
 		return result;
 	}
@@ -153,7 +155,7 @@ public final class ConnectionGraph extends SummaryGraph {
 			ReferenceNode referenceNode = refIterator.next();
 			if (!referenceNode.equals(returnValue)) {
 				refIterator.remove();
-				for (Iterator<Pair<NonObjectNode, ObjectNode>> edgeIterator = result.pointsToEdges
+				for (Iterator<Pair<NonObjectNode, String>> edgeIterator = result.pointsToEdges
 						.iterator(); edgeIterator.hasNext();)
 					if (edgeIterator.next().getValue1().equals(referenceNode))
 						edgeIterator.remove();

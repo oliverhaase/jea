@@ -31,8 +31,10 @@ public class ObjectNode implements Node {
 		return new ObjectNode("global", EscapeState.GLOBAL_ESCAPE);
 	}
 
-	public ObjectNode publish() {
-		return new ObjectNode(getId(), EscapeState.GLOBAL_ESCAPE);
+	public ObjectNode increaseEscapeState(EscapeState escapeState) {
+		if (this.escapeState.moreConfinedThan(escapeState))
+			return new ObjectNode(getId(), escapeState);
+		return this;
 	}
 
 	@Override

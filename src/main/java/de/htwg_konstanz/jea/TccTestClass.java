@@ -3,6 +3,7 @@ package de.htwg_konstanz.jea;
 public class TccTestClass {
 	public final static int NUMBER = 42;
 	private static TccTestClass staticRef;
+	private static Object staticObjectRef;
 	private Object ref;
 
 	private void private1(Object arg) {
@@ -64,6 +65,11 @@ public class TccTestClass {
 
 	Object p(int number) {
 		return new Object();
+	}
+
+	void q(TccTestClass x) {
+		x.ref = new Object();
+		staticRef = x;
 	}
 
 }
