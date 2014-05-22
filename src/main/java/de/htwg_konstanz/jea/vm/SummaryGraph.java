@@ -8,22 +8,15 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode
 public class SummaryGraph {
 	protected final Set<ObjectNode> objectNodes;
-	protected final Set<FieldNode> fieldNodes;
-	protected final Set<Pair<NonObjectNode, String>> pointsToEdges;
-	protected final Set<Pair<String, FieldNode>> fieldEdges;
+	protected final Set<Triple<String, String, String>> fieldEdges;
 
 	public SummaryGraph() {
 		objectNodes = new HashSet<>();
-		fieldNodes = new HashSet<>();
-		pointsToEdges = new HashSet<>();
 		fieldEdges = new HashSet<>();
 	}
 
-	public SummaryGraph(Set<ObjectNode> objectNodes, Set<FieldNode> fieldNodes,
-			Set<Pair<NonObjectNode, String>> pointsToEdges, Set<Pair<String, FieldNode>> fieldEdges) {
+	public SummaryGraph(Set<ObjectNode> objectNodes, Set<Triple<String, String, String>> fieldEdges) {
 		this.objectNodes = objectNodes;
-		this.fieldNodes = fieldNodes;
-		this.pointsToEdges = pointsToEdges;
 		this.fieldEdges = fieldEdges;
 	}
 
@@ -44,19 +37,27 @@ public class SummaryGraph {
 	public Set<ObjectNode> getSubObjectsOf(ObjectNode origin) {
 		Set<ObjectNode> result = new HashSet<>();
 
-		for (Pair<String, FieldNode> fieldEdge : fieldEdges)
+		for (Triple<String, String, String> fieldEdge : fieldEdges)
 			if (fieldEdge.getValue1().equals(origin.getId()))
-				for (Pair<NonObjectNode, String> pointsToEdge : pointsToEdges)
-					if (pointsToEdge.getValue1().equals(fieldEdge.getValue2()))
-						result.add(getObjectNode(pointsToEdge.getValue2()));
+				result.add(getObjectNode(fieldEdge.getValue3()));
+
+		return result;
+	}
+
+	public Set<ObjectNode> getFieldOf(ObjectNode origin, String fieldName) {
+		Set<ObjectNode> result = new HashSet<>();
+
+		for (Triple<String, String, String> fieldEdge : fieldEdges)
+			if (fieldEdge.getValue1().equals(origin.getId())
+					&& fieldEdge.getValue2().equals(fieldName))
+				result.add(getObjectNode(fieldEdge.getValue3()));
 
 		return result;
 	}
 
 	@Override
 	public String toString() {
-		return "SG[" + objectNodes + ", " + fieldNodes + ", " + pointsToEdges + ", " + fieldEdges
-				+ "]";
+		return "SG[" + objectNodes + ", " + fieldEdges + "]";
 	}
 
 	public SummaryGraph merge(SummaryGraph other) {
@@ -76,12 +77,6 @@ public class SummaryGraph {
 		}
 
 		result.objectNodes.addAll(other.objectNodes);
-
-		result.fieldNodes.addAll(this.fieldNodes);
-		result.fieldNodes.addAll(other.fieldNodes);
-
-		result.pointsToEdges.addAll(this.pointsToEdges);
-		result.pointsToEdges.addAll(other.pointsToEdges);
 
 		result.fieldEdges.addAll(this.fieldEdges);
 		result.fieldEdges.addAll(other.fieldEdges);

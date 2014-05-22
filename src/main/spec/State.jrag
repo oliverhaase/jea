@@ -133,16 +133,19 @@ aspect State {
 				
 				if ( getFieldType() instanceof org.apache.bcel.generic.ReferenceType ) {
 					result = new ReferenceNode(getPosition(), Category.LOCAL);
-					Set<ObjectNode> targets = new HashSet<ObjectNode>();
+					Set<ObjectNode> allTargets = new HashSet<ObjectNode>();
 
 					for ( ObjectNode obj :  cg.dereference(getLoadObjectRef(original))) {
-						if ( cg.getFieldNode(obj, getFieldName()) == null ) 
-							cg = cg.addField(obj, getFieldName(), ObjectNode.newSubObjectNode(obj, getFieldName()));
-						
-						targets.addAll(cg.dereference(cg.getFieldNode(obj, getFieldName())));
+						Set<ObjectNode> targets = cg.getFieldOf(obj, getFieldName());
+						if ( targets.isEmpty() ) {
+							ObjectNode subObject = ObjectNode.newSubObjectNode(obj, getFieldName());
+							cg.addField(obj, getFieldName(), subObject);
+							targets.add(subObject);
+						}
+						allTargets.addAll(targets);
 					}
 							
-					cg = cg.addReferenceToTargets((ReferenceNode) result, targets);
+					cg = cg.addReferenceToTargets((ReferenceNode) result, allTargets);
 					
 				} else 
 					result = DontCareSlot.values()[getProduceStack()];					
