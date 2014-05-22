@@ -4,7 +4,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import lombok.EqualsAndHashCode;
+import net.jcip.annotations.Immutable;
 
+@Immutable
 @EqualsAndHashCode
 public class MethodSummary {
 	private final static MethodSummary ALIEN_SUMMARY = new MethodSummary();

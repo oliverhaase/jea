@@ -2,8 +2,10 @@ package de.htwg_konstanz.jea.vm;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Stack;
 
 import lombok.EqualsAndHashCode;
+import de.htwg_konstanz.jea.vm.Node.EscapeState;
 
 @EqualsAndHashCode
 public class SummaryGraph {
@@ -52,6 +54,29 @@ public class SummaryGraph {
 					&& fieldEdge.getValue2().equals(fieldName))
 				result.add(getObjectNode(fieldEdge.getValue3()));
 
+		return result;
+	}
+
+	protected Set<ObjectNode> propagateEscapeState(Set<ObjectNode> objects, EscapeState escapeState) {
+		Set<ObjectNode> result = new HashSet<>();
+		result.addAll(objects);
+
+		Stack<ObjectNode> workingList = new Stack<>();
+		for (ObjectNode objectNode : result)
+			if (objectNode.getEscapeState() == escapeState)
+				workingList.push(objectNode);
+
+		while (!workingList.isEmpty()) {
+			ObjectNode current = workingList.pop();
+
+			for (ObjectNode subObject : getSubObjectsOf(current))
+				if (subObject.getEscapeState().moreConfinedThan(escapeState)) {
+					ObjectNode updatedSubObject = subObject.increaseEscapeState(escapeState);
+					result.remove(subObject);
+					result.add(updatedSubObject);
+					workingList.push(updatedSubObject);
+				}
+		}
 		return result;
 	}
 

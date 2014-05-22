@@ -2,7 +2,6 @@ package de.htwg_konstanz.jea.vm;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Stack;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -35,7 +34,6 @@ public final class ConnectionGraph extends SummaryGraph {
 
 			vars[index] = ref;
 		}
-
 	}
 
 	public ConnectionGraph(ConnectionGraph original) {
@@ -46,29 +44,6 @@ public final class ConnectionGraph extends SummaryGraph {
 
 		pointsToEdges.addAll(original.pointsToEdges);
 		fieldEdges.addAll(original.fieldEdges);
-	}
-
-	public Set<ObjectNode> propagateEscapeState(Set<ObjectNode> objects, EscapeState escapeState) {
-		Set<ObjectNode> result = new HashSet<>();
-		result.addAll(objects);
-
-		Stack<ObjectNode> workingList = new Stack<>();
-		for (ObjectNode objectNode : result)
-			if (objectNode.getEscapeState() == escapeState)
-				workingList.push(objectNode);
-
-		while (!workingList.isEmpty()) {
-			ObjectNode current = workingList.pop();
-
-			for (ObjectNode subObject : getSubObjectsOf(current))
-				if (subObject.getEscapeState().moreConfinedThan(escapeState)) {
-					ObjectNode updatedSubObject = subObject.increaseEscapeState(escapeState);
-					result.remove(subObject);
-					result.add(updatedSubObject);
-					workingList.push(updatedSubObject);
-				}
-		}
-		return result;
 	}
 
 	public SummaryGraph extractSummaryGraph() {
@@ -95,38 +70,6 @@ public final class ConnectionGraph extends SummaryGraph {
 
 		return result;
 	}
-
-	// public FieldNode getFieldNode(ObjectNode obj, String fieldName) {
-	// for (Pair<String, FieldNode> fieldEdge : fieldEdges)
-	// if (fieldEdge.getValue1().equals(obj.getId())
-	// && fieldEdge.getValue2().getName().equals(fieldName))
-	// return fieldEdge.getValue2();
-	//
-	// return null;
-	//
-	// }
-
-	// public ConnectionGraph addField(ObjectNode obj, String fieldName,
-	// ObjectNode value) {
-	// ConnectionGraph result = new ConnectionGraph(this);
-	//
-	// FieldNode fieldNode = getFieldNode(obj, fieldName);
-	//
-	// if (fieldNode == null) {
-	// fieldNode = new FieldNode(fieldName, obj.getId());
-	// result.fieldNodes.add(fieldNode);
-	// result.fieldEdges.add(new Pair<String, FieldNode>(obj.getId(),
-	// fieldNode));
-	// }
-	//
-	// if (!existsObject(value.getId()))
-	// result.objectNodes.add(value);
-	//
-	// result.pointsToEdges.add(new Pair<NonObjectNode, String>(fieldNode,
-	// value.getId()));
-	//
-	// return result;
-	// }
 
 	public ConnectionGraph addField(ObjectNode obj, String fieldName, ObjectNode value) {
 		ConnectionGraph result = new ConnectionGraph(this);
@@ -156,25 +99,6 @@ public final class ConnectionGraph extends SummaryGraph {
 
 		return result;
 	}
-
-	// public ConnectionGraph removeReferenceNodesExcept(Slot returnValue) {
-	// ConnectionGraph result = new ConnectionGraph(this);
-	//
-	// for (Iterator<ReferenceNode> refIterator =
-	// result.referenceNodes.iterator(); refIterator
-	// .hasNext();) {
-	// ReferenceNode referenceNode = refIterator.next();
-	// if (!referenceNode.equals(returnValue)) {
-	// refIterator.remove();
-	// for (Iterator<Pair<NonObjectNode, String>> edgeIterator =
-	// result.pointsToEdges
-	// .iterator(); edgeIterator.hasNext();)
-	// if (edgeIterator.next().getValue1().equals(referenceNode))
-	// edgeIterator.remove();
-	// }
-	// }
-	// return result;
-	// }
 
 	@Override
 	public String toString() {

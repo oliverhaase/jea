@@ -2,7 +2,9 @@ package de.htwg_konstanz.jea.vm;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import net.jcip.annotations.Immutable;
 
+@Immutable
 @EqualsAndHashCode(exclude = { "escapeState" })
 public class ObjectNode implements Node {
 	@Getter
