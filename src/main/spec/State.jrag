@@ -174,7 +174,11 @@ aspect State {
 		return Frames.processFrames(framesIn(), new FrameProcessor() {
 			@Override public Frame process(Frame original) {
 				ConnectionGraph cg = original.getCg();
-				ObjectNode obj = ObjectNode.newInternalObjectNode(getPosition());
+//				ObjectNode obj = ObjectNode.newInternalObjectNode(getPosition());
+				ObjectNode obj = ObjectNode.newInternalObjectNode(
+					method().clazz().getName() + "." 
+					+ method().getMethodName() + ":"
+					+ getPosition());
 				ReferenceNode ref = new ReferenceNode(getPosition(), Category.LOCAL);
 				cg = cg.addReferenceAndTarget(ref, obj); 
 				return new Frame(

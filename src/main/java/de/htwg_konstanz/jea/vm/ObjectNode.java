@@ -19,8 +19,8 @@ public class ObjectNode implements Node {
 		return new ObjectNode("p" + id, EscapeState.ARG_ESCAPE);
 	}
 
-	public static ObjectNode newInternalObjectNode(int id) {
-		return new ObjectNode("i" + id, EscapeState.NO_ESCAPE);
+	public static ObjectNode newInternalObjectNode(String id) {
+		return new ObjectNode(id, EscapeState.NO_ESCAPE);
 	}
 
 	public static ObjectNode newSubObjectNode(ObjectNode origin, String fieldName) {

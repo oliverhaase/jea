@@ -38,7 +38,7 @@ public class AstConverter {
 			method.setIsStatic(bcelMethod.isStatic());
 			method.setIsAbstract(bcelMethod.isAbstract());
 			method.setIsNative(bcelMethod.isNative());
-			method.setMethodName(bcelMethod.getName());
+			method.setMethodName(bcelMethod.getName() + bcelMethod.getSignatureIndex());
 			method.setArgTypes(bcelMethod.getArgumentTypes());
 
 			clazz.addMethod(method);
