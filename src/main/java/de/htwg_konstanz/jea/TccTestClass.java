@@ -8,6 +8,11 @@ public class TccTestClass {
 
 	private void private1(Object arg) {
 		ref = arg;
+		private2(4);
+	}
+
+	private void private2(int n) {
+		n++;
 	}
 
 	void f(String ex) {
