@@ -33,7 +33,7 @@ aspect State {
 	}
 	
 
-	coll Set<Frame> Instruction.framesIn() circular [new HashSet<Frame>()] with addAll;
+	coll Set<Frame> Instruction.framesIn() circular [new HashSet<Frame>()] with addAll root Method;
 	Instruction contributes framesOut() to Instruction.framesIn() for each successors();
 
 	syn Set<Frame> EntryPoint.framesIn() {
@@ -196,7 +196,7 @@ aspect State {
 		Set<Frame> result = new HashSet<Frame>();
 		
 		for ( Method targetMethod : resolveTargetMethod() ) {
-			final Method target = targetMethod; 
+			final Method target = targetMethod; 		
 			result.addAll(Frames.processFrames(framesIn(), new FrameProcessor() {
 				@Override public Frame process(Frame original) {	
 					return original.applyMethodSummary(

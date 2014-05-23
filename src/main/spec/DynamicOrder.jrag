@@ -64,7 +64,7 @@ aspect DynamicOrder {
 	
 	// predecessors 
 
-	coll Set<Instruction> Instruction.predecessors() [new HashSet<Instruction>()] with add;
+	coll Set<Instruction> Instruction.predecessors() [new HashSet<Instruction>()] with add root Method;
   
   	Instruction contributes this
     	to Instruction.predecessors()
