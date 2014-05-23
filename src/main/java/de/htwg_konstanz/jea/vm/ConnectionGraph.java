@@ -52,6 +52,20 @@ public final class ConnectionGraph extends SummaryGraph {
 				EscapeState.ARG_ESCAPE), fieldEdges);
 	}
 
+	public SummaryGraph extractSummaryGraph(Set<ObjectNode> resultObjects) {
+		Set<ObjectNode> updatedObjectNodes = new HashSet<>();
+		updatedObjectNodes.addAll(objectNodes);
+
+		for (ObjectNode resultObject : resultObjects) {
+			updatedObjectNodes.remove(resultObject);
+			updatedObjectNodes.add(resultObject.increaseEscapeState(EscapeState.ARG_ESCAPE));
+		}
+
+		return new SummaryGraph(propagateEscapeState(
+				propagateEscapeState(updatedObjectNodes, EscapeState.GLOBAL_ESCAPE),
+				EscapeState.ARG_ESCAPE), fieldEdges);
+	}
+
 	public Set<ObjectNode> dereference(ReferenceNode ref) {
 		Set<ObjectNode> result = new HashSet<>();
 		for (Pair<ReferenceNode, String> pointsToEdge : pointsToEdges)

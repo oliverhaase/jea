@@ -18,9 +18,13 @@ aspect MethodSummary {
 	
 	syn Set<MethodSummary> Areturn.methodSummaries() {
 		Set<MethodSummary> result = new HashSet<MethodSummary>();
-		for ( Frame frame : framesIn() ) 
-			result.add(new MethodSummary(frame.getCg().extractSummaryGraph(), 
-				frame.getCg().dereference((ReferenceNode) frame.getOpStack().peek())));
+		for ( Frame frame : framesIn() ) {
+			Set<ObjectNode> resultObjects = 
+				frame.getCg().dereference((ReferenceNode) frame.getOpStack().peek());		
+				
+			result.add(new MethodSummary(frame.getCg().extractSummaryGraph(resultObjects), 
+				resultObjects));
+		}
 		return result;	
 	}
 		
