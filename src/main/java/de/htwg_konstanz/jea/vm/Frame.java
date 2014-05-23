@@ -5,6 +5,7 @@ import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import de.htwg_konstanz.jea.vm.Node.EscapeState;
 
 @EqualsAndHashCode
 public final class Frame {
@@ -44,11 +45,9 @@ public final class Frame {
 
 			for (int i = 0; i < consumeStack; i++) {
 				Slot arg = opStack.peek();
-				if (arg instanceof ReferenceNode) {
-					Set<ObjectNode> objects = cg.dereference((ReferenceNode) arg);
+				if (arg instanceof ReferenceNode)
 					cg = cg.publish((ReferenceNode) arg);
 
-				}
 				opStack = opStack.pop();
 			}
 
@@ -60,8 +59,28 @@ public final class Frame {
 			return new Frame(localVars, opStack, cg);
 		}
 
-		throw new AssertionError("not yet implemented");
+		OpStack opStack = this.opStack;
+		ConnectionGraph cg = this.cg;
 
+		for (int i = consumeStack - 1; i >= 0; i--) {
+			Slot arg = opStack.peek();
+			if (arg instanceof ReferenceNode) {
+				ObjectNode formalArg = summary.getSg().getObjectNode("p" + i);
+				for (ObjectNode actualArg : cg.dereference((ReferenceNode) arg)) {
+					// map formal and actual args onto each other
+					if (formalArg.getEscapeState() == EscapeState.GLOBAL_ESCAPE)
+						actualArg.increaseEscapeState(EscapeState.GLOBAL_ESCAPE);
+				}
+			}
+			opStack = opStack.pop();
+		}
+
+		if (returnType instanceof org.apache.bcel.generic.ReferenceType)
+			opStack.push(cg.getGlobalReference());
+		else
+			opStack.push(DontCareSlot.values()[produceStack], produceStack);
+
+		return new Frame(localVars, opStack, cg);
 	}
 
 	@Override
