@@ -31,5 +31,6 @@ public class ProgramBuilder {
 			IOException {
 		Program program = new ProgramBuilder("de.htwg_konstanz.jea.TccTestClass").build();
 		program.print();
+		System.out.println(program.methodEscapingTypes());
 	}
 }

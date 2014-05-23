@@ -1,0 +1,27 @@
+
+aspect MethodConfinement {
+
+	syn Set<String> Program.methodEscapingTypes() {
+		Set<String> result = new HashSet<String>();
+		for ( ByteCodeClass clazz : getByteCodeClasss() )
+			result.addAll(clazz.methodEscapingTypes());
+		return result;		
+	}
+
+	syn Set<String> ByteCodeClass.methodEscapingTypes() {
+		Set<String> result = new HashSet<String>();
+		for ( Method method : getMethods() )
+			result.addAll(method.methodEscapingTypes());
+		return result;		
+	}
+		
+	syn Set<String> Method.methodEscapingTypes() {
+		Set<String> result = new HashSet<String>();
+		for ( ObjectNode object : methodSummary().getSg().getObjectNodes() )
+			if ( object.getType() != null 
+					&& EscapeState.NO_ESCAPE.moreConfinedThan(object.getEscapeState()) )
+				result.add(object.getType());
+		return result;
+	}		
+	
+}
