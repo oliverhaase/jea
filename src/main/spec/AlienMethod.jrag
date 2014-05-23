@@ -14,5 +14,12 @@ aspect AlienMethod {
 		result.add(method().clazz().program().alienClass().alienMethod());
 		return result;
 	}
+	
+	syn Set<Method> InvokeSpecial.resolveTargetMethod() {		
+		Set<Method> result = new HashSet<Method>();
+		result.add(method().clazz().program().getClass(getLoadClass())
+    		.lookup(getMethodName(), getArgTypes()));
+		return result;
+	}
 		
 }
