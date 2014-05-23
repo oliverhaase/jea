@@ -6,8 +6,8 @@ ByteCodeClass ::= <Name:String> Field* Method*;
 
 Field ::= <Name:String>;
 
-Method ::= <IsStatic:boolean> <IsAbstract:boolean> <IsNative:boolean> <MethodName:String>
-	<ArgTypes:org.apache.bcel.generic.Type[]> <MaxLocals:int> Instruction*;
+Method ::= <IsStatic:boolean> <IsAbstract:boolean> <IsNative:boolean> <MethodName:String> 
+	<SignatureIndex:int> <ArgTypes:org.apache.bcel.generic.Type[]> <MaxLocals:int> Instruction*;
 
 
 abstract Instruction ::= <Label:String> <Position:int> <ConsumeStack:int> <ProduceStack:int>;
