@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import net.jcip.annotations.Immutable;
 
 @Immutable
@@ -11,6 +12,7 @@ import net.jcip.annotations.Immutable;
 public class MethodSummary {
 	private final static MethodSummary ALIEN_SUMMARY = new MethodSummary();
 
+	@Getter
 	private final SummaryGraph sg;
 	private final Set<ObjectNode> result;
 

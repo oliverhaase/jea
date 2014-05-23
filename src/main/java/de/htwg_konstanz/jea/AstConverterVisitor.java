@@ -204,18 +204,21 @@ public class AstConverterVisitor extends EmptyVisitor {
 	@Override
 	public void visitNEWARRAY(org.apache.bcel.generic.NEWARRAY bcelInstruction) {
 		NewArray instruction = new NewArray();
+		instruction.setType(null);
 		this.instruction = instruction;
 	}
 
 	@Override
 	public void visitANEWARRAY(org.apache.bcel.generic.ANEWARRAY bcelInstruction) {
 		ANewArray instruction = new ANewArray();
+		instruction.setType(null);
 		this.instruction = instruction;
 	}
 
 	@Override
 	public void visitMULTIANEWARRAY(org.apache.bcel.generic.MULTIANEWARRAY bcelInstruction) {
 		MultiANewArray instruction = new MultiANewArray();
+		instruction.setType(null);
 		this.instruction = instruction;
 	}
 

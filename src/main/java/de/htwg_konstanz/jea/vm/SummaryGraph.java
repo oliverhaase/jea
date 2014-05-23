@@ -5,10 +5,12 @@ import java.util.Set;
 import java.util.Stack;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import de.htwg_konstanz.jea.vm.Node.EscapeState;
 
 @EqualsAndHashCode
 public class SummaryGraph {
+	@Getter
 	protected final Set<ObjectNode> objectNodes;
 	protected final Set<Triple<String, String, String>> fieldEdges;
 

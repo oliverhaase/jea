@@ -43,8 +43,8 @@ InvokeSpecial : InvokeInstruction;
 InvokeStatic : InvokeInstruction;
 InvokeVirtual : InvokeInstruction;
 
-abstract NewInstruction : Instruction;
-New : NewInstruction ::= <Type:String> ;
+abstract NewInstruction : Instruction  ::= <Type:String>;
+New : NewInstruction;
 NewArray : NewInstruction;
 ANewArray : NewInstruction;
 MultiANewArray : NewInstruction;
