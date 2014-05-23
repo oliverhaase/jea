@@ -51,7 +51,7 @@ aspect StaticOrder {
 	
 	inh Program ByteCodeClass.program();
 	
-	eq Program.getChild(). program() {
+	eq Program.getChild().program() {
 		return this;
 	}
 	
