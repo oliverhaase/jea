@@ -185,7 +185,7 @@ aspect State {
 				cg = cg.addReferenceAndTarget(ref, obj); 
 				return new Frame(
 					original.getLocalVars(), 
-					original.getOpStack().push(ref), 
+					original.getOpStack().pop(getConsumeStack()).push(ref), 
 					cg); 
 			}
 		});
@@ -196,7 +196,13 @@ aspect State {
 		Set<Frame> result = new HashSet<Frame>();
 		
 		for ( Method targetMethod : resolveTargetMethod() ) {
-			final Method target = targetMethod; 		
+			final Method target = targetMethod; 	
+			
+			System.out.println("*** BEGIN TARGET ******************");
+			target.printMethod();
+			System.out.println("*** END TARGET ******************");
+			
+				
 			result.addAll(Frames.processFrames(framesIn(), new FrameProcessor() {
 				@Override public Frame process(Frame original) {	
 					return original.applyMethodSummary(
