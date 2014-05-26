@@ -7,6 +7,9 @@ import net.jcip.annotations.Immutable;
 @Immutable
 @EqualsAndHashCode(exclude = { "escapeState" })
 public class ObjectNode implements Node {
+	private final static ObjectNode global = new ObjectNode("global", EscapeState.GLOBAL_ESCAPE,
+			null);
+
 	@Getter
 	private final String id;
 	@Getter
@@ -32,8 +35,8 @@ public class ObjectNode implements Node {
 		return new ObjectNode(origin.id + "." + fieldName, origin.escapeState, null);
 	}
 
-	public static ObjectNode newGlobalObjectNode() {
-		return new ObjectNode("global", EscapeState.GLOBAL_ESCAPE, null);
+	public static ObjectNode getGlobalObjectNode() {
+		return global;
 	}
 
 	public ObjectNode increaseEscapeState(EscapeState escapeState) {

@@ -18,7 +18,7 @@ public final class ConnectionGraph extends SummaryGraph {
 
 	public ConnectionGraph(Set<Integer> indexes, Slot[] vars) {
 		globalReference = new ReferenceNode(-1, Category.GLOBAL);
-		ObjectNode globalObj = ObjectNode.newGlobalObjectNode();
+		ObjectNode globalObj = ObjectNode.getGlobalObjectNode();
 
 		referenceNodes.add(globalReference);
 		objectNodes.add(globalObj);
