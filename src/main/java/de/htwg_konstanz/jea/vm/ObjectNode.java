@@ -8,7 +8,7 @@ import net.jcip.annotations.Immutable;
 @EqualsAndHashCode(exclude = { "escapeState" })
 public class ObjectNode implements Node {
 	private final static ObjectNode global = new ObjectNode("global", EscapeState.GLOBAL_ESCAPE,
-			null);
+			null, false);
 
 	@Getter
 	private final String id;
@@ -16,23 +16,26 @@ public class ObjectNode implements Node {
 	private final EscapeState escapeState;
 	@Getter
 	private final String type;
+	@Getter
+	private final boolean isPhantom;
 
-	private ObjectNode(String id, EscapeState escapeState, String type) {
+	private ObjectNode(String id, EscapeState escapeState, String type, boolean isPhantom) {
 		this.id = id;
 		this.escapeState = escapeState;
 		this.type = type;
+		this.isPhantom = isPhantom;
 	}
 
 	public static ObjectNode newPhantomObjectNode(int id) {
-		return new ObjectNode("p" + id, EscapeState.ARG_ESCAPE, null);
+		return new ObjectNode("p" + id, EscapeState.ARG_ESCAPE, null, true);
 	}
 
 	public static ObjectNode newInternalObjectNode(String id, String type) {
-		return new ObjectNode(id, EscapeState.NO_ESCAPE, type);
+		return new ObjectNode(id, EscapeState.NO_ESCAPE, type, false);
 	}
 
 	public static ObjectNode newSubObjectNode(ObjectNode origin, String fieldName) {
-		return new ObjectNode(origin.id + "." + fieldName, origin.escapeState, null);
+		return new ObjectNode(origin.id + "." + fieldName, origin.escapeState, null, true);
 	}
 
 	public static ObjectNode getGlobalObjectNode() {
@@ -41,7 +44,7 @@ public class ObjectNode implements Node {
 
 	public ObjectNode increaseEscapeState(EscapeState escapeState) {
 		if (this.escapeState.moreConfinedThan(escapeState))
-			return new ObjectNode(this.getId(), escapeState, this.type);
+			return new ObjectNode(this.getId(), escapeState, this.type, this.isPhantom);
 		return this;
 	}
 
