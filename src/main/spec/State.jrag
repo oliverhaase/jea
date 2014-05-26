@@ -138,7 +138,8 @@ aspect State {
 					for ( ObjectNode obj :  cg.dereference(getLoadObjectRef(original))) {
 						Set<ObjectNode> targets = cg.getFieldOf(obj, getFieldName());
 						if ( targets.isEmpty() ) {
-							ObjectNode subObject = ObjectNode.newSubObjectNode(obj, getFieldName());
+							ObjectNode subObject = 
+								PhantomObject.newSubPhantom(obj, getFieldName());
 							cg.addField(obj, getFieldName(), subObject);
 							targets.add(subObject);
 						}
@@ -177,9 +178,10 @@ aspect State {
 		return Frames.processFrames(framesIn(), new FrameProcessor() {
 			@Override public Frame process(Frame original) {
 				ConnectionGraph cg = original.getCg();
-				ObjectNode obj = ObjectNode.newInternalObjectNode(
+				ObjectNode obj = InternalObject.newInternalObject(
 					method().clazz().getName() + "." 
-					+ method().getMethodName() + ":"
+					+ method().getMethodName() + "|"
+					+ method().getSignatureIndex() + ":"
 					+ getPosition(), getType());
 				ReferenceNode ref = new ReferenceNode(getPosition(), Category.LOCAL);
 				cg = cg.addReferenceAndTarget(ref, obj); 

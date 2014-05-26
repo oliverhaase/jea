@@ -18,9 +18,9 @@ aspect MethodConfinement {
 	syn Set<String> Method.methodEscapingTypes() {
 		Set<String> result = new HashSet<String>();
 		for ( ObjectNode object : methodSummary().getSg().getObjectNodes() )
-			if ( object.getType() != null 
+			if ( object instanceof InternalObject && ((InternalObject)object).getType() != null 
 					&& EscapeState.NO_ESCAPE.moreConfinedThan(object.getEscapeState()) )
-				result.add(object.getType());
+				result.add(((InternalObject)object).getType());
 		return result;
 	}		
 	
