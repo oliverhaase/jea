@@ -80,10 +80,18 @@ public final class Frame {
 		}
 
 		OpStack opStack = this.opStack;
-		ConnectionGraph cg = this.cg;
+		ConnectionGraph cg = new ConnectionGraph(this.cg);
 
 		// (1) transfer summary's internal objects to caller's connection graph,
 		// setting escape state to NO_ESCAPE
+
+		Set<ObjectNode> transferObjects = new HashSet<>();
+		for (ObjectNode obj : summary.getSg().getObjectNodes())
+			if (obj instanceof InternalObject && obj.getEscapeState() == EscapeState.ARG_ESCAPE)
+				transferObjects.add(((InternalObject) obj).resetEscapeState());
+
+		cg.objectNodes.addAll(transferObjects);
+
 		// (2) for each field edge in summary that involve any of the
 		// transferred
 		// internal objects, add a corresponding edge to caller's connection
@@ -93,6 +101,7 @@ public final class Frame {
 		// (3) take care of return value(s)
 		// (4) propagate escape state
 		// (5) adapt opStack
+		// (6) make actual param global as need be
 
 		for (int i = consumeStack - 1; i >= 0; i--) {
 			Slot arg = opStack.peek();
