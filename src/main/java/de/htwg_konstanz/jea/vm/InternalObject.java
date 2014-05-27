@@ -29,4 +29,9 @@ public final class InternalObject extends ObjectNode {
 		return this.getId() + getEscapeState().toString();
 	}
 
+	@Override
+	public boolean isGlobal() {
+		return false;
+	}
+
 }

@@ -21,4 +21,9 @@ public final class GlobalObject extends ObjectNode {
 		return this.getId();
 	}
 
+	@Override
+	public boolean isGlobal() {
+		return true;
+	}
+
 }

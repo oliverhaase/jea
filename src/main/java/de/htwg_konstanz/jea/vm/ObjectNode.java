@@ -15,5 +15,7 @@ public abstract class ObjectNode implements Node {
 		this.escapeState = escapeState;
 	}
 
+	public abstract boolean isGlobal();
+
 	public abstract ObjectNode increaseEscapeState(EscapeState escapeState);
 }
