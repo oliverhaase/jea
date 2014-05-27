@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import net.jcip.annotations.Immutable;
 
 @Immutable
@@ -12,23 +11,16 @@ import net.jcip.annotations.Immutable;
 public class MethodSummary {
 	private final static MethodSummary ALIEN_SUMMARY = new MethodSummary();
 
-	@Getter
-	private final SummaryGraph sg;
-	private final Set<ObjectNode> result;
-
 	public MethodSummary() {
-		sg = new SummaryGraph();
-		result = new HashSet<ObjectNode>();
+
 	}
 
-	public MethodSummary(SummaryGraph sg) {
-		this.sg = sg;
-		result = new HashSet<ObjectNode>();
+	public MethodSummary(ConnectionGraph cg) {
+
 	}
 
-	public MethodSummary(SummaryGraph sg, Set<ObjectNode> result) {
-		this.sg = sg;
-		this.result = result;
+	public MethodSummary(ConnectionGraph cg, Set<ObjectNode> resultObjects) {
+
 	}
 
 	public static MethodSummary getAlienSummary() {
@@ -40,16 +32,11 @@ public class MethodSummary {
 	}
 
 	public MethodSummary merge(MethodSummary other) {
-		Set<ObjectNode> mergedResult = new HashSet<>();
-		mergedResult.addAll(this.result);
-		mergedResult.addAll(other.result);
-
-		return new MethodSummary(sg.merge(other.sg), mergedResult);
+		return this;
 	}
 
-	@Override
-	public String toString() {
-		return sg.toString() + ", " + result;
+	public Set<String> getEscapingTypes() {
+		return new HashSet<String>();
 	}
 
 }

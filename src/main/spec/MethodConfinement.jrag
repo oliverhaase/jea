@@ -14,7 +14,8 @@ aspect MethodConfinement {
 			result.addAll(method.methodEscapingTypes());
 		return result;		
 	}
-		
+
+/*		
 	syn Set<String> Method.methodEscapingTypes() {
 		Set<String> result = new HashSet<String>();
 		for ( ObjectNode object : methodSummary().getSg().getObjectNodes() )
@@ -23,5 +24,10 @@ aspect MethodConfinement {
 				result.add(((InternalObject)object).getType());
 		return result;
 	}		
+*/	
+	
+	syn Set<String> Method.methodEscapingTypes() {
+		return methodSummary().getEscapingTypes();
+	}	
 	
 }

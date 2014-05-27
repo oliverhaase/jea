@@ -97,11 +97,11 @@ public final class ConnectionGraph {
 		throw new AssertionError("invalid object id: " + id);
 	}
 
-	public SummaryGraph extractSummaryGraph() {
-		return new SummaryGraph(propagateEscapeState(
-				propagateEscapeState(objectNodes, EscapeState.GLOBAL_ESCAPE),
-				EscapeState.ARG_ESCAPE), fieldEdges);
-	}
+	// public SummaryGraph extractSummaryGraph() {
+	// return new SummaryGraph(propagateEscapeState(
+	// propagateEscapeState(objectNodes, EscapeState.GLOBAL_ESCAPE),
+	// EscapeState.ARG_ESCAPE), fieldEdges);
+	// }
 
 	public Set<ObjectNode> getFieldOf(ObjectNode origin, String fieldName) {
 		Set<ObjectNode> result = new HashSet<>();
