@@ -24,6 +24,12 @@ public final class InternalObject extends ObjectNode {
 		return this;
 	}
 
+	public InternalObject resetEscapeState() {
+		if (EscapeState.NO_ESCAPE.moreConfinedThan(this.getEscapeState()))
+			return new InternalObject(this.getId(), this.type, EscapeState.NO_ESCAPE);
+		return this;
+	}
+
 	@Override
 	public String toString() {
 		return this.getId() + getEscapeState().toString();
