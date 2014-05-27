@@ -1,5 +1,6 @@
 package de.htwg_konstanz.jea.vm;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import lombok.EqualsAndHashCode;
@@ -35,6 +36,25 @@ public final class Frame {
 
 		localVars = new LocalVars(vars);
 		opStack = new OpStack();
+	}
+
+	private Set<ObjectNode> mapsTo(PhantomObject phantomObject, int consumeStack) {
+		if (phantomObject.getOrigin() == null)
+			return cg.dereference((ReferenceNode) opStack.get(opStack.size() - consumeStack
+					+ phantomObject.getIndex()));
+
+		Set<ObjectNode> result = new HashSet<>();
+
+		if (phantomObject.getOrigin().isGlobal()) {
+			result.add(GlobalObject.getInstance());
+			return result;
+		}
+
+		for (ObjectNode obj : mapsTo((PhantomObject) phantomObject.getOrigin(), consumeStack))
+			for (ObjectNode field : cg.getFieldOf(obj, phantomObject.getField()))
+				result.add(field);
+
+		return result;
 	}
 
 	public Frame applyMethodSummary(MethodSummary summary, int consumeStack, int produceStack,
