@@ -2,7 +2,6 @@ package de.htwg_konstanz.jea.vm;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Stack;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -12,8 +11,9 @@ import de.htwg_konstanz.jea.vm.ReferenceNode.Category;
 @EqualsAndHashCode
 public final class ConnectionGraph {
 	@Getter
-	protected final Set<ObjectNode> objectNodes;
-	protected final Set<Triple<String, String, String>> fieldEdges;
+	private final ObjectNodes objectNodes;
+	@Getter
+	private final Set<Triple<String, String, String>> fieldEdges;
 
 	private final Set<ReferenceNode> referenceNodes = new HashSet<>();
 	private final Set<Pair<ReferenceNode, String>> pointsToEdges = new HashSet<>();
@@ -22,7 +22,7 @@ public final class ConnectionGraph {
 	private final ReferenceNode globalReference;
 
 	public ConnectionGraph(Set<Integer> indexes, Slot[] vars) {
-		objectNodes = new HashSet<>();
+		objectNodes = new ObjectNodes();
 		fieldEdges = new HashSet<>();
 
 		globalReference = new ReferenceNode(-1, Category.GLOBAL);
@@ -45,7 +45,7 @@ public final class ConnectionGraph {
 	}
 
 	public ConnectionGraph(ConnectionGraph original) {
-		objectNodes = new HashSet<>();
+		objectNodes = new ObjectNodes();
 		fieldEdges = new HashSet<>();
 
 		globalReference = original.globalReference;
@@ -57,82 +57,22 @@ public final class ConnectionGraph {
 		fieldEdges.addAll(original.fieldEdges);
 	}
 
-	private Set<ObjectNode> propagateEscapeState(Set<ObjectNode> objects, EscapeState escapeState) {
-		Set<ObjectNode> result = new HashSet<>();
-		result.addAll(objects);
-
-		Stack<ObjectNode> workingList = new Stack<>();
-		for (ObjectNode objectNode : result)
-			if (objectNode.getEscapeState() == escapeState)
-				workingList.push(objectNode);
-
-		while (!workingList.isEmpty()) {
-			ObjectNode current = workingList.pop();
-
-			for (ObjectNode subObject : getSubObjectsOf(current))
-				if (subObject.getEscapeState().moreConfinedThan(escapeState)) {
-					ObjectNode updatedSubObject = subObject.increaseEscapeState(escapeState);
-					result.remove(subObject);
-					result.add(updatedSubObject);
-					workingList.push(updatedSubObject);
-				}
-		}
-		return result;
-	}
-
-	public Set<ObjectNode> getSubObjectsOf(ObjectNode origin) {
-		Set<ObjectNode> result = new HashSet<>();
-
-		for (Triple<String, String, String> fieldEdge : fieldEdges)
-			if (fieldEdge.getValue1().equals(origin.getId()))
-				result.add(getObjectNode(fieldEdge.getValue3()));
-
-		return result;
-	}
-
-	public ObjectNode getObjectNode(String id) {
-		for (ObjectNode objectNode : objectNodes)
-			if (objectNode.getId().equals(id))
-				return objectNode;
-		throw new AssertionError("invalid object id: " + id);
-	}
-
-	// public SummaryGraph extractSummaryGraph() {
-	// return new SummaryGraph(propagateEscapeState(
-	// propagateEscapeState(objectNodes, EscapeState.GLOBAL_ESCAPE),
-	// EscapeState.ARG_ESCAPE), fieldEdges);
-	// }
-
 	public Set<ObjectNode> getFieldOf(ObjectNode origin, String fieldName) {
 		Set<ObjectNode> result = new HashSet<>();
 
 		for (Triple<String, String, String> fieldEdge : fieldEdges)
 			if (fieldEdge.getValue1().equals(origin.getId())
 					&& fieldEdge.getValue2().equals(fieldName))
-				result.add(getObjectNode(fieldEdge.getValue3()));
+				result.add(objectNodes.getObjectNode(fieldEdge.getValue3()));
 
 		return result;
-	}
-
-	public SummaryGraph extractSummaryGraph(Set<ObjectNode> resultObjects) {
-		Set<ObjectNode> updatedObjectNodes = new HashSet<>();
-		updatedObjectNodes.addAll(objectNodes);
-
-		for (ObjectNode resultObject : resultObjects) {
-			updatedObjectNodes.remove(resultObject);
-			updatedObjectNodes.add(resultObject.increaseEscapeState(EscapeState.ARG_ESCAPE));
-		}
-
-		return new SummaryGraph(propagateEscapeState(
-				propagateEscapeState(updatedObjectNodes, EscapeState.GLOBAL_ESCAPE),
-				EscapeState.ARG_ESCAPE), fieldEdges);
 	}
 
 	public Set<ObjectNode> dereference(ReferenceNode ref) {
 		Set<ObjectNode> result = new HashSet<>();
 		for (Pair<ReferenceNode, String> pointsToEdge : pointsToEdges)
 			if (pointsToEdge.getValue1().equals(ref))
-				result.add(getObjectNode(pointsToEdge.getValue2()));
+				result.add(objectNodes.getObjectNode(pointsToEdge.getValue2()));
 		return result;
 	}
 
@@ -150,20 +90,13 @@ public final class ConnectionGraph {
 	public ConnectionGraph addField(ObjectNode obj, String fieldName, ObjectNode value) {
 		ConnectionGraph result = new ConnectionGraph(this);
 
-		if (!existsObject(value.getId()))
+		if (!objectNodes.existsObject(value.getId()))
 			result.objectNodes.add(value);
 
 		result.fieldEdges.add(new Triple<String, String, String>(obj.getId(), fieldName, value
 				.getId()));
 
 		return result;
-	}
-
-	public boolean existsObject(String id) {
-		for (ObjectNode objectNode : objectNodes)
-			if (objectNode.getId().equals(id))
-				return true;
-		return false;
 	}
 
 	public ConnectionGraph addReferenceAndTarget(ReferenceNode ref, ObjectNode obj) {
