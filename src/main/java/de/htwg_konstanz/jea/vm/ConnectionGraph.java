@@ -2,14 +2,19 @@ package de.htwg_konstanz.jea.vm;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Stack;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import de.htwg_konstanz.jea.vm.Node.EscapeState;
 import de.htwg_konstanz.jea.vm.ReferenceNode.Category;
 
-@EqualsAndHashCode(callSuper = true)
-public final class ConnectionGraph extends SummaryGraph {
+@EqualsAndHashCode
+public final class ConnectionGraph {
+	@Getter
+	protected final Set<ObjectNode> objectNodes;
+	protected final Set<Triple<String, String, String>> fieldEdges;
+
 	private final Set<ReferenceNode> referenceNodes = new HashSet<>();
 	private final Set<Pair<ReferenceNode, String>> pointsToEdges = new HashSet<>();
 
@@ -17,6 +22,9 @@ public final class ConnectionGraph extends SummaryGraph {
 	private final ReferenceNode globalReference;
 
 	public ConnectionGraph(Set<Integer> indexes, Slot[] vars) {
+		objectNodes = new HashSet<>();
+		fieldEdges = new HashSet<>();
+
 		globalReference = new ReferenceNode(-1, Category.GLOBAL);
 		ObjectNode globalObj = GlobalObject.getInstance();
 
@@ -37,6 +45,9 @@ public final class ConnectionGraph extends SummaryGraph {
 	}
 
 	public ConnectionGraph(ConnectionGraph original) {
+		objectNodes = new HashSet<>();
+		fieldEdges = new HashSet<>();
+
 		globalReference = original.globalReference;
 
 		objectNodes.addAll(original.objectNodes);
@@ -46,10 +57,61 @@ public final class ConnectionGraph extends SummaryGraph {
 		fieldEdges.addAll(original.fieldEdges);
 	}
 
+	private Set<ObjectNode> propagateEscapeState(Set<ObjectNode> objects, EscapeState escapeState) {
+		Set<ObjectNode> result = new HashSet<>();
+		result.addAll(objects);
+
+		Stack<ObjectNode> workingList = new Stack<>();
+		for (ObjectNode objectNode : result)
+			if (objectNode.getEscapeState() == escapeState)
+				workingList.push(objectNode);
+
+		while (!workingList.isEmpty()) {
+			ObjectNode current = workingList.pop();
+
+			for (ObjectNode subObject : getSubObjectsOf(current))
+				if (subObject.getEscapeState().moreConfinedThan(escapeState)) {
+					ObjectNode updatedSubObject = subObject.increaseEscapeState(escapeState);
+					result.remove(subObject);
+					result.add(updatedSubObject);
+					workingList.push(updatedSubObject);
+				}
+		}
+		return result;
+	}
+
+	public Set<ObjectNode> getSubObjectsOf(ObjectNode origin) {
+		Set<ObjectNode> result = new HashSet<>();
+
+		for (Triple<String, String, String> fieldEdge : fieldEdges)
+			if (fieldEdge.getValue1().equals(origin.getId()))
+				result.add(getObjectNode(fieldEdge.getValue3()));
+
+		return result;
+	}
+
+	public ObjectNode getObjectNode(String id) {
+		for (ObjectNode objectNode : objectNodes)
+			if (objectNode.getId().equals(id))
+				return objectNode;
+		throw new AssertionError("invalid object id: " + id);
+	}
+
 	public SummaryGraph extractSummaryGraph() {
 		return new SummaryGraph(propagateEscapeState(
 				propagateEscapeState(objectNodes, EscapeState.GLOBAL_ESCAPE),
 				EscapeState.ARG_ESCAPE), fieldEdges);
+	}
+
+	public Set<ObjectNode> getFieldOf(ObjectNode origin, String fieldName) {
+		Set<ObjectNode> result = new HashSet<>();
+
+		for (Triple<String, String, String> fieldEdge : fieldEdges)
+			if (fieldEdge.getValue1().equals(origin.getId())
+					&& fieldEdge.getValue2().equals(fieldName))
+				result.add(getObjectNode(fieldEdge.getValue3()));
+
+		return result;
 	}
 
 	public SummaryGraph extractSummaryGraph(Set<ObjectNode> resultObjects) {
@@ -95,6 +157,13 @@ public final class ConnectionGraph extends SummaryGraph {
 				.getId()));
 
 		return result;
+	}
+
+	public boolean existsObject(String id) {
+		for (ObjectNode objectNode : objectNodes)
+			if (objectNode.getId().equals(id))
+				return true;
+		return false;
 	}
 
 	public ConnectionGraph addReferenceAndTarget(ReferenceNode ref, ObjectNode obj) {
