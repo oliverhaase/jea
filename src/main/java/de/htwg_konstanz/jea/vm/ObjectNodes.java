@@ -40,13 +40,12 @@ public class ObjectNodes implements Iterable<ObjectNode> {
 		throw new AssertionError("invalid object id: " + id);
 	}
 
-	public ObjectNodes getSubObjectsOf(ObjectNode origin,
-			Set<Triple<String, String, String>> fieldEdges) {
+	public ObjectNodes getSubObjectsOf(ObjectNode origin, Set<FieldEdge> fieldEdges) {
 		ObjectNodes result = new ObjectNodes();
 
-		for (Triple<String, String, String> fieldEdge : fieldEdges)
-			if (fieldEdge.getValue1().equals(origin.getId()))
-				result.add(getObjectNode(fieldEdge.getValue3()));
+		for (FieldEdge fieldEdge : fieldEdges)
+			if (fieldEdge.getOriginId().equals(origin.getId()))
+				result.add(getObjectNode(fieldEdge.getDestinationId()));
 
 		return result;
 	}

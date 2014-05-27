@@ -26,7 +26,7 @@ public class MethodSummary {
 		ObjectNodes objectNodes = new ObjectNodes();
 		objectNodes.addAll(cg.getObjectNodes());
 
-		Set<Triple<String, String, String>> fieldEdges = new HashSet<>();
+		Set<FieldEdge> fieldEdges = new HashSet<>();
 		fieldEdges.addAll(cg.getFieldEdges());
 
 		for (ObjectNode resultObject : resultObjects) {
@@ -47,8 +47,8 @@ public class MethodSummary {
 
 	}
 
-	private ObjectNodes propagateEscapeState(ObjectNodes objects,
-			Set<Triple<String, String, String>> fieldEdges, EscapeState escapeState) {
+	private ObjectNodes propagateEscapeState(ObjectNodes objects, Set<FieldEdge> fieldEdges,
+			EscapeState escapeState) {
 		ObjectNodes result = new ObjectNodes();
 		result.addAll(objects);
 

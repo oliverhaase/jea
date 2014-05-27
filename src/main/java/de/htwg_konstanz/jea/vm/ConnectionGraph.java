@@ -13,7 +13,7 @@ public final class ConnectionGraph {
 	@Getter
 	private final ObjectNodes objectNodes;
 	@Getter
-	private final Set<Triple<String, String, String>> fieldEdges;
+	private final Set<FieldEdge> fieldEdges;
 
 	private final Set<ReferenceNode> referenceNodes = new HashSet<>();
 	private final Set<Pair<ReferenceNode, String>> pointsToEdges = new HashSet<>();
@@ -60,10 +60,10 @@ public final class ConnectionGraph {
 	public Set<ObjectNode> getFieldOf(ObjectNode origin, String fieldName) {
 		Set<ObjectNode> result = new HashSet<>();
 
-		for (Triple<String, String, String> fieldEdge : fieldEdges)
-			if (fieldEdge.getValue1().equals(origin.getId())
-					&& fieldEdge.getValue2().equals(fieldName))
-				result.add(objectNodes.getObjectNode(fieldEdge.getValue3()));
+		for (FieldEdge fieldEdge : fieldEdges)
+			if (fieldEdge.getOriginId().equals(origin.getId())
+					&& fieldEdge.getFieldName().equals(fieldName))
+				result.add(objectNodes.getObjectNode(fieldEdge.getDestinationId()));
 
 		return result;
 	}
@@ -93,9 +93,7 @@ public final class ConnectionGraph {
 		if (!objectNodes.existsObject(value.getId()))
 			result.objectNodes.add(value);
 
-		result.fieldEdges.add(new Triple<String, String, String>(obj.getId(), fieldName, value
-				.getId()));
-
+		result.fieldEdges.add(new FieldEdge(obj.getId(), fieldName, value.getId()));
 		return result;
 	}
 
