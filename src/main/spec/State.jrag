@@ -200,9 +200,9 @@ aspect State {
 		for ( Method targetMethod : resolveTargetMethod() ) {
 			final Method target = targetMethod; 	
 			
-			System.out.println("*** BEGIN TARGET ******************");
-			target.printMethod();
-			System.out.println("*** END TARGET ******************");
+//			System.out.println("*** BEGIN TARGET ******************");
+//			target.printMethod();
+//			System.out.println("*** END TARGET ******************");
 			
 				
 			result.addAll(Frames.processFrames(framesIn(), new FrameProcessor() {
