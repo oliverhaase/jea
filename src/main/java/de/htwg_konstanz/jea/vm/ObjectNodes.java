@@ -55,4 +55,9 @@ public class ObjectNodes implements Iterable<ObjectNode> {
 		return nodes.iterator();
 	}
 
+	@Override
+	public String toString() {
+		return nodes.toString();
+	}
+
 }
