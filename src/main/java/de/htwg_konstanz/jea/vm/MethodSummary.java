@@ -6,30 +6,34 @@ import java.util.Set;
 import java.util.Stack;
 
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import net.jcip.annotations.Immutable;
 import de.htwg_konstanz.jea.vm.Node.EscapeState;
 
 @Immutable
 @EqualsAndHashCode
+@ToString
 public class MethodSummary {
 	private final static MethodSummary ALIEN_SUMMARY = new MethodSummary();
 
-	public MethodSummary() {
+	private final ObjectNodes objectNodes;
+	private final Set<FieldEdge> fieldEdges;
+	private final ObjectNodes escapedObjects;
 
+	private MethodSummary() {
+		this.objectNodes = new ObjectNodes();
+		this.fieldEdges = new HashSet<>();
+		this.escapedObjects = new ObjectNodes();
 	}
 
-	public MethodSummary(ConnectionGraph cg) {
-		this(cg, new HashSet<ObjectNode>());
-	}
-
-	public MethodSummary(ConnectionGraph cg, Set<ObjectNode> resultObjects) {
+	public MethodSummary(ReturnResult rr) {
 		ObjectNodes objectNodes = new ObjectNodes();
-		objectNodes.addAll(cg.getObjectNodes());
+		objectNodes.addAll(rr.getObjectNodes());
 
 		Set<FieldEdge> fieldEdges = new HashSet<>();
-		fieldEdges.addAll(cg.getFieldEdges());
+		fieldEdges.addAll(rr.getFieldEdges());
 
-		for (ObjectNode resultObject : resultObjects) {
+		for (ObjectNode resultObject : rr.getResultValues()) {
 			objectNodes.remove(resultObject);
 			objectNodes.add(resultObject.increaseEscapeState(EscapeState.ARG_ESCAPE));
 		}
@@ -38,13 +42,43 @@ public class MethodSummary {
 				propagateEscapeState(objectNodes, fieldEdges, EscapeState.GLOBAL_ESCAPE),
 				fieldEdges, EscapeState.ARG_ESCAPE);
 
+		this.escapedObjects = collapseGlobalGraph(objectNodes, fieldEdges);
+
+		this.objectNodes = objectNodes;
+		this.fieldEdges = fieldEdges;
+
+	}
+
+	private ObjectNodes collapseGlobalGraph(ObjectNodes objectNodes, Set<FieldEdge> fieldEdges) {
+		ObjectNodes result = new ObjectNodes();
+
 		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator.hasNext();) {
 			ObjectNode current = objIterator.next();
+
 			if (current.getEscapeState() == EscapeState.GLOBAL_ESCAPE) {
+				Set<FieldEdge> edgesTerminatingAtCurrent = new HashSet<>();
+
+				for (Iterator<FieldEdge> edgeIterator = fieldEdges.iterator(); edgeIterator
+						.hasNext();) {
+					FieldEdge edge = edgeIterator.next();
+
+					if (edge.getOriginId().equals(current.getId()))
+						edgeIterator.remove();
+					else if (edge.getDestinationId().equals(current.getId()))
+						edgesTerminatingAtCurrent.add(edge);
+				}
+				for (FieldEdge edgeTerminatingAtCurrent : edgesTerminatingAtCurrent) {
+					fieldEdges.remove(edgeTerminatingAtCurrent);
+					fieldEdges.add(new FieldEdge(edgeTerminatingAtCurrent.getOriginId(),
+							edgeTerminatingAtCurrent.getFieldName(), GlobalObject.getInstance()
+									.getId()));
+				}
+
+				result.add(current);
 				objIterator.remove();
 			}
 		}
-
+		return result;
 	}
 
 	private ObjectNodes propagateEscapeState(ObjectNodes objects, Set<FieldEdge> fieldEdges,
@@ -84,7 +118,11 @@ public class MethodSummary {
 	}
 
 	public Set<String> getEscapingTypes() {
-		return new HashSet<String>();
+		Set<String> result = new HashSet<String>();
+		for (ObjectNode obj : escapedObjects)
+			if (obj instanceof InternalObject)
+				result.add(((InternalObject) obj).getType());
+		return result;
 	}
 
 }
