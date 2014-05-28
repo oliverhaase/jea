@@ -37,21 +37,48 @@ public final class Frame {
 		opStack = new OpStack();
 	}
 
-	private Set<ObjectNode> mapsTo(PhantomObject phantomObject, int consumeStack) {
-		if (phantomObject.getOrigin() == null)
-			return cg.dereference((ReferenceNode) opStack.get(opStack.size() - consumeStack
-					+ phantomObject.getIndex()));
+	private Set<String> mapsTo(String objectId, MethodSummary summary, int consumeStack) {
+		Set<String> result = new HashSet<>();
 
-		Set<ObjectNode> result = new HashSet<>();
+		// global object
 
-		if (phantomObject.getOrigin().isGlobal()) {
-			result.add(GlobalObject.getInstance());
+		if (objectId.equals(GlobalObject.getInstance().getId())) {
+			result.add(objectId);
 			return result;
 		}
 
-		for (ObjectNode obj : mapsTo((PhantomObject) phantomObject.getOrigin(), consumeStack))
-			for (ObjectNode field : cg.getFieldOf(obj, phantomObject.getField()))
-				result.add(field);
+		// internal object
+
+		if (summary.getArgEscapeObjects().getObjectNode(objectId) instanceof InternalObject) {
+			result.add(objectId);
+			return result;
+		}
+
+		// phantomObject
+
+		PhantomObject phantom = (PhantomObject) summary.getArgEscapeObjects().getObjectNode(
+				objectId);
+
+		if (phantom.getOrigin() == null) {
+			for (ObjectNode mappingObj : cg.dereference((ReferenceNode) opStack.getArgumentAtIndex(
+					phantom.getIndex(), consumeStack))) {
+				result.add(mappingObj.getId());
+			}
+			return result;
+		}
+
+		if (phantom.getOrigin().isGlobal()) {
+			result.add(GlobalObject.getInstance().getId());
+			return result;
+		}
+
+		for (String mapsToId : mapsTo(phantom.getOrigin().getId(), summary, consumeStack)) {
+			for (ObjectNode field : cg.getObjectNodes().getFieldOf(
+					cg.getObjectNodes().getObjectNode(mapsToId), cg.getFieldEdges(),
+					phantom.getField())) {
+				result.add(field.getId());
+			}
+		}
 
 		return result;
 	}
@@ -71,6 +98,30 @@ public final class Frame {
 		}
 		return result;
 
+	}
+
+	private ConnectionGraph transferInternalObjects(ConnectionGraph cg, MethodSummary summary) {
+		ConnectionGraph result = new ConnectionGraph(cg);
+
+		for (ObjectNode object : summary.getArgEscapeObjects())
+			if (object instanceof InternalObject)
+				result.getObjectNodes().add(((InternalObject) object).resetEscapeState());
+
+		return result;
+	}
+
+	private ConnectionGraph transferFieldEdges(ConnectionGraph cg, MethodSummary summary,
+			int consumeStack) {
+		ConnectionGraph result = new ConnectionGraph(cg);
+
+		for (FieldEdge edge : summary.getFieldEdges()) {
+			for (String originId : mapsTo(edge.getOriginId(), summary, consumeStack))
+				for (String destinationId : mapsTo(edge.getDestinationId(), summary, consumeStack))
+					result.getFieldEdges().add(
+							new FieldEdge(originId, edge.getFieldName(), destinationId));
+		}
+
+		return result;
 	}
 
 	public Frame applyMethodSummary(MethodSummary summary, int consumeStack, int produceStack,
@@ -97,6 +148,8 @@ public final class Frame {
 		ConnectionGraph cg = this.cg;
 
 		cg = publishEscapedArgs(summary, opStack, cg, consumeStack);
+		cg = transferInternalObjects(cg, summary);
+		cg = transferFieldEdges(cg, summary, consumeStack);
 
 		opStack = opStack.pop(consumeStack);
 
@@ -107,43 +160,6 @@ public final class Frame {
 
 		return new Frame(localVars, opStack, cg);
 
-		/*
-		 * 
-		 * OpStack opStack = this.opStack; ConnectionGraph cg = new
-		 * ConnectionGraph(this.cg);
-		 * 
-		 * // (1) transfer summary's internal objects to caller's connection
-		 * graph, // setting escape state to NO_ESCAPE
-		 * 
-		 * Set<ObjectNode> transferObjects = new HashSet<>(); for (ObjectNode
-		 * obj : summary.getSg().getObjectNodes()) if (obj instanceof
-		 * InternalObject && obj.getEscapeState() == EscapeState.ARG_ESCAPE)
-		 * transferObjects.add(((InternalObject) obj).resetEscapeState());
-		 * 
-		 * cg.objectNodes.addAll(transferObjects);
-		 * 
-		 * // (2) for each field edge in summary that involve any of the //
-		 * transferred // internal objects, add a corresponding edge to caller's
-		 * connection // graph, replacing // the involved phantom object - if
-		 * there is one - with all mapsTo // objects. // (3) take care of return
-		 * value(s) // (4) propagate escape state // (5) adapt opStack // (6)
-		 * make actual param global as need be
-		 * 
-		 * for (int i = consumeStack - 1; i >= 0; i--) { Slot arg =
-		 * opStack.peek(); if (arg instanceof ReferenceNode) { ObjectNode
-		 * formalArg = summary.getSg().getObjectNode("p" + i); for (ObjectNode
-		 * actualArg : cg.dereference((ReferenceNode) arg)) { // map formal and
-		 * actual args onto each other if (formalArg.getEscapeState() ==
-		 * EscapeState.GLOBAL_ESCAPE)
-		 * actualArg.increaseEscapeState(EscapeState.GLOBAL_ESCAPE); } } opStack
-		 * = opStack.pop(); }
-		 * 
-		 * if (returnType instanceof org.apache.bcel.generic.ReferenceType)
-		 * opStack.push(cg.getGlobalReference()); else
-		 * opStack.push(DontCareSlot.values()[produceStack], produceStack);
-		 * 
-		 * return new Frame(localVars, opStack, cg);
-		 */
 	}
 
 	@Override
