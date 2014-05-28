@@ -52,8 +52,8 @@ aspect Print {
 //   		if ( predecessors().size() > 1)
 //	  		System.out.println(framesIn());
     	System.out.println("instruction: " + getLabel());	
-    	System.out.println(methodSummary());
     	System.out.println(returnResult());
+    	System.out.println(methodSummary());
     	System.out.println();
   	}
   	
