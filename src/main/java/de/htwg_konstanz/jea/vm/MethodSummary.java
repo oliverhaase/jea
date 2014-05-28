@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.Stack;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.ToString;
 import net.jcip.annotations.Immutable;
 import de.htwg_konstanz.jea.vm.Node.EscapeState;
@@ -18,12 +19,16 @@ public class MethodSummary {
 
 	private final ObjectNodes objectNodes;
 	private final Set<FieldEdge> fieldEdges;
+	@Getter
 	private final ObjectNodes escapedObjects;
+	@Getter
+	private final ObjectNodes localObjects;
 
 	private MethodSummary() {
 		this.objectNodes = new ObjectNodes();
 		this.fieldEdges = new HashSet<>();
 		this.escapedObjects = new ObjectNodes();
+		this.localObjects = new ObjectNodes();
 	}
 
 	public MethodSummary(ReturnResult rr) {
@@ -43,10 +48,30 @@ public class MethodSummary {
 				fieldEdges, EscapeState.ARG_ESCAPE);
 
 		this.escapedObjects = collapseGlobalGraph(objectNodes, fieldEdges);
+		this.localObjects = removeLocalGraph(objectNodes, fieldEdges);
 
 		this.objectNodes = objectNodes;
 		this.fieldEdges = fieldEdges;
 
+	}
+
+	private ObjectNodes removeLocalGraph(ObjectNodes objectNodes, Set<FieldEdge> fieldEdges) {
+		ObjectNodes result = new ObjectNodes();
+
+		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator.hasNext();) {
+			ObjectNode current = objIterator.next();
+
+			if (current.getEscapeState() == EscapeState.NO_ESCAPE) {
+				for (Iterator<FieldEdge> edgeIterator = fieldEdges.iterator(); edgeIterator
+						.hasNext();)
+					if (edgeIterator.next().getOriginId().equals(current.getId()))
+						edgeIterator.remove();
+
+				result.add(current);
+				objIterator.remove();
+			}
+		}
+		return result;
 	}
 
 	private ObjectNodes collapseGlobalGraph(ObjectNodes objectNodes, Set<FieldEdge> fieldEdges) {
@@ -111,10 +136,6 @@ public class MethodSummary {
 
 	public boolean isAlien() {
 		return this == ALIEN_SUMMARY;
-	}
-
-	public MethodSummary merge(MethodSummary other) {
-		return this;
 	}
 
 	public Set<String> getEscapingTypes() {
