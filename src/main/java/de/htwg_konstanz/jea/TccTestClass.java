@@ -15,6 +15,10 @@ public class TccTestClass {
 		n++;
 	}
 
+	private void private3(Object obj) {
+		staticObjectRef = obj;
+	}
+
 	void f(String ex) {
 		ex = new String();
 	}
@@ -77,4 +81,7 @@ public class TccTestClass {
 		staticRef = x;
 	}
 
+	void r() {
+		private3(new Float(47.11));
+	}
 }
