@@ -56,18 +56,50 @@ public final class Frame {
 		return result;
 	}
 
+	private ConnectionGraph publishEscapedArgs(MethodSummary summary, OpStack opStack,
+			ConnectionGraph cg, int consumeStack) {
+		ConnectionGraph result = cg;
+
+		for (ObjectNode object : summary.getEscapedObjects()) {
+			if (object instanceof PhantomObject) {
+				PhantomObject phantom = (PhantomObject) object;
+				if (phantom.getOrigin() == null) {
+					result = result.publish(opStack.getArgumentAtIndex(phantom.getIndex(),
+							consumeStack));
+				}
+			}
+		}
+		return result;
+
+	}
+
 	public Frame applyMethodSummary(MethodSummary summary, int consumeStack, int produceStack,
 			org.apache.bcel.generic.Type returnType) {
+		if (summary.isAlien()) {
+			OpStack opStack = this.opStack;
+			ConnectionGraph cg = this.cg;
+			for (int i = 0; i < consumeStack; i++) {
+				Slot arg = opStack.peek();
+				if (arg instanceof ReferenceNode)
+					cg = cg.publish((ReferenceNode) arg);
+
+				opStack = opStack.pop();
+			}
+			if (returnType instanceof org.apache.bcel.generic.ReferenceType)
+				opStack.push(cg.getGlobalReference());
+			else
+				opStack.push(DontCareSlot.values()[produceStack], produceStack);
+
+			return new Frame(localVars, opStack, cg);
+		}
 
 		OpStack opStack = this.opStack;
 		ConnectionGraph cg = this.cg;
-		for (int i = 0; i < consumeStack; i++) {
-			Slot arg = opStack.peek();
-			if (arg instanceof ReferenceNode)
-				cg = cg.publish((ReferenceNode) arg);
 
-			opStack = opStack.pop();
-		}
+		cg = publishEscapedArgs(summary, opStack, cg, consumeStack);
+
+		opStack = opStack.pop(consumeStack);
+
 		if (returnType instanceof org.apache.bcel.generic.ReferenceType)
 			opStack.push(cg.getGlobalReference());
 		else
@@ -76,20 +108,6 @@ public final class Frame {
 		return new Frame(localVars, opStack, cg);
 
 		/*
-		 * if (summary.isAlien()) { OpStack opStack = this.opStack;
-		 * ConnectionGraph cg = this.cg;
-		 * 
-		 * for (int i = 0; i < consumeStack; i++) { Slot arg = opStack.peek();
-		 * if (arg instanceof ReferenceNode) cg = cg.publish((ReferenceNode)
-		 * arg);
-		 * 
-		 * opStack = opStack.pop(); }
-		 * 
-		 * if (returnType instanceof org.apache.bcel.generic.ReferenceType)
-		 * opStack.push(cg.getGlobalReference()); else
-		 * opStack.push(DontCareSlot.values()[produceStack], produceStack);
-		 * 
-		 * return new Frame(localVars, opStack, cg); }
 		 * 
 		 * OpStack opStack = this.opStack; ConnectionGraph cg = new
 		 * ConnectionGraph(this.cg);
