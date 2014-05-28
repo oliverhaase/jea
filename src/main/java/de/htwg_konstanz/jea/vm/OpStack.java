@@ -61,6 +61,10 @@ public final class OpStack {
 		return stack.size();
 	}
 
+	public ReferenceNode getArgumentAtIndex(int index, int numArgs) {
+		return (ReferenceNode) stack.get(stack.size() - numArgs + index);
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder("S<");
