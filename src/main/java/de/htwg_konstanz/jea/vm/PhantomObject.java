@@ -38,7 +38,11 @@ public final class PhantomObject extends ObjectNode {
 	@Override
 	public PhantomObject increaseEscapeState(EscapeState escapeState) {
 		if (this.getEscapeState().moreConfinedThan(escapeState))
-			return new PhantomObject(this.getId(), this.origin, field, escapeState);
+			if (this.index != -1)
+				return new PhantomObject(this.getIndex(), escapeState);
+			else
+				return new PhantomObject(this.getId(), this.origin, field, escapeState);
+
 		return this;
 	}
 
