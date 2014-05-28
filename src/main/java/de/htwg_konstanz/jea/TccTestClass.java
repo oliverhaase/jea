@@ -19,6 +19,10 @@ public class TccTestClass {
 		staticObjectRef = obj;
 	}
 
+	private void private4(TccTestClass tcc) {
+		tcc.ref = new Short((short) 4);
+	}
+
 	void f(String ex) {
 		ex = new String();
 	}
@@ -84,4 +88,13 @@ public class TccTestClass {
 	void r() {
 		private3(new Float(47.11));
 	}
+
+	void s() {
+		private4(new TccTestClass());
+	}
+
+	void t(TccTestClass tcc) {
+		private4(tcc);
+	}
+
 }
