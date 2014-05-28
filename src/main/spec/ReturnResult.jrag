@@ -1,0 +1,31 @@
+
+aspect ReturnResult {
+	
+	syn ReturnResult Instruction.returnResult() {
+		return null;
+	}
+	
+	syn ReturnResult ReturnInstruction.returnResult() {
+		ReturnResult result = new ReturnResult();
+		for ( Frame frame : framesIn() )
+			result = result.merge(new ReturnResult(frame.getCg()));
+		return result;	
+	}
+	
+	syn ReturnResult Areturn.returnResult() {
+		ReturnResult result = new ReturnResult();
+		for ( Frame frame : framesIn() )
+			result = result.merge(new ReturnResult(
+				frame.getCg(), 
+				frame.getCg().dereference((ReferenceNode) frame.getOpStack().peek())));
+		return result;	
+	}
+	
+	syn ReturnResult ExitPoint.returnResult() {
+		ReturnResult result = new ReturnResult();
+		for ( Instruction predecessor : predecessors() )
+			result = result.merge(predecessor.returnResult());
+		return result;	
+	}
+
+}
