@@ -5,6 +5,9 @@ import lombok.Getter;
 
 @EqualsAndHashCode(callSuper = true)
 public final class InternalObject extends ObjectNode {
+	private final static InternalObject NULL_OBJECT = new InternalObject("null",
+			"javax.lang.model.type.NullType", EscapeState.NO_ESCAPE);
+
 	@Getter
 	private final String type;
 
@@ -15,6 +18,10 @@ public final class InternalObject extends ObjectNode {
 
 	public static InternalObject newInternalObject(String id, String type) {
 		return new InternalObject(id, type, EscapeState.NO_ESCAPE);
+	}
+
+	public static InternalObject getNullObject() {
+		return NULL_OBJECT;
 	}
 
 	@Override

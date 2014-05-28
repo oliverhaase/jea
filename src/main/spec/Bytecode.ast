@@ -16,6 +16,8 @@ EntryPoint : Instruction;
 
 SimpleInstruction : Instruction;
 
+AconstNull : Instruction;
+
 abstract FieldAssignmentInstruction : Instruction ::= <FieldName:String>;
 PutField : FieldAssignmentInstruction;
 Aastore : FieldAssignmentInstruction;
