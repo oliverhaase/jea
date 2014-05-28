@@ -50,6 +50,17 @@ public class ObjectNodes implements Iterable<ObjectNode> {
 		return result;
 	}
 
+	public Set<ObjectNode> getFieldOf(ObjectNode origin, Set<FieldEdge> fieldEdges, String fieldName) {
+		Set<ObjectNode> result = new HashSet<ObjectNode>();
+
+		for (FieldEdge fieldEdge : fieldEdges)
+			if (fieldEdge.getOriginId().equals(origin.getId())
+					&& fieldEdge.getFieldName().equals(fieldName))
+				result.add(getObjectNode(fieldEdge.getDestinationId()));
+
+		return result;
+	}
+
 	@Override
 	public Iterator<ObjectNode> iterator() {
 		return nodes.iterator();

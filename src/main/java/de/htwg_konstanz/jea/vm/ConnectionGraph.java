@@ -57,17 +57,6 @@ public final class ConnectionGraph {
 		fieldEdges.addAll(original.fieldEdges);
 	}
 
-	public Set<ObjectNode> getFieldOf(ObjectNode origin, String fieldName) {
-		Set<ObjectNode> result = new HashSet<>();
-
-		for (FieldEdge fieldEdge : fieldEdges)
-			if (fieldEdge.getOriginId().equals(origin.getId())
-					&& fieldEdge.getFieldName().equals(fieldName))
-				result.add(objectNodes.getObjectNode(fieldEdge.getDestinationId()));
-
-		return result;
-	}
-
 	public Set<ObjectNode> dereference(ReferenceNode ref) {
 		Set<ObjectNode> result = new HashSet<>();
 		for (Pair<ReferenceNode, String> pointsToEdge : pointsToEdges)
