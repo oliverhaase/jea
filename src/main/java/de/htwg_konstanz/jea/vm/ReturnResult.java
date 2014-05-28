@@ -4,12 +4,16 @@ import java.util.HashSet;
 import java.util.Set;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 
 @EqualsAndHashCode
 public class ReturnResult {
+	@Getter
 	private final ObjectNodes objectNodes;
+	@Getter
 	private final Set<FieldEdge> fieldEdges;
+	@Getter
 	private final Set<ObjectNode> resultValues;
 
 	private ReturnResult(@NonNull ObjectNodes objectNodes, @NonNull Set<FieldEdge> fieldEdges,
