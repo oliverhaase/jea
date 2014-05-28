@@ -17,7 +17,9 @@ import de.htwg_konstanz.jea.vm.Node.EscapeState;
 public class MethodSummary {
 	private final static MethodSummary ALIEN_SUMMARY = new MethodSummary();
 
-	private final ObjectNodes objectNodes;
+	@Getter
+	private final ObjectNodes argEscapeObjects;
+	@Getter
 	private final Set<FieldEdge> fieldEdges;
 	@Getter
 	private final ObjectNodes escapedObjects;
@@ -25,7 +27,7 @@ public class MethodSummary {
 	private final ObjectNodes localObjects;
 
 	private MethodSummary() {
-		this.objectNodes = new ObjectNodes();
+		this.argEscapeObjects = new ObjectNodes();
 		this.fieldEdges = new HashSet<>();
 		this.escapedObjects = new ObjectNodes();
 		this.localObjects = new ObjectNodes();
@@ -50,7 +52,7 @@ public class MethodSummary {
 		this.escapedObjects = collapseGlobalGraph(objectNodes, fieldEdges);
 		this.localObjects = removeLocalGraph(objectNodes, fieldEdges);
 
-		this.objectNodes = objectNodes;
+		this.argEscapeObjects = objectNodes;
 		this.fieldEdges = fieldEdges;
 
 	}
