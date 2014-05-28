@@ -1,40 +1,14 @@
 
 aspect MethodSummary {
 	
-	syn Set<MethodSummary> Instruction.methodSummaries() {
-		return null;
-	}
 	
 	syn MethodSummary Instruction.methodSummary() {
 		return null;
 	}
-	
-	syn Set<MethodSummary> ReturnInstruction.methodSummaries() {
-		Set<MethodSummary> result = new HashSet<MethodSummary>();
-		for ( Frame frame : framesIn() )
-			result.add(new MethodSummary(frame.getCg()));
-		return result;	
-	}
-	
-	syn Set<MethodSummary> Areturn.methodSummaries() {
-		Set<MethodSummary> result = new HashSet<MethodSummary>();
-		for ( Frame frame : framesIn() ) {
-			Set<ObjectNode> resultObjects = 
-				frame.getCg().dereference((ReferenceNode) frame.getOpStack().peek());		
-				
-			result.add(new MethodSummary(frame.getCg(), resultObjects));
-		}
-		return result;	
-	}
-		
-	
+			
 	syn MethodSummary ExitPoint.methodSummary() {
-		MethodSummary result = new MethodSummary();
-		for ( Instruction predecessor : predecessors())
-			for ( MethodSummary predSummary : predecessor.methodSummaries() )
-				result = result.merge(predSummary);
-		return result;
-	}	
+		return new MethodSummary(returnResult());
+	}
 	
 	syn MethodSummary Method.methodSummary() {
 		return exitPoint().methodSummary();
