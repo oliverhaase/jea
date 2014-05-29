@@ -32,12 +32,14 @@ public class MethodSummary {
 	private final Set<Pair<ReferenceNode, String>> resultPointsToEdges;
 
 	private MethodSummary() {
-		this.argEscapeObjects = null;
-		this.fieldEdges = null;
-		this.escapedObjects = null;
-		this.localObjects = null;
-		this.resultReference = null;
-		this.resultPointsToEdges = null;
+		this.argEscapeObjects = new ObjectNodes();
+		this.fieldEdges = new HashSet<>();
+		this.escapedObjects = new ObjectNodes();
+		this.localObjects = new ObjectNodes();
+		this.resultReference = new ReferenceNode(0, Category.RETURN);
+		this.resultPointsToEdges = new HashSet<>();
+		this.resultPointsToEdges.add(new Pair<ReferenceNode, String>(resultReference, GlobalObject
+				.getInstance().getId()));
 	}
 
 	public MethodSummary(ReturnResult rr) {
