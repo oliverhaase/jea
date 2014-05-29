@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.ToString;
 import net.jcip.annotations.Immutable;
 import de.htwg_konstanz.jea.vm.Node.EscapeState;
+import de.htwg_konstanz.jea.vm.ReferenceNode.Category;
 
 @Immutable
 @EqualsAndHashCode
@@ -26,11 +27,16 @@ public class MethodSummary {
 	@Getter
 	private final ObjectNodes localObjects;
 
+	private final ReferenceNode resultReference;
+	private final Set<Pair<ReferenceNode, String>> resultPointsToEdges;
+
 	private MethodSummary() {
-		this.argEscapeObjects = new ObjectNodes();
-		this.fieldEdges = new HashSet<>();
-		this.escapedObjects = new ObjectNodes();
-		this.localObjects = new ObjectNodes();
+		this.argEscapeObjects = null;
+		this.fieldEdges = null;
+		this.escapedObjects = null;
+		this.localObjects = null;
+		this.resultReference = null;
+		this.resultPointsToEdges = null;
 	}
 
 	public MethodSummary(ReturnResult rr) {
@@ -50,6 +56,19 @@ public class MethodSummary {
 				fieldEdges, EscapeState.ARG_ESCAPE);
 
 		this.escapedObjects = collapseGlobalGraph(objectNodes, fieldEdges);
+
+		this.resultReference = new ReferenceNode(0, Category.RETURN);
+		this.resultPointsToEdges = new HashSet<>();
+
+		for (ObjectNode resultObject : rr.getResultValues()) {
+			if (this.escapedObjects.existsObject(resultObject.getId()))
+				this.resultPointsToEdges.add(new Pair<ReferenceNode, String>(resultReference,
+						GlobalObject.getInstance().getId()));
+			else
+				this.resultPointsToEdges.add(new Pair<ReferenceNode, String>(resultReference,
+						resultObject.getId()));
+		}
+
 		this.localObjects = removeLocalGraph(objectNodes, fieldEdges);
 
 		this.argEscapeObjects = objectNodes;

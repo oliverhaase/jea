@@ -8,7 +8,7 @@ import net.jcip.annotations.Immutable;
 @EqualsAndHashCode
 public class ReferenceNode implements NonObjectNode, Slot {
 	public static enum Category {
-		ARG, LOCAL, GLOBAL
+		ARG, LOCAL, GLOBAL, RETURN
 	};
 
 	private final Category category;
