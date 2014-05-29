@@ -97,4 +97,15 @@ public class TccTestClass {
 		private4(tcc);
 	}
 
+	Object u(int n) {
+		if (n > 0)
+			return new Object();
+		else {
+			Object result = new Object();
+			private3(result);
+			return result;
+		}
+
+	}
+
 }
