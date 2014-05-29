@@ -21,5 +21,12 @@ aspect AlienMethod {
     		.lookup(getMethodName(), getArgTypes()));
 		return result;
 	}
+	
+	syn Set<Method> InvokeStatic.resolveTargetMethod() {		
+		Set<Method> result = new HashSet<Method>();
+		result.add(method().clazz().program().getClass(getLoadClass())
+    		.lookup(getMethodName(), getArgTypes()));
+		return result;
+	}
 		
 }

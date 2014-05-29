@@ -233,35 +233,7 @@ aspect State {
 		return result;
 		
 	}
-	
-	
-	/*
-	
-	syn Set<Frame> InvokeSpecial.framesOut() {
-
-		Set<OpStack> callerStacks = new HashSet<OpStack>();
-		for ( Frame callerFrame : framesIn() ) 
-			callerStacks.add(callerFrame.getOpStack());
-				
-		getTargetMethod().callerStacks = callerStacks;
 		
-		Set<Frame> result = new HashSet<Frame>();
-				
-		for ( Slot slot : getTargetMethod().results() ) {
-			final Slot resultSlot = slot;
-			result.addAll(Frames.processFrames(framesIn(), new FrameProcessor() {
-				@Override public Frame process(Frame original) {
-					return new Frame(
-						original.getLocalVars(), 
-						original.getOpStack().pop(getConsumeStack()).typedPush(resultSlot));
-				}
-			}));
-		}
-		
-		return result; 
-	}
-	*/
-	
 	
 	syn Set<Frame> LoadInstruction.framesOut() {
 		return Frames.processFrames(framesIn(), new FrameProcessor() {
