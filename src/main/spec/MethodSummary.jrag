@@ -11,7 +11,8 @@ aspect MethodSummary {
 	}
 	
 	syn MethodSummary Method.methodSummary() {
-		return exitPoint().methodSummary();
+		return ( getIsAbstract() || getIsNative() ) ? MethodSummary.getAlienSummary() :
+			exitPoint().methodSummary();
 	}
 	
 	syn MethodSummary AlienMethod.methodSummary() {
