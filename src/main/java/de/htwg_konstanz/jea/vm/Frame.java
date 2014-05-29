@@ -124,6 +124,13 @@ public final class Frame {
 		return result;
 	}
 
+	private ConnectionGraph transferResult(ConnectionGraph cg, MethodSummary summary) {
+		ConnectionGraph result = new ConnectionGraph(cg);
+		result.getReferenceNodes().add(summary.getResultReference());
+		result.getPointsToEdges().addAll(summary.getResultPointsToEdges());
+		return result;
+	}
+
 	public Frame applyMethodSummary(MethodSummary summary, int consumeStack, int produceStack,
 			org.apache.bcel.generic.Type returnType) {
 		if (summary.isAlien()) {
@@ -153,9 +160,10 @@ public final class Frame {
 
 		opStack = opStack.pop(consumeStack);
 
-		if (returnType instanceof org.apache.bcel.generic.ReferenceType)
-			opStack.push(cg.getGlobalReference());
-		else
+		if (returnType instanceof org.apache.bcel.generic.ReferenceType) {
+			cg = transferResult(cg, summary);
+			opStack.push(summary.getResultReference());
+		} else
 			opStack.push(DontCareSlot.values()[produceStack], produceStack);
 
 		return new Frame(localVars, opStack, cg);

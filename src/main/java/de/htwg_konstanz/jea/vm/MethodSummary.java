@@ -26,8 +26,9 @@ public class MethodSummary {
 	private final ObjectNodes escapedObjects;
 	@Getter
 	private final ObjectNodes localObjects;
-
+	@Getter
 	private final ReferenceNode resultReference;
+	@Getter
 	private final Set<Pair<ReferenceNode, String>> resultPointsToEdges;
 
 	private MethodSummary() {

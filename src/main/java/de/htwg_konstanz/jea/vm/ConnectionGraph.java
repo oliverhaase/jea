@@ -14,8 +14,9 @@ public final class ConnectionGraph {
 	private final ObjectNodes objectNodes;
 	@Getter
 	private final Set<FieldEdge> fieldEdges;
-
+	@Getter
 	private final Set<ReferenceNode> referenceNodes = new HashSet<>();
+	@Getter
 	private final Set<Pair<ReferenceNode, String>> pointsToEdges = new HashSet<>();
 
 	@Getter
