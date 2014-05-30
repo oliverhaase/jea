@@ -153,9 +153,9 @@ public final class Frame {
 
 		if (returnType instanceof org.apache.bcel.generic.ReferenceType) {
 			cg = transferResult(cg, summary);
-			opStack.push(summary.getResultReference());
+			opStack = opStack.push(summary.getResultReference());
 		} else
-			opStack.push(DontCareSlot.values()[produceStack], produceStack);
+			opStack = opStack.push(DontCareSlot.values()[produceStack], produceStack);
 
 		return new Frame(localVars, opStack, cg);
 
