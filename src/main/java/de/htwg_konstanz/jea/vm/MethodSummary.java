@@ -54,6 +54,8 @@ public class MethodSummary {
 			objectNodes.add(resultObject.increaseEscapeState(EscapeState.ARG_ESCAPE));
 		}
 
+		removeNullObject(objectNodes, fieldEdges);
+
 		objectNodes = propagateEscapeState(
 				propagateEscapeState(objectNodes, fieldEdges, EscapeState.GLOBAL_ESCAPE),
 				fieldEdges, EscapeState.ARG_ESCAPE);
@@ -77,6 +79,19 @@ public class MethodSummary {
 		this.argEscapeObjects = objectNodes;
 		this.fieldEdges = fieldEdges;
 
+	}
+
+	private void removeNullObject(ObjectNodes objectNodes, Set<FieldEdge> fieldEdges) {
+		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator.hasNext();)
+			if (objIterator.next().equals(InternalObject.getNullObject()))
+				objIterator.remove();
+
+		for (Iterator<FieldEdge> edgeIterator = fieldEdges.iterator(); edgeIterator.hasNext();) {
+			FieldEdge edge = edgeIterator.next();
+			if (edge.getOriginId().equals(InternalObject.getNullObject().getId())
+					|| edge.getDestinationId().equals(InternalObject.getNullObject().getId()))
+				edgeIterator.remove();
+		}
 	}
 
 	private ObjectNodes removeLocalGraph(ObjectNodes objectNodes, Set<FieldEdge> fieldEdges) {
@@ -162,9 +177,17 @@ public class MethodSummary {
 		return this == ALIEN_SUMMARY;
 	}
 
-	public Set<String> getEscapingTypes() {
+	public Set<String> globallyEscapingTypes() {
 		Set<String> result = new HashSet<String>();
 		for (ObjectNode obj : escapedObjects)
+			if (obj instanceof InternalObject)
+				result.add(((InternalObject) obj).getType());
+		return result;
+	}
+
+	public Set<String> argEscapingTypes() {
+		Set<String> result = new HashSet<String>();
+		for (ObjectNode obj : argEscapeObjects)
 			if (obj instanceof InternalObject)
 				result.add(((InternalObject) obj).getType());
 		return result;
