@@ -23,6 +23,14 @@ public class TccTestClass {
 		tcc.ref = new Short((short) 4);
 	}
 
+	private Object private5() {
+		return new Short((short) 42);
+	}
+
+	private Object private6() {
+		return new Long(42L);
+	}
+
 	void f(String ex) {
 		ex = new String();
 	}
@@ -105,7 +113,14 @@ public class TccTestClass {
 			private3(result);
 			return result;
 		}
+	}
 
+	void v() {
+		Short s = (Short) private5();
+	}
+
+	Object w() {
+		return private6();
 	}
 
 }
