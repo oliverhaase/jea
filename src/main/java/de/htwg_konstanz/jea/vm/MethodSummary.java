@@ -177,20 +177,22 @@ public class MethodSummary {
 		return this == ALIEN_SUMMARY;
 	}
 
-	public Set<String> globallyEscapingTypes() {
-		Set<String> result = new HashSet<String>();
+	public EscapingTypes globallyEscapingTypes() {
+		if (this == ALIEN_SUMMARY)
+			return EscapingTypes.getAllTypes();
+
+		EscapingTypes result = new EscapingTypes();
 		for (ObjectNode obj : escapedObjects)
 			if (obj instanceof InternalObject)
 				result.add(((InternalObject) obj).getType());
 		return result;
 	}
 
-	public Set<String> argEscapingTypes() {
-		Set<String> result = new HashSet<String>();
+	public EscapingTypes argEscapingTypes() {
+		EscapingTypes result = new EscapingTypes();
 		for (ObjectNode obj : argEscapeObjects)
 			if (obj instanceof InternalObject)
 				result.add(((InternalObject) obj).getType());
 		return result;
 	}
-
 }

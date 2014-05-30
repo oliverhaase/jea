@@ -19,6 +19,7 @@ import de.htwg_konstanz.jea.vm.DontCareSlot;
 import de.htwg_konstanz.jea.vm.MethodSummary;
 import de.htwg_konstanz.jea.vm.Node.EscapeState;
 import de.htwg_konstanz.jea.vm.ReturnResult;
+import de.htwg_konstanz.jea.vm.EscapingTypes;
 
 import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
