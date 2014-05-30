@@ -41,6 +41,7 @@ public class AstConverter {
 			method.setMethodName(bcelMethod.getName());
 			method.setSignatureIndex(bcelMethod.getSignatureIndex());
 			method.setArgTypes(bcelMethod.getArgumentTypes());
+			method.setIsPrivate(bcelMethod.isPrivate());
 
 			clazz.addMethod(method);
 
