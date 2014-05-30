@@ -1,22 +1,43 @@
 
 aspect MethodConfinement {
 
-	syn Set<String> Program.methodEscapingTypes() {
+
+	syn Set<String> Program.escapingTypes() {
 		Set<String> result = new HashSet<String>();
 		for ( ByteCodeClass clazz : getByteCodeClasss() )
-			result.addAll(clazz.methodEscapingTypes());
-		return result;		
-	}
-
-	syn Set<String> ByteCodeClass.methodEscapingTypes() {
-		Set<String> result = new HashSet<String>();
-		for ( Method method : getMethods() )
-			result.addAll(method.methodEscapingTypes());
+			result.addAll(clazz.escapingTypes());
 		return result;		
 	}
 	
-	syn Set<String> Method.methodEscapingTypes() {
-		return methodSummary().getEscapingTypes();
+	syn Set<String> ByteCodeClass.escapingTypes() {
+		Set<String> result = new HashSet<String>();
+		result.addAll(globallyEscapingTypes());
+		result.addAll(argEscapingTypes());
+		return result;		
+	}
+
+
+	syn Set<String> ByteCodeClass.globallyEscapingTypes() {
+		Set<String> result = new HashSet<String>();
+		for ( Method method : getMethods() )
+			result.addAll(method.globallyEscapingTypes());
+		return result;		
+	}
+
+	syn Set<String> ByteCodeClass.argEscapingTypes() {
+		Set<String> result = new HashSet<String>();
+		for ( Method method : getMethods() )
+			if ( !method.getIsPrivate() )
+				result.addAll(method.argEscapingTypes());
+		return result;		
+	}
+	
+	syn Set<String> Method.globallyEscapingTypes() {
+		return methodSummary().globallyEscapingTypes();
+	}
+	
+	syn Set<String> Method.argEscapingTypes() {
+		return methodSummary().argEscapingTypes();
 	}	
 	
 }
