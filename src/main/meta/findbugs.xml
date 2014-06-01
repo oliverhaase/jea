@@ -1,0 +1,9 @@
+<FindbugsPlugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="findbugsplugin.xsd" 
+        pluginid="de.htwg_konstanz.jea.JeaDetector"
+        provider="HTWG Konstanz" 
+        website="http://findbugs.sourceforge.net">
+
+        <Detector class="de.htwg_konstanz.jea.JeaDetector" reports="STACKCONFINEMENT_BUG" />
+        <BugPattern type="STACKCONFINEMENT_BUG" abbrev="SC" category="CORRECTNESS"/>
+</FindbugsPlugin>

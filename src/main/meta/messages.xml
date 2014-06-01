@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MessageCollection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="messagecollection.xsd">
+
+	<Plugin>
+		<ShortDescription>jea plugin</ShortDescription>
+		<Details>java escape analysis plugin</Details>
+	</Plugin>
+
+	<Detector class="de.htwg_konstanz.jea.JeaDetector">
+		<Details>
+			Runs java escape analysis.
+		</Details>
+
+	</Detector>
+
+	<BugPattern type="STACKCONFINEMENT_BUG">
+		<ShortDescription>stack confinement bug</ShortDescription>
+		<LongDescription>stack confinement bug</LongDescription>
+		<Details>
+<![CDATA[
+<p>java escape analysis.
+</p>
+]]>
+		</Details>
+	</BugPattern>
+
+	<BugCode abbrev="SC">Stack confinement</BugCode>
+</MessageCollection>

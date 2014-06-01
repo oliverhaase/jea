@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.htwg_konstanz.de</groupId>
   <artifactId>jea</artifactId>
-  <version>0.0.1</version>
+  <version>0.9</version>
   <name>jea</name>
   <description>thread confinement checker</description>
   <dependencies>
@@ -16,11 +16,28 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<version>1.12.6</version>
-			<scope>provided</scope>
 		</dependency>
   </dependencies>
   <build>
   	<plugins>
+  		<plugin>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<configuration>
+				<descriptorRefs>
+					<descriptorRef>jar-with-dependencies</descriptorRef>
+				</descriptorRefs>
+			       <appendAssemblyId>false</appendAssemblyId>
+			</configuration>
+			<executions>
+				<execution>
+					<id>make-assembly</id> <!-- this is used for inheritance merges -->
+					<phase>package</phase> <!-- bind to the packaging phase -->
+					<goals>
+						<goal>single</goal>
+					</goals>
+				</execution>
+			</executions>
+		</plugin>
   		<plugin>
 			<artifactId>maven-compiler-plugin</artifactId>
 			<version>3.0</version>
@@ -29,6 +46,39 @@
 				<target>1.7</target>
 			</configuration>
 		</plugin>
+		<plugin>
+			<artifactId>maven-antrun-plugin</artifactId>
+			<version>1.7</version>
+			<executions>
+				<execution>
+					<id>prepare-package</id>
+					<phase>prepare-package</phase>
+					<configuration>
+						<target>
+							<copy file="src/main/meta/findbugs.xml" tofile="target/classes/findbugs.xml" />
+							<copy file="src/main/meta/messages.xml" tofile="target/classes/messages.xml" />
+						</target>
+					</configuration>
+					<goals>
+						<goal>run</goal>
+					</goals>
+				</execution>
+				<execution>
+					<id>package</id>
+					<phase>package</phase>
+					<configuration>
+						<target>
+							<delete file="target/classes/findbugs.xml" />
+							<delete file="target/classes/messages.xml" />
+						</target>
+					</configuration>
+					<goals>
+						<goal>run</goal>
+					</goals>
+				</execution>
+			</executions>
+		</plugin>
+		
 <!-- 		<plugin> -->
 <!-- 			<artifactId>maven-antrun-plugin</artifactId> -->
 <!-- 			<version>1.7</version> -->
@@ -58,5 +108,41 @@
 <!-- 			</executions> -->
 <!-- 		</plugin> -->
   	</plugins>
+	<pluginManagement>
+		<plugins>
+			<!--This plugin's configuration is used to store Eclipse m2e settings 
+				only. It has no influence on the Maven build itself. -->
+			<plugin>
+				<groupId>org.eclipse.m2e</groupId>
+				<artifactId>lifecycle-mapping</artifactId>
+				<version>1.0.0</version>
+				<configuration>
+					<lifecycleMappingMetadata>
+						<pluginExecutions>
+							<pluginExecution>
+								<pluginExecutionFilter>
+									<groupId>
+										org.apache.maven.plugins
+									</groupId>
+									<artifactId>
+										maven-antrun-plugin
+									</artifactId>
+									<versionRange>
+										[1.7,)
+									</versionRange>
+									<goals>
+										<goal>run</goal>
+									</goals>
+								</pluginExecutionFilter>
+								<action>
+									<ignore></ignore>
+								</action>
+							</pluginExecution>
+						</pluginExecutions>
+					</lifecycleMappingMetadata>
+				</configuration>
+			</plugin>
+		</plugins>
+	</pluginManagement>  	
   </build>
 </project>
