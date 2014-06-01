@@ -16,6 +16,7 @@ EntryPoint : Instruction;
 
 SimpleInstruction : Instruction;
 
+ArrayLength : Instruction;
 AconstNull : Instruction;
 
 abstract FieldAssignmentInstruction : Instruction ::= <FieldName:String>;

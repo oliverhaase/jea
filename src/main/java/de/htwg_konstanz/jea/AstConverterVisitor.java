@@ -8,6 +8,7 @@ import de.htwg_konstanz.jea.gen.Aaload;
 import de.htwg_konstanz.jea.gen.Aastore;
 import de.htwg_konstanz.jea.gen.AconstNull;
 import de.htwg_konstanz.jea.gen.Areturn;
+import de.htwg_konstanz.jea.gen.ArrayLength;
 import de.htwg_konstanz.jea.gen.DUP;
 import de.htwg_konstanz.jea.gen.DUP2;
 import de.htwg_konstanz.jea.gen.DUP2_X1;
@@ -59,6 +60,12 @@ public class AstConverterVisitor extends EmptyVisitor {
 	@Override
 	public void visitACONST_NULL(org.apache.bcel.generic.ACONST_NULL bcelInstruction) {
 		AconstNull instruction = new AconstNull();
+		this.instruction = instruction;
+	}
+
+	@Override
+	public void visitARRAYLENGTH(org.apache.bcel.generic.ARRAYLENGTH bcelInstruction) {
+		ArrayLength instruction = new ArrayLength();
 		this.instruction = instruction;
 	}
 
