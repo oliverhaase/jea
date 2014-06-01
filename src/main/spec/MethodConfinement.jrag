@@ -1,6 +1,15 @@
 
 aspect MethodConfinement {
 
+	syn Set<String> Program.confinedClasses() {
+		Set<String> result = new HashSet<String>();
+		
+		for ( ByteCodeClass clazz : getByteCodeClasss() )
+			if ( !escapingTypes().contains(clazz.getName()) )
+				result.add(clazz.getName());
+				
+		return result;
+	}
 
 	syn EscapingTypes Program.escapingTypes() {
 		EscapingTypes result = new EscapingTypes();
