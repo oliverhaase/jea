@@ -123,4 +123,16 @@ public class TccTestClass {
 		return private6();
 	}
 
+	public void x(String... classNames) {
+		String[] names = new String[classNames.length];
+		for (int i = 0; i < classNames.length; i++)
+			names[i] = classNames[i];
+	}
+
+	// private int x(int n) {
+	// if (n <= 0)
+	// return 0;
+	// return x(n - 1);
+	// }
+
 }
