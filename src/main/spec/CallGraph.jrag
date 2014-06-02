@@ -1,6 +1,6 @@
 
 
-aspect AlienMethod {
+aspect CallGraph {
 	syn nta AlienClass Program.alienClass() {
 		return new AlienClass();
 	}
