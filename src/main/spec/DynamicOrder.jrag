@@ -70,10 +70,4 @@ aspect DynamicOrder {
     	to Instruction.predecessors()
     	for each successors();
     	
-  /*  	
-    syn Method InvokeInstruction.getTargetMethod() {
-    	return method().clazz().program().getClass(getLoadClass())
-    		.lookup(getMethodName(), getArgTypes());
-    }	
-    */	
 }
