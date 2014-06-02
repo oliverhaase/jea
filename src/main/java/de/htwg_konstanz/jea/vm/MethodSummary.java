@@ -62,7 +62,8 @@ public class MethodSummary {
 
 		this.escapedObjects = collapseGlobalGraph(objectNodes, fieldEdges);
 
-		this.resultReference = new ReferenceNode(0, Category.RETURN);
+		// this.resultReference = new ReferenceNode(0, Category.RETURN);
+		this.resultReference = new ReferenceNode(hashCode(), Category.RETURN);
 		this.resultPointsToEdges = new HashSet<>();
 
 		for (ObjectNode resultObject : rr.getResultValues()) {
