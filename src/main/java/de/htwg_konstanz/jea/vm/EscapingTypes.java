@@ -1,7 +1,6 @@
 package de.htwg_konstanz.jea.vm;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 public class EscapingTypes {
@@ -39,12 +38,6 @@ public class EscapingTypes {
 
 	public static EscapingTypes getAllTypes() {
 		return ALL_TYPES;
-	}
-
-	private Iterator<String> iterator() {
-		if (this == ALL_TYPES)
-			throw new AssertionError("ALL_TYPES cannot be iterated");
-		return types.iterator();
 	}
 
 	@Override
