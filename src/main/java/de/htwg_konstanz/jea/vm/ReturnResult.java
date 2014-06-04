@@ -35,7 +35,7 @@ public class ReturnResult {
 		this(cg.getObjectNodes(), cg.getFieldEdges(), resultValues);
 	}
 
-	public ReturnResult merge(ReturnResult other) {
+	public ReturnResult merge(@NonNull ReturnResult other) {
 		ReturnResult result = new ReturnResult();
 
 		for (ObjectNode oneObject : this.objectNodes) {
