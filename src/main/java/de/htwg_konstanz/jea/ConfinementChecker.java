@@ -8,9 +8,8 @@ public class ConfinementChecker {
 		String[] classes = { "de.htwg_konstanz.jea.AstConverterVisitor",
 				"de.htwg_konstanz.jea.ConfinementChecker", "de.htwg_konstanz.jea.CreationChecker",
 				"de.htwg_konstanz.jea.ProgramBuilder", "de.htwg_konstanz.jea.TccTestClass",
-				"de.htwg_konstanz.jea.vm.ConnectionGraph",
-		// "de.htwg_konstanz.jea.vm.DontCareSlot"
-		};
+				"de.htwg_konstanz.jea.vm.ConnectionGraph", "de.htwg_konstanz.jea.vm.Slot",
+				"de.htwg_konstanz.jea.vm.DontCareSlot" };
 
 		Program program = new ProgramBuilder(classes).build();
 		program.print();
