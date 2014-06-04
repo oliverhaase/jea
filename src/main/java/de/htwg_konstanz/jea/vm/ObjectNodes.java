@@ -37,7 +37,7 @@ public class ObjectNodes implements Iterable<ObjectNode> {
 		for (ObjectNode objectNode : nodes)
 			if (objectNode.getId().equals(id))
 				return objectNode;
-		throw new AssertionError("invalid object id: " + id);
+		throw new AssertionError("invalid object id: " + id + ", not in " + nodes);
 	}
 
 	public ObjectNodes getSubObjectsOf(ObjectNode origin, Set<FieldEdge> fieldEdges) {
