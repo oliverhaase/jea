@@ -129,10 +129,13 @@ public class TccTestClass {
 			names[i] = classNames[i];
 	}
 
-	// private int x(int n) {
-	// if (n <= 0)
-	// return 0;
-	// return x(n - 1);
-	// }
+	private int x(int n) {
+		if (n <= 0)
+			return 0;
+		return x(n - 1);
+	}
 
+	private int y() {
+		return y();
+	}
 }
