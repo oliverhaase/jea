@@ -10,15 +10,33 @@ aspect MethodConfinement {
 				
 		return result;
 	}
-
+	
+	syn Set<String> Program.listClassNames() {
+		Set<String> result = new HashSet<String>();
+		for ( ByteCodeClass clazz : getByteCodeClasss() )
+			result.add(clazz.getName());
+		return result;
+	}
+		
 	syn EscapingTypes Program.escapingTypes() {
 		EscapingTypes result = new EscapingTypes();
 		for ( ByteCodeClass clazz : getByteCodeClasss() )
-			result = result.merge(clazz.escapingTypes());
+			result = result.merge(clazz.escapingTypes(listClassNames()));
 		return result;		
 	}
 	
-	syn EscapingTypes ByteCodeClass.escapingTypes() {
+	
+
+	syn EscapingTypes ByteCodeClass.escapingTypes(Set<String> base) {
+		boolean intersect = false;
+		
+		for ( String createdClass : creates() ) 
+			if ( base.contains(createdClass) ) 
+				intersect = true;
+				
+		if ( !intersect )
+			return new EscapingTypes(); 		
+	
 		EscapingTypes result = globallyEscapingTypes();
 		result = result.merge(argEscapingTypes());
 		return result;		
