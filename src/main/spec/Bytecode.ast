@@ -2,7 +2,7 @@
 
 Program ::= ByteCodeClass*;
 
-ByteCodeClass ::= <Name:String> Field* Method*;
+ByteCodeClass ::= <Name:String> <SuperClass:String> Field* Method*;
 
 Field ::= <Name:String>;
 

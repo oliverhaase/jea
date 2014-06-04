@@ -23,6 +23,7 @@ public class AstConverter {
 	public ByteCodeClass convert() {
 		ByteCodeClass clazz = new ByteCodeClass();
 		clazz.setName(bcelClass.getClassName());
+		clazz.setSuperClass(bcelClass.getSuperclassName());
 
 		for (org.apache.bcel.classfile.Field bcelField : bcelClass.getFields()) {
 			Field field = new Field(bcelField.getName());
