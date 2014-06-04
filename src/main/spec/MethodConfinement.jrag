@@ -11,6 +11,16 @@ aspect MethodConfinement {
 		return result;
 	}
 	
+	syn Set<String> Program.escapingClasses() {
+		Set<String> result = listClassNames();
+		for ( Iterator<String> it = result.iterator(); it.hasNext(); ) 
+			if ( confinedClasses().contains(it.next()) )
+				it.remove();
+				
+		return result;		
+	}
+	
+	
 	syn Set<String> Program.listClassNames() {
 		Set<String> result = new HashSet<String>();
 		for ( ByteCodeClass clazz : getByteCodeClasss() )
