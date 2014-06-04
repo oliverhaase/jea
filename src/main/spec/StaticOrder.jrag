@@ -36,6 +36,18 @@ aspect StaticOrder {
 				return method;
 		return null;
 	}
+	
+	
+	syn ByteCodeClass ByteCodeClass.resolve(String methodName, org.apache.bcel.generic.Type[] argTypes) {
+		System.out.println("ByteCodeClass.resolve: " + getName() + "." + methodName);
+	
+	
+		if ( lookup(methodName, argTypes) != null ) 
+			return this;
+			
+		return program().getClass(getSuperClass()).resolve(methodName, argTypes);	
+	}
+	
 						
 	inh Method Instruction.method();
 	

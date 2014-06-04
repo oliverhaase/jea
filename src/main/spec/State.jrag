@@ -232,26 +232,15 @@ aspect State {
 	eq InvokeInstruction.framesOut() {
 		Set<Frame> result = new HashSet<Frame>();
 		
-		for ( Method targetMethod : resolveTargetMethod() ) {
-			final Method target = targetMethod; 	
-			
-//			System.out.println("*** BEGIN TARGET ******************");
-//			target.printMethod();
-//			System.out.println("*** END TARGET ******************");
-			
-				
-			result.addAll(Frames.processFrames(framesIn(), new FrameProcessor() {
-				@Override public Frame process(Frame original) {	
-					return original.applyMethodSummary(
-						target.methodSummary(), 
-						getConsumeStack(), 
-						getProduceStack(), 
-						getReturnType());
-				}
-			}));	
-		}
+		for ( Frame frameIn : framesIn() ) 
+			for ( Method targetMethod : resolveTargetMethod(frameIn) ) 
+				result.add(frameIn.applyMethodSummary(
+					targetMethod.methodSummary(), 
+					getConsumeStack(), 
+					getProduceStack(), 
+					getReturnType()));
+					
 		return result;
-		
 	}
 		
 	

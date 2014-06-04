@@ -9,24 +9,40 @@ aspect CallGraph {
 		return new AlienMethod();
 	}
 	
-	syn Set<Method> InvokeInstruction.resolveTargetMethod() {
+	syn Set<Method> InvokeInstruction.resolveTargetMethod(Frame frame) {
 		Set<Method> result = new HashSet<Method>();
 		result.add(method().clazz().program().alienClass().alienMethod());
 		return result;
 	}
 	
-	syn Set<Method> InvokeSpecial.resolveTargetMethod() {		
+	syn Set<Method> InvokeSpecial.resolveTargetMethod(Frame frame) {		
 		Set<Method> result = new HashSet<Method>();
 		result.add(method().clazz().program().getClass(getLoadClass())
     		.lookup(getMethodName(), getArgTypes()));
 		return result;
 	}
 	
-	syn Set<Method> InvokeStatic.resolveTargetMethod() {		
+	syn Set<Method> InvokeStatic.resolveTargetMethod(Frame frame) {		
 		Set<Method> result = new HashSet<Method>();
 		result.add(method().clazz().program().getClass(getLoadClass())
     		.lookup(getMethodName(), getArgTypes()));
 		return result;
 	}
+	
+	syn Set<Method> InvokeVirtual.resolveTargetMethod(Frame frame) {
+		Set<Method> result = new HashSet<Method>();
+		
+		for ( ObjectNode targetObject : frame.getCg().dereference(
+				(ReferenceNode) frame.getOpStack().getArgumentAtIndex(0, getConsumeStack())) ) 
+			if ( targetObject instanceof InternalObject ) {
+				result.add(method().clazz().program().getClass(((InternalObject)targetObject).getType())
+					.resolve(getMethodName(), getArgTypes()).lookup(getMethodName(), getArgTypes()));
+			}
+			else 
+				result.add(method().clazz().program().alienClass().alienMethod());
+		
+		return result;
+	}
+	
 		
 }
