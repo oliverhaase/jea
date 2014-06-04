@@ -77,6 +77,18 @@ aspect State {
 		});
 	}
 	
+	eq Athrow.framesOut() {
+		return Frames.processFrames(framesIn(), new FrameProcessor() {
+			@Override public Frame process(Frame original) {
+				return new Frame(
+					original.getLocalVars(), 
+					original.getOpStack().pop(getConsumeStack()).push(original.getOpStack().peek()), 
+					original.getCg()); 
+			}
+		});
+	}		
+	
+	
 	eq AconstNull.framesOut() {
 		return Frames.processFrames(framesIn(), new FrameProcessor() {
 			@Override public Frame process(Frame original) {

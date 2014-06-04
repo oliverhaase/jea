@@ -18,6 +18,8 @@ SimpleInstruction : Instruction;
 
 ArrayLength : Instruction;
 AconstNull : Instruction;
+Athrow : Instruction;
+
 
 abstract FieldAssignmentInstruction : Instruction ::= <FieldName:String>;
 PutField : FieldAssignmentInstruction;

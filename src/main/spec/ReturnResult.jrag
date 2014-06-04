@@ -21,6 +21,16 @@ aspect ReturnResult {
 		return result;	
 	}
 	
+	syn ReturnResult Athrow.returnResult() {
+		ReturnResult result = new ReturnResult();
+		for ( Frame frame : framesIn() )
+			result = result.merge(new ReturnResult(
+				frame.getCg(), 
+				frame.getCg().dereference((ReferenceNode) frame.getOpStack().peek())));
+		return result;	
+	}
+	
+	
 	syn ReturnResult ExitPoint.returnResult() {
 		ReturnResult result = new ReturnResult();
 		for ( Instruction predecessor : predecessors() )

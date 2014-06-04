@@ -46,6 +46,12 @@ aspect DynamicOrder {
 		return result;
 	}
 	
+	syn Set<Instruction> Athrow.successors() {
+		Set<Instruction> result = new HashSet<Instruction>();
+		result.add(method().exitPoint());
+		return result;
+	}
+	
 	syn Set<Instruction> BranchInstruction.successors() {
 		Set<Instruction> result = super.successors();
 		result.add(target());
