@@ -2,6 +2,7 @@ package de.htwg_konstanz.jea.vm;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 
 @EqualsAndHashCode(callSuper = true)
 public final class InternalObject extends ObjectNode {
@@ -11,13 +12,9 @@ public final class InternalObject extends ObjectNode {
 	@Getter
 	private final String type;
 
-	private InternalObject(String id, String type, EscapeState escapeState) {
+	public InternalObject(@NonNull String id, @NonNull String type, @NonNull EscapeState escapeState) {
 		super(id, escapeState);
 		this.type = type;
-	}
-
-	public static InternalObject newInternalObject(String id, String type) {
-		return new InternalObject(id, type, EscapeState.NO_ESCAPE);
 	}
 
 	public static InternalObject getNullObject() {
@@ -44,7 +41,7 @@ public final class InternalObject extends ObjectNode {
 
 	@Override
 	public boolean isGlobal() {
-		return false;
+		return getEscapeState() == EscapeState.GLOBAL_ESCAPE;
 	}
 
 }
