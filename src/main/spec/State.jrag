@@ -247,9 +247,9 @@ aspect State {
 	
 	eq InvokeInstruction.framesOut() {
 		Set<Frame> result = new HashSet<Frame>();
-		
+
 		for ( Frame frameIn : framesIn() ) 
-			for ( Method targetMethod : resolveTargetMethod(frameIn) ) 
+			for ( Method targetMethod : resolveTargetMethod() ) 
 				result.add(frameIn.applyMethodSummary(
 					targetMethod.methodSummary(), 
 					getConsumeStack(), 

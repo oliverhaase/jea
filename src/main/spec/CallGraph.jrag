@@ -9,31 +9,34 @@ aspect CallGraph {
 		return new AlienMethod();
 	}
 	
-	syn Set<Method> InvokeInstruction.resolveTargetMethod(Frame frame) {
+	syn Set<Method> InvokeInstruction.resolveTargetMethod() {
 		Set<Method> result = new HashSet<Method>();
 		result.add(method().clazz().program().alienClass().alienMethod());
 		return result;
 	}
 	
-	syn Set<Method> InvokeSpecial.resolveTargetMethod(Frame frame) {		
+	syn Set<Method> InvokeSpecial.resolveTargetMethod() {		
 		Set<Method> result = new HashSet<Method>();
 		result.add(method().clazz().program().getClass(getLoadClass())
     		.lookup(getMethodName(), getArgTypes()));
 		return result;
 	}
 	
-	syn Set<Method> InvokeStatic.resolveTargetMethod(Frame frame) {		
+	syn Set<Method> InvokeStatic.resolveTargetMethod() {		
 		Set<Method> result = new HashSet<Method>();
 		result.add(method().clazz().program().getClass(getLoadClass())
     		.lookup(getMethodName(), getArgTypes()));
 		return result;
 	}
 	
-	syn Set<Method> InvokeVirtual.resolveTargetMethod(Frame frame) {
+	syn Set<Method> InvokeVirtual.resolveTargetMethod() {
 		Set<Method> result = new HashSet<Method>();
 		
-		for ( ObjectNode targetObject : frame.getCg().dereference(
-				(ReferenceNode) frame.getOpStack().getArgumentAtIndex(0, getConsumeStack())) ) 
+		getLoadClass();
+		
+		
+//		for ( ObjectNode targetObject : frame.getCg().dereference(
+//				(ReferenceNode) frame.getOpStack().getArgumentAtIndex(0, getConsumeStack())) ) 
 //			if ( targetObject instanceof InternalObject ) {
 //				result.add(method().clazz().program().getClass(((InternalObject)targetObject).getType())
 //					.resolve(getMethodName(), getArgTypes()).lookup(getMethodName(), getArgTypes()));
