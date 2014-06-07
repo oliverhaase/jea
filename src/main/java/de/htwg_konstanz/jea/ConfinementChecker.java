@@ -38,6 +38,8 @@ public class ConfinementChecker {
 		for (String confinedClass : program.confinedClasses())
 			System.out.println("- " + confinedClass);
 
+		System.out.println();
+
 		System.out.println("escaping types: ");
 		for (String confinedClass : program.escapingClasses())
 			System.out.println("- " + confinedClass);
