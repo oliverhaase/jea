@@ -10,6 +10,7 @@ import de.htwg_konstanz.jea.gen.AconstNull;
 import de.htwg_konstanz.jea.gen.Areturn;
 import de.htwg_konstanz.jea.gen.ArrayLength;
 import de.htwg_konstanz.jea.gen.Athrow;
+import de.htwg_konstanz.jea.gen.BranchInstruction;
 import de.htwg_konstanz.jea.gen.DUP;
 import de.htwg_konstanz.jea.gen.DUP2;
 import de.htwg_konstanz.jea.gen.DUP2_X1;
@@ -19,13 +20,11 @@ import de.htwg_konstanz.jea.gen.DUP_X2;
 import de.htwg_konstanz.jea.gen.GetField;
 import de.htwg_konstanz.jea.gen.GetStatic;
 import de.htwg_konstanz.jea.gen.GotoInstruction;
-import de.htwg_konstanz.jea.gen.IfInstruction;
 import de.htwg_konstanz.jea.gen.Instruction;
 import de.htwg_konstanz.jea.gen.InvokeInterface;
 import de.htwg_konstanz.jea.gen.InvokeSpecial;
 import de.htwg_konstanz.jea.gen.InvokeStatic;
 import de.htwg_konstanz.jea.gen.InvokeVirtual;
-import de.htwg_konstanz.jea.gen.JsrInstruction;
 import de.htwg_konstanz.jea.gen.Ldc;
 import de.htwg_konstanz.jea.gen.LoadInstruction;
 import de.htwg_konstanz.jea.gen.MultiANewArray;
@@ -35,7 +34,6 @@ import de.htwg_konstanz.jea.gen.PutField;
 import de.htwg_konstanz.jea.gen.PutStatic;
 import de.htwg_konstanz.jea.gen.ReturnInstruction;
 import de.htwg_konstanz.jea.gen.SWAP;
-import de.htwg_konstanz.jea.gen.SelectInstruction;
 import de.htwg_konstanz.jea.gen.StoreInstruction;
 
 public class AstConverterVisitor extends EmptyVisitor {
@@ -143,13 +141,6 @@ public class AstConverterVisitor extends EmptyVisitor {
 	}
 
 	@Override
-	public void visitIfInstruction(org.apache.bcel.generic.IfInstruction bcelInstruction) {
-		IfInstruction instruction = new IfInstruction();
-		instruction.setTargetPosition(bcelInstruction.getTarget().getPosition());
-		this.instruction = instruction;
-	}
-
-	@Override
 	public void visitGotoInstruction(org.apache.bcel.generic.GotoInstruction bcelInstruction) {
 		GotoInstruction instruction = new GotoInstruction();
 		instruction.setTargetPosition(bcelInstruction.getTarget().getPosition());
@@ -157,20 +148,36 @@ public class AstConverterVisitor extends EmptyVisitor {
 	}
 
 	@Override
+	public void visitIfInstruction(org.apache.bcel.generic.IfInstruction bcelInstruction) {
+		BranchInstruction instruction = new BranchInstruction();
+
+		int[] targetPositions = new int[1];
+		targetPositions[0] = bcelInstruction.getTarget().getPosition();
+		instruction.setTargetPositions(targetPositions);
+
+		this.instruction = instruction;
+	}
+
+	@Override
 	public void visitJsrInstruction(org.apache.bcel.generic.JsrInstruction bcelInstruction) {
-		JsrInstruction instruction = new JsrInstruction();
-		instruction.setTargetPosition(bcelInstruction.getTarget().getPosition());
+		BranchInstruction instruction = new BranchInstruction();
+
+		int[] targetPositions = new int[1];
+		targetPositions[0] = bcelInstruction.getTarget().getPosition();
+		instruction.setTargetPositions(targetPositions);
+
 		this.instruction = instruction;
 	}
 
 	@Override
 	public void visitSelect(org.apache.bcel.generic.Select bcelInstruction) {
-		SelectInstruction instruction = new SelectInstruction();
-		instruction.setTargetPosition(bcelInstruction.getTarget().getPosition());
+		BranchInstruction instruction = new BranchInstruction();
 
-		int[] targetPositions = new int[bcelInstruction.getTargets().length];
-		for (int i = 0; i < targetPositions.length; i++)
-			targetPositions[i] = bcelInstruction.getTargets()[i].getPosition();
+		int[] targetPositions = new int[bcelInstruction.getTargets().length + 1];
+		targetPositions[0] = bcelInstruction.getTarget().getPosition();
+
+		for (int i = 1; i < targetPositions.length; i++)
+			targetPositions[i] = bcelInstruction.getTargets()[i - 1].getPosition();
 		instruction.setTargetPositions(targetPositions);
 		this.instruction = instruction;
 	}

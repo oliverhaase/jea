@@ -33,13 +33,9 @@ GetStatic : FieldLoadInstruction;
 
 Ldc : Instruction ::= <ConstantType:org.apache.bcel.generic.Type>;
 
-abstract InstructionWithTarget : Instruction ::= <TargetPosition:int>;
-GotoInstruction : InstructionWithTarget;
+GotoInstruction : Instruction ::= <TargetPosition:int>;
+BranchInstruction : Instruction ::= <TargetPositions:int[]>;
 
-abstract BranchInstruction : InstructionWithTarget;
-IfInstruction : BranchInstruction;
-JsrInstruction : BranchInstruction;
-SelectInstruction : BranchInstruction ::= <TargetPositions:int[]>;
 
 abstract InvokeInstruction : Instruction ::= <LoadClass:String> <MethodName:String> 
 	<ArgTypes:org.apache.bcel.generic.Type[]> <ReturnType:org.apache.bcel.generic.Type>;

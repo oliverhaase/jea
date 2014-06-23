@@ -8,17 +8,12 @@ aspect DynamicOrder {
 		return null;
 	}
 	
-	inh Instruction Instruction.localLookup(int position);
+	inh Instruction Instruction.localLookup(int position);	
+	eq Method.getInstruction(int i).localLookup(int position) = lookup(position);
 	
-	eq Method.getInstruction(int i).localLookup(int position) {
-		return lookup(position);
-	}	
+	syn Instruction GotoInstruction.target() = localLookup(getTargetPosition());	
 	
-	syn Instruction InstructionWithTarget.target() {
-		return localLookup(getTargetPosition());
-	}
-	
-	syn Set<Instruction> SelectInstruction.targets() {
+	syn Set<Instruction> BranchInstruction.targets() {
 		Set<Instruction> targets = new HashSet<Instruction>();
 		for ( int targetPos : getTargetPositions() ) 
 			targets.add(localLookup(targetPos)); 
@@ -27,46 +22,20 @@ aspect DynamicOrder {
 	
 	// successors 
 	
-	syn Set<Instruction> Instruction.successors() {
+	syn Set<Instruction> Instruction.successors() = Collections.singleton(next());
+	syn Set<Instruction> GotoInstruction.successors() = Collections.singleton(target());
+
+	syn Set<Instruction> BranchInstruction.successors() {
 		Set<Instruction> result = new HashSet<Instruction>();
 		result.add(next());
-		return result;
-	}
-	
-	syn Set<Instruction> GotoInstruction.successors() {
-		Set<Instruction> result = new HashSet<Instruction>();
-		result.add(target());
-		return result;
-	}
-	
-	
-	syn Set<Instruction> ReturnInstruction.successors() {
-		Set<Instruction> result = new HashSet<Instruction>();
-		result.add(method().exitPoint());
-		return result;
-	}
-	
-	syn Set<Instruction> Athrow.successors() {
-		Set<Instruction> result = new HashSet<Instruction>();
-		result.add(method().exitPoint());
-		return result;
-	}
-	
-	syn Set<Instruction> BranchInstruction.successors() {
-		Set<Instruction> result = super.successors();
-		result.add(target());
-		return result;
-	}
-	
-	syn Set<Instruction> SelectInstruction.successors() {
-		Set<Instruction> result = super.successors();
 		result.addAll(targets());
 		return result;
 	}
-	
-	syn Set<Instruction> ExitPoint.successors() {
-		return new HashSet<Instruction>();
-	}
+		
+	syn Set<Instruction> ReturnInstruction.successors() = Collections.singleton(method().exitPoint());		
+	syn Set<Instruction> Athrow.successors() = Collections.singleton(method().exitPoint());
+	syn Set<Instruction> ExitPoint.successors() = new HashSet<Instruction>();
+
 	
 	// predecessors 
 
