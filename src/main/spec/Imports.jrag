@@ -2,6 +2,7 @@
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Collections;
 import de.htwg_konstanz.jea.AstConverter;
 import de.htwg_konstanz.jea.ClassHelper;
 import de.htwg_konstanz.jea.vm.Frame;
