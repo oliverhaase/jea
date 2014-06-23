@@ -1,6 +1,6 @@
 
-
 aspect CallGraph {
+
 	syn nta AlienClass Program.alienClass() {
 		return new AlienClass();
 	}
@@ -8,6 +8,37 @@ aspect CallGraph {
 	syn nta AlienMethod AlienClass.alienMethod() {
 		return new AlienMethod();
 	}
+	
+		syn boolean Method.matches(String methodName, org.apache.bcel.generic.Type[] argTypes) {
+		if ( !methodName.equals(getMethodName()) || argTypes.length != getArgTypes().length )
+			return false;
+			
+		for ( int i = 0; i < argTypes.length; i++ ) 
+			if (!argTypes[i].equals(getArgTypes()[i])) 
+				return false;
+			
+		return true;
+	}
+	
+	syn Method ByteCodeClass.lookup(String methodName, org.apache.bcel.generic.Type[] argTypes) {
+		for ( Method method : getMethods() )
+			if ( method.matches(methodName, argTypes))
+				return method;
+		return null;
+	}
+	
+	
+	syn ByteCodeClass ByteCodeClass.resolve(String methodName, org.apache.bcel.generic.Type[] argTypes) {
+		System.out.println("ByteCodeClass.resolve: " + getName() + "." + methodName);
+	
+	
+		if ( lookup(methodName, argTypes) != null ) 
+			return this;
+			
+		return program().getClass(getSuperClass()).resolve(methodName, argTypes);	
+	}
+	
+	
 	
 	syn Set<Method> InvokeInstruction.resolveTargetMethod() {
 		Set<Method> result = new HashSet<Method>();
