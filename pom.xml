@@ -17,6 +17,11 @@
 			<artifactId>lombok</artifactId>
 			<version>1.12.6</version>
 		</dependency>
+		<dependency>
+         <groupId>org.reflections</groupId>
+         <artifactId>reflections</artifactId>
+         <version>0.9.9-RC1</version>
+     </dependency>
   </dependencies>
   <build>
   	<plugins>
