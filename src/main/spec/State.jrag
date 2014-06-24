@@ -1,8 +1,8 @@
 
 aspect State {
 
-	public Frame Method.createFrame() {
-		Set<Frame> result = new HashSet<Frame>();
+	public State Method.createState() {
+		Set<State> result = new HashSet<State>();
 
 		int index = 0;	
 		Set<Integer> indexes = new HashSet<Integer>();
@@ -15,19 +15,19 @@ aspect State {
 				indexes.add(index);
 			index++;	
 		}	
-		return new Frame(indexes, getMaxLocals());
+		return new State(indexes, getMaxLocals());
 	}	
 
-	coll Set<Frame> Instruction.framesIn() circular [new HashSet<Frame>()] with addAll root Method;
-	Instruction contributes framesOut() to Instruction.framesIn() for each successors();
+	coll Set<State> Instruction.statesIn() circular [new HashSet<State>()] with addAll root Method;
+	Instruction contributes statesOut() to Instruction.statesIn() for each successors();
 	
-	syn Set<Frame> EntryPoint.framesIn() = Collections.singleton(method().createFrame());
+	syn Set<State> EntryPoint.statesIn() = Collections.singleton(method().createState());
 
-	syn Set<Frame> Instruction.framesOut() circular [new HashSet<Frame>()]; 
+	syn Set<State> Instruction.statesOut() circular [new HashSet<State>()]; 
       	
-	eq Instruction.framesOut() =
-		Frames.processFrames(framesIn(), new FrameProcessor() {
-			@Override public Frame process(Frame original) {
+	eq Instruction.statesOut() =
+		States.processStates(statesIn(), new StateProcessor() {
+			@Override public State process(State original) {
 				OpStack opStack = original.getOpStack();
 				
 				if ( getProduceStack() > getConsumeStack() ) 
@@ -37,7 +37,7 @@ aspect State {
 					opStack = opStack.pop(getConsumeStack() - getProduceStack());
 
 				if ( !opStack.equals(original.getOpStack()) ) 
-					return new Frame(
+					return new State(
 						original.getLocalVars(), 
 						opStack, 
 						original.getCg());
@@ -46,20 +46,20 @@ aspect State {
 			}
 		});
 		
-	eq ArrayLength.framesOut() =
-		Frames.processFrames(framesIn(), new FrameProcessor() {
-			@Override public Frame process(Frame original) {
-				return new Frame(
+	eq ArrayLength.statesOut() =
+		States.processStates(statesIn(), new StateProcessor() {
+			@Override public State process(State original) {
+				return new State(
 					original.getLocalVars(), 
 					original.getOpStack().pop().push(DontCareSlot.NORMAL_SLOT), 
 					original.getCg()); 
 			}
 		});
 	
-	eq Athrow.framesOut() =
-		Frames.processFrames(framesIn(), new FrameProcessor() {
-			@Override public Frame process(Frame original) {
-				return new Frame(
+	eq Athrow.statesOut() =
+		States.processStates(statesIn(), new StateProcessor() {
+			@Override public State process(State original) {
+				return new State(
 					original.getLocalVars(), 
 					original.getOpStack().pop(getConsumeStack()).push(original.getOpStack().peek()), 
 					original.getCg()); 
@@ -67,34 +67,34 @@ aspect State {
 		});		
 	
 	
-	eq AconstNull.framesOut() =
-		Frames.processFrames(framesIn(), new FrameProcessor() {
-			@Override public Frame process(Frame original) {
+	eq AconstNull.statesOut() =
+		States.processStates(statesIn(), new StateProcessor() {
+			@Override public State process(State original) {
 				ConnectionGraph cg = original.getCg();
 				ObjectNode obj = InternalObject.getNullObject();
 				ReferenceNode ref = new ReferenceNode(getPosition(), Category.LOCAL);
 				cg = cg.addReferenceAndTarget(ref, obj); 
-				return new Frame(
+				return new State(
 					original.getLocalVars(), 
 					original.getOpStack().pop(getConsumeStack()).push(ref), 
 					cg); 
 			}
 		});
 	
-	syn ReferenceNode FieldAssignmentInstruction.getStoreObjectRef(Frame frame) = null;
+	syn ReferenceNode FieldAssignmentInstruction.getStoreObjectRef(State frame) = null;
 	
-	syn ReferenceNode PutField.getStoreObjectRef(Frame frame) =
+	syn ReferenceNode PutField.getStoreObjectRef(State frame) =
 		(ReferenceNode) frame.getOpStack().get(frame.getOpStack().size() -2);
 
-	syn ReferenceNode Aastore.getStoreObjectRef(Frame frame) =
+	syn ReferenceNode Aastore.getStoreObjectRef(State frame) =
 		(ReferenceNode) frame.getOpStack().get(frame.getOpStack().size() -3);
 	
-	syn ReferenceNode PutStatic.getStoreObjectRef(Frame frame) = frame.getCg().getGlobalReference();
+	syn ReferenceNode PutStatic.getStoreObjectRef(State frame) = frame.getCg().getGlobalReference();
 				
-	eq FieldAssignmentInstruction.framesOut() {
+	eq FieldAssignmentInstruction.statesOut() {
 		// notation: obj.field = value
-		return Frames.processFrames(framesIn(), new FrameProcessor() {
-			@Override public Frame process(Frame original) {
+		return States.processStates(statesIn(), new StateProcessor() {
+			@Override public State process(State original) {
 				OpStack opStack = original.getOpStack();
 				ConnectionGraph cg = original.getCg();
 				
@@ -109,7 +109,7 @@ aspect State {
 							cg = cg.addField(obj, getFieldName(), referredValue);
 				}
 				
-				return new Frame(
+				return new State(
 					original.getLocalVars(), 
 					opStack.pop(getConsumeStack()), 
 					cg);
@@ -118,21 +118,21 @@ aspect State {
 	}
 	
 	
-	syn ReferenceNode FieldLoadInstruction.getLoadObjectRef(Frame frame) = null;
+	syn ReferenceNode FieldLoadInstruction.getLoadObjectRef(State frame) = null;
 	
-	syn ReferenceNode GetField.getLoadObjectRef(Frame frame) =
+	syn ReferenceNode GetField.getLoadObjectRef(State frame) =
 		(ReferenceNode) frame.getOpStack().get(frame.getOpStack().size() -1);
 
-	syn ReferenceNode Aaload.getLoadObjectRef(Frame frame) =
+	syn ReferenceNode Aaload.getLoadObjectRef(State frame) =
 		(ReferenceNode) frame.getOpStack().get(frame.getOpStack().size() -2);		
 	
-	syn ReferenceNode GetStatic.getLoadObjectRef(Frame frame) = frame.getCg().getGlobalReference();
+	syn ReferenceNode GetStatic.getLoadObjectRef(State frame) = frame.getCg().getGlobalReference();
 	
 
-	eq FieldLoadInstruction.framesOut() =
+	eq FieldLoadInstruction.statesOut() =
 		// notation: load obj.field 
-		Frames.processFrames(framesIn(), new FrameProcessor() {
-			@Override public Frame process(Frame original) {
+		States.processStates(statesIn(), new StateProcessor() {
+			@Override public State process(State original) {
 				OpStack opStack = original.getOpStack();
 				ConnectionGraph cg = original.getCg();
 				Slot result;
@@ -163,17 +163,17 @@ aspect State {
 				} else 
 					result = DontCareSlot.values()[getProduceStack()];					
 					
-				return new Frame(
+				return new State(
 					original.getLocalVars(), 
 					opStack.pop(getConsumeStack()).push(result, getProduceStack()), 
 					cg);									
 			}
 		});	
 
-	eq Ldc.framesOut() =
-		Frames.processFrames(framesIn(), new FrameProcessor() {
-			@Override public Frame process(Frame original) {			
-				return new Frame(
+	eq Ldc.statesOut() =
+		States.processStates(statesIn(), new StateProcessor() {
+			@Override public State process(State original) {			
+				return new State(
 					original.getLocalVars(), 
 					original.getOpStack().push(
 						(getConstantType() instanceof org.apache.bcel.generic.ReferenceType ) ? 
@@ -184,9 +184,9 @@ aspect State {
 		});	
 
 			
-	eq NewInstruction.framesOut() =
-		Frames.processFrames(framesIn(), new FrameProcessor() {
-			@Override public Frame process(Frame original) {
+	eq NewInstruction.statesOut() =
+		States.processStates(statesIn(), new StateProcessor() {
+			@Override public State process(State original) {
 				ConnectionGraph cg = original.getCg();
 				
 				ObjectNode obj = new InternalObject(
@@ -199,17 +199,17 @@ aspect State {
 					
 				ReferenceNode ref = new ReferenceNode(getPosition(), Category.LOCAL);
 				cg = cg.addReferenceAndTarget(ref, obj); 
-				return new Frame(
+				return new State(
 					original.getLocalVars(), 
 					original.getOpStack().pop(getConsumeStack()).push(ref), 
 					cg); 
 			}
 		});
 	
-	eq InvokeInstruction.framesOut() {
-		Set<Frame> result = new HashSet<Frame>();
+	eq InvokeInstruction.statesOut() {
+		Set<State> result = new HashSet<State>();
 
-		for ( Frame frameIn : framesIn() ) 
+		for ( State frameIn : statesIn() ) 
 			for ( Method targetMethod : resolveTargetMethod() ) 
 				result.add(frameIn.applyMethodSummary(
 					targetMethod.methodSummary(), 
@@ -220,10 +220,10 @@ aspect State {
 		return result;
 	}
 		
-	eq LoadInstruction.framesOut() =
-		Frames.processFrames(framesIn(), new FrameProcessor() {
-			@Override public Frame process(Frame original) {
-				return new Frame(
+	eq LoadInstruction.statesOut() =
+		States.processStates(statesIn(), new StateProcessor() {
+			@Override public State process(State original) {
+				return new State(
 					original.getLocalVars(), 
 					original.getOpStack().push(original.getLocalVars().get(getIndex()), 
 						getProduceStack()), 
@@ -231,30 +231,30 @@ aspect State {
 			}
 		});
 	
-	eq StoreInstruction.framesOut() =
-		Frames.processFrames(framesIn(), new FrameProcessor() {
-			@Override public Frame process(Frame original) {
-				return new Frame(
+	eq StoreInstruction.statesOut() =
+		States.processStates(statesIn(), new StateProcessor() {
+			@Override public State process(State original) {
+				return new State(
 					original.getLocalVars().set(getIndex(), 
 					original.getOpStack().peek()), original.getOpStack().pop(getConsumeStack()), 
 					original.getCg());
 			}
 		});
 	
-	eq DUP.framesOut() =
-		Frames.processFrames(framesIn(), new FrameProcessor() {
-			@Override public Frame process(Frame original) {
-				return new Frame(
+	eq DUP.statesOut() =
+		States.processStates(statesIn(), new StateProcessor() {
+			@Override public State process(State original) {
+				return new State(
 					original.getLocalVars(), 
 					original.getOpStack().push(original.getOpStack().peek()), 
 					original.getCg());
 			}
 		});
 	
-	eq DUP_X1.framesOut() =
-		Frames.processFrames(framesIn(), new FrameProcessor() {
-			@Override public Frame process(Frame original) {				
-				return new Frame(
+	eq DUP_X1.statesOut() =
+		States.processStates(statesIn(), new StateProcessor() {
+			@Override public State process(State original) {				
+				return new State(
 					original.getLocalVars(), 
 					original.getOpStack().pop().pop().push(original.getOpStack().peek())
 						.push(original.getOpStack().pop().peek()).push(original.getOpStack().peek()), 
@@ -262,10 +262,10 @@ aspect State {
 			}
 		});
 	
-	eq DUP_X2.framesOut() =
-		Frames.processFrames(framesIn(), new FrameProcessor() {
-			@Override public Frame process(Frame original) {				
-				return new Frame(
+	eq DUP_X2.statesOut() =
+		States.processStates(statesIn(), new StateProcessor() {
+			@Override public State process(State original) {				
+				return new State(
 					original.getLocalVars(), 
 					original.getOpStack().pop().pop().pop().push(original.getOpStack().peek())
 						.push(original.getOpStack().pop().pop().peek())
@@ -275,10 +275,10 @@ aspect State {
 			}
 		});
 	
-	eq DUP2.framesOut() =
-		Frames.processFrames(framesIn(), new FrameProcessor() {
-			@Override public Frame process(Frame original) {
-				return new Frame(
+	eq DUP2.statesOut() =
+		States.processStates(statesIn(), new StateProcessor() {
+			@Override public State process(State original) {
+				return new State(
 					original.getLocalVars(), 
 					original.getOpStack().push(original.getOpStack().pop().peek())
 						.push(original.getOpStack().peek()), 
@@ -286,10 +286,10 @@ aspect State {
 			}
 		});
 	
-	eq DUP2_X1.framesOut() =
-		Frames.processFrames(framesIn(), new FrameProcessor() {
-			@Override public Frame process(Frame original) {
-				return new Frame(
+	eq DUP2_X1.statesOut() =
+		States.processStates(statesIn(), new StateProcessor() {
+			@Override public State process(State original) {
+				return new State(
 					original.getLocalVars(), 
 					original.getOpStack().pop().pop().pop()
 						.push(original.getOpStack().pop().peek())
@@ -301,10 +301,10 @@ aspect State {
 			}
 		});
 	
-	eq DUP2_X2.framesOut() =
-		 Frames.processFrames(framesIn(), new FrameProcessor() {
-			@Override public Frame process(Frame original) {
-				return new Frame(
+	eq DUP2_X2.statesOut() =
+		 States.processStates(statesIn(), new StateProcessor() {
+			@Override public State process(State original) {
+				return new State(
 					original.getLocalVars(), 
 					original.getOpStack().pop().pop().pop().pop()
 						.push(original.getOpStack().pop().peek())
@@ -317,10 +317,10 @@ aspect State {
 			}
 		});
 	
-	eq SWAP.framesOut() =
-		Frames.processFrames(framesIn(), new FrameProcessor() {
-			@Override public Frame process(Frame original) {
-				return new Frame(
+	eq SWAP.statesOut() =
+		States.processStates(statesIn(), new StateProcessor() {
+			@Override public State process(State original) {
+				return new State(
 					original.getLocalVars(), 
 					original.getOpStack().pop().pop()
 						.push(original.getOpStack().peek())
@@ -329,7 +329,7 @@ aspect State {
 			}
 		});
 	
-	eq ReturnInstruction.framesOut() = null;
-	eq Areturn.framesOut() = null;
+	eq ReturnInstruction.statesOut() = null;
+	eq Areturn.statesOut() = null;
 		
 }

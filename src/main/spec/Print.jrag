@@ -27,17 +27,17 @@ aspect Print {
   	    
   	public void Instruction.printInstruction() { 
   		if ( predecessors().size() > 1)
-	  		System.out.println(framesIn());
+	  		System.out.println(statesIn());
     	System.out.println("instruction: " + getLabel());	
-    	System.out.println(framesOut());
+    	System.out.println(statesOut());
     	System.out.println();
   	}
   	
   	public void InvokeInstruction.printInstruction() {
    		if ( predecessors().size() > 1)
-	  		System.out.println(framesIn());
+	  		System.out.println(statesIn());
     	System.out.println("instruction: " + getLabel() + " " + getLoadClass() + "." + getMethodName());	
-    	System.out.println(framesOut());
+    	System.out.println(statesOut());
     	System.out.println();
   	}
   	

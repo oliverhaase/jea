@@ -7,26 +7,26 @@ aspect ReturnResult {
 	
 	syn ReturnResult ReturnInstruction.returnResult() {
 		ReturnResult result = new ReturnResult();
-		for ( Frame frame : framesIn() )
-			result = result.merge(new ReturnResult(frame.getCg()));
+		for ( State state : statesIn() )
+			result = result.merge(new ReturnResult(state.getCg()));
 		return result;	
 	}
 	
 	syn ReturnResult Areturn.returnResult() {
 		ReturnResult result = new ReturnResult();
-		for ( Frame frame : framesIn() )
+		for ( State state : statesIn() )
 			result = result.merge(new ReturnResult(
-				frame.getCg(), 
-				frame.getCg().dereference((ReferenceNode) frame.getOpStack().peek())));
+				state.getCg(), 
+				state.getCg().dereference((ReferenceNode) state.getOpStack().peek())));
 		return result;	
 	}
 	
 	syn ReturnResult Athrow.returnResult() {
 		ReturnResult result = new ReturnResult();
-		for ( Frame frame : framesIn() )
+		for ( State state : statesIn() )
 			result = result.merge(new ReturnResult(
-				frame.getCg(), 
-				frame.getCg().dereference((ReferenceNode) frame.getOpStack().peek())));
+				state.getCg(), 
+				state.getCg().dereference((ReferenceNode) state.getOpStack().peek())));
 		return result;	
 	}
 	

@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.NonNull;
 
 @EqualsAndHashCode
-public final class Frame {
+public final class State {
 	@Getter
 	private final LocalVars localVars;
 	@Getter
@@ -16,13 +16,13 @@ public final class Frame {
 	@Getter
 	private final ConnectionGraph cg;
 
-	public Frame(@NonNull LocalVars localVars, @NonNull OpStack opStack, @NonNull ConnectionGraph cg) {
+	public State(@NonNull LocalVars localVars, @NonNull OpStack opStack, @NonNull ConnectionGraph cg) {
 		this.localVars = localVars;
 		this.opStack = opStack;
 		this.cg = cg;
 	}
 
-	public Frame(Set<Integer> indexes, int maxLocals) {
+	public State(Set<Integer> indexes, int maxLocals) {
 		Slot[] vars = new Slot[maxLocals];
 
 		// initialize local vars
@@ -139,7 +139,7 @@ public final class Frame {
 		return result;
 	}
 
-	public Frame applyMethodSummary(MethodSummary summary, int consumeStack, int produceStack,
+	public State applyMethodSummary(MethodSummary summary, int consumeStack, int produceStack,
 			org.apache.bcel.generic.Type returnType) {
 
 		OpStack opStack = this.opStack;
@@ -157,7 +157,7 @@ public final class Frame {
 		} else
 			opStack = opStack.push(DontCareSlot.values()[produceStack], produceStack);
 
-		return new Frame(localVars, opStack, cg);
+		return new State(localVars, opStack, cg);
 
 	}
 
