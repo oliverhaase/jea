@@ -22,19 +22,21 @@ aspect DynamicOrder {
 	
 	// successors 
 	
-	syn Set<Instruction> Instruction.successors() = Collections.singleton(next());
-	syn Set<Instruction> GotoInstruction.successors() = Collections.singleton(target());
+	syn Set<Instruction> Instruction.successors();
+	
+	eq Instruction.successors() = Collections.singleton(next());
+	eq GotoInstruction.successors() = Collections.singleton(target());
 
-	syn Set<Instruction> BranchInstruction.successors() {
+	eq BranchInstruction.successors() {
 		Set<Instruction> result = new HashSet<Instruction>();
 		result.add(next());
 		result.addAll(targets());
 		return result;
 	}
 		
-	syn Set<Instruction> ReturnInstruction.successors() = Collections.singleton(method().exitPoint());		
-	syn Set<Instruction> Athrow.successors() = Collections.singleton(method().exitPoint());
-	syn Set<Instruction> ExitPoint.successors() = new HashSet<Instruction>();
+	eq ReturnInstruction.successors() = Collections.singleton(method().exitPoint());		
+	eq Athrow.successors() = Collections.singleton(method().exitPoint());
+	eq ExitPoint.successors() = new HashSet<Instruction>();
 
 	
 	// predecessors 
