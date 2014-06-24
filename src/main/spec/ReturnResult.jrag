@@ -33,7 +33,7 @@ aspect ReturnResult {
 	
 	syn ReturnResult ExitPoint.returnResult() {
 		ReturnResult result = new ReturnResult();
-		for ( Instruction predecessor : predecessors() )
+		for ( Instruction predecessor : pred() )
 			result = result.merge(predecessor.returnResult());
 		return result;	
 	}

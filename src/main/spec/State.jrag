@@ -19,7 +19,7 @@ aspect State {
 	}	
 
 	coll Set<State> Instruction.statesIn() circular [new HashSet<State>()] with addAll root Method;
-	Instruction contributes statesOut() to Instruction.statesIn() for each successors();
+	Instruction contributes statesOut() to Instruction.statesIn() for each succ();
 	
 	syn Set<State> EntryPoint.statesIn() = Collections.singleton(method().createState());
 
