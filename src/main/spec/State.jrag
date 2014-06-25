@@ -26,21 +26,12 @@ aspect State {
 	eq Instruction.statesOut() =
 		States.processStates(statesIn(), new StateProcessor() {
 			@Override public State process(State original) {
-				OpStack opStack = original.getOpStack();
-				
-				if ( getProduceStack() > getConsumeStack() ) 
-					for ( int i = 0; i < getProduceStack() - getConsumeStack(); i++ ) 
-						opStack = opStack.push(DontCareSlot.NORMAL_SLOT);
-				else
-					opStack = opStack.pop(getConsumeStack() - getProduceStack());
-
-				if ( !opStack.equals(original.getOpStack()) ) 
-					return new State(
+				return new State(
 						original.getLocalVars(), 
-						opStack, 
+						( getProduceStack() > getConsumeStack() ) ? 
+							original.getOpStack().push(DontCareSlot.NORMAL_SLOT, getProduceStack() - getConsumeStack()) :
+							original.getOpStack().pop(getConsumeStack() - getProduceStack()), 
 						original.getCg());
-				else 
-					return original;	
 			}
 		});
 		
