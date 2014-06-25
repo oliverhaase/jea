@@ -1,10 +1,8 @@
 
 aspect ReturnResult {
 	
-	syn ReturnResult Instruction.returnResult() {
-		return null;
-	}
-	
+	syn ReturnResult Instruction.returnResult()  = null;
+		
 	syn ReturnResult ReturnInstruction.returnResult() {
 		ReturnResult result = new ReturnResult();
 		for ( State state : statesIn() )
