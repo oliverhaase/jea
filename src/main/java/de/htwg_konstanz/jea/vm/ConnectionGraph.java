@@ -71,6 +71,9 @@ public final class ConnectionGraph {
 	}
 
 	public ConnectionGraph addField(ObjectNode obj, String fieldName, ObjectNode value) {
+		if (obj.isGlobal())
+			return this;
+
 		ConnectionGraph result = new ConnectionGraph(this);
 
 		if (!objectNodes.existsObject(value.getId()))
