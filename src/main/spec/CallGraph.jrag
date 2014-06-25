@@ -1,15 +1,10 @@
 
 aspect CallGraph {
 
-	syn nta AlienClass Program.alienClass() {
-		return new AlienClass();
-	}
-
-	syn nta AlienMethod AlienClass.alienMethod() {
-		return new AlienMethod();
-	}
+	syn nta AlienClass Program.alienClass() = new AlienClass();
+	syn nta AlienMethod AlienClass.alienMethod() = new AlienMethod();
 	
-		syn boolean Method.matches(String methodName, org.apache.bcel.generic.Type[] argTypes) {
+	syn boolean Method.matches(String methodName, org.apache.bcel.generic.Type[] argTypes) {
 		if ( !methodName.equals(getMethodName()) || argTypes.length != getArgTypes().length )
 			return false;
 			
@@ -27,44 +22,26 @@ aspect CallGraph {
 		return null;
 	}
 	
+	syn ByteCodeClass ByteCodeClass.resolveTargetClass(String methodName, org.apache.bcel.generic.Type[] argTypes) =
+		( lookup(methodName, argTypes) != null ) ? 
+			this : 
+			program().getClass(getSuperClass()).resolve(methodName, argTypes);
 	
-	syn ByteCodeClass ByteCodeClass.resolve(String methodName, org.apache.bcel.generic.Type[] argTypes) {
-		System.out.println("ByteCodeClass.resolve: " + getName() + "." + methodName);
+	syn Set<Method> InvokeInstruction.resolveTargetMethod() =
+		Collections.singleton(method().clazz().program().alienClass().alienMethod());
 	
-	
-		if ( lookup(methodName, argTypes) != null ) 
-			return this;
-			
-		return program().getClass(getSuperClass()).resolve(methodName, argTypes);	
-	}
-	
-	
-	
-	syn Set<Method> InvokeInstruction.resolveTargetMethod() {
-		Set<Method> result = new HashSet<Method>();
-		result.add(method().clazz().program().alienClass().alienMethod());
-		return result;
-	}
-	
-	syn Set<Method> InvokeSpecial.resolveTargetMethod() {		
-		Set<Method> result = new HashSet<Method>();
-		result.add(method().clazz().program().getClass(getLoadClass())
+	syn Set<Method> InvokeSpecial.resolveTargetMethod() =		
+		Collections.singleton(method().clazz().program().getClass(getLoadClass())
     		.lookup(getMethodName(), getArgTypes()));
-		return result;
-	}
-	
-	syn Set<Method> InvokeStatic.resolveTargetMethod() {		
-		Set<Method> result = new HashSet<Method>();
-		result.add(method().clazz().program().getClass(getLoadClass())
+    			
+	syn Set<Method> InvokeStatic.resolveTargetMethod() =		
+		Collections.singleton(method().clazz().program().getClass(getLoadClass())
     		.lookup(getMethodName(), getArgTypes()));
-		return result;
-	}
 	
 	syn Set<Method> InvokeVirtual.resolveTargetMethod() {
 		Set<Method> result = new HashSet<Method>();
 		
-		getLoadClass();
-		
+		getLoadClass();		
 		
 //		for ( ObjectNode targetObject : frame.getCg().dereference(
 //				(ReferenceNode) frame.getOpStack().getArgumentAtIndex(0, getConsumeStack())) ) 
@@ -77,6 +54,5 @@ aspect CallGraph {
 		
 		return result;
 	}
-	
-		
+			
 }
