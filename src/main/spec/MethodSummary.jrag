@@ -1,22 +1,13 @@
 
-aspect MethodSummary {
-	
-	
-	syn MethodSummary Instruction.methodSummary() {
-		return null;
-	}
+aspect MethodSummary {	
+	syn MethodSummary Instruction.methodSummary() = null;
 			
-	syn MethodSummary ExitPoint.methodSummary() {
-		return new MethodSummary(returnResult());
-	}
+	syn MethodSummary ExitPoint.methodSummary() = new MethodSummary(returnResult());
 	
-	syn MethodSummary Method.methodSummary() {
-		return ( getIsAbstract() || getIsNative() ) ? MethodSummary.getAlienSummary() :
+	syn MethodSummary Method.methodSummary() =
+		( getIsAbstract() || getIsNative() ) ? MethodSummary.getAlienSummary() :
 			exitPoint().methodSummary();
-	}
 	
-	syn MethodSummary AlienMethod.methodSummary() {
-		return MethodSummary.getAlienSummary();
-	}
+	syn MethodSummary AlienMethod.methodSummary() =	MethodSummary.getAlienSummary();
 	
 }
