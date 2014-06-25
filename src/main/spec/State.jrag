@@ -120,11 +120,6 @@ aspect State {
 					Set<ObjectNode> allTargets = new HashSet<ObjectNode>();
 
 					for ( ObjectNode obj :  cg.dereference(getLoadObjectRef(original))) {
-//						if ( obj.isGlobal() ) {
-//							allTargets.add(obj);
-//							continue;
-//						}
-			
 						Set<ObjectNode> targets 
 							= cg.getObjectNodes().getFieldOf(obj, cg.getFieldEdges(), getFieldName());
 						if ( targets.isEmpty() ) {

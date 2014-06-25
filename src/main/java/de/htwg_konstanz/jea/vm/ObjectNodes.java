@@ -53,6 +53,11 @@ public class ObjectNodes implements Iterable<ObjectNode> {
 	public Set<ObjectNode> getFieldOf(ObjectNode origin, Set<FieldEdge> fieldEdges, String fieldName) {
 		Set<ObjectNode> result = new HashSet<ObjectNode>();
 
+		if (origin.isGlobal()) {
+			result.add(origin);
+			return result;
+		}
+
 		for (FieldEdge fieldEdge : fieldEdges)
 			if (fieldEdge.getOriginId().equals(origin.getId())
 					&& fieldEdge.getFieldName().equals(fieldName))
