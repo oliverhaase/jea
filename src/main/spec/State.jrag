@@ -191,7 +191,7 @@ aspect State {
 					getReturnType()));
 					
 		return result;
-	}
+	}	
 		
 	eq LoadInstruction.statesOut() =
 		States.processStates(statesIn(), new StateProcessor() {
@@ -208,8 +208,8 @@ aspect State {
 		States.processStates(statesIn(), new StateProcessor() {
 			@Override public State process(State original) {
 				return new State(
-					original.getLocalVars().set(getIndex(), 
-					original.getOpStack().peek()), original.getOpStack().pop(getConsumeStack()), 
+					original.getLocalVars().set(getIndex(), original.getOpStack().peek()), 
+					original.getOpStack().pop(getConsumeStack()), 
 					original.getCg());
 			}
 		});
