@@ -25,10 +25,10 @@ aspect CallGraph {
 	syn ByteCodeClass ByteCodeClass.resolveTargetClass(String methodName, org.apache.bcel.generic.Type[] argTypes) =
 		( lookup(methodName, argTypes) != null ) ? 
 			this : 
-			program().getClass(getSuperClass()).resolve(methodName, argTypes);
+			program().getClass(getSuperClass()).resolveTargetClass(methodName, argTypes);
 	
 	syn Set<Method> InvokeInstruction.resolveTargetMethod() =
-		Collections.singleton(method().clazz().program().alienClass().alienMethod());
+		Collections.singleton((Method) method().clazz().program().alienClass().alienMethod());
 	
 	syn Set<Method> InvokeSpecial.resolveTargetMethod() =		
 		Collections.singleton(method().clazz().program().getClass(getLoadClass())
