@@ -11,12 +11,17 @@ public class ReferenceNode implements NonObjectNode, Slot {
 		ARG, LOCAL, GLOBAL, RETURN
 	};
 
+	private final static ReferenceNode GLOBAL_REF = new ReferenceNode(-1, Category.GLOBAL);
 	private final Category category;
 	private final int id;
 
 	public ReferenceNode(int id, @NonNull Category category) {
 		this.id = id;
 		this.category = category;
+	}
+
+	public static ReferenceNode getGlobalRef() {
+		return GLOBAL_REF;
 	}
 
 	@Override

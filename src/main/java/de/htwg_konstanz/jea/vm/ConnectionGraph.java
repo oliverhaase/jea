@@ -19,19 +19,14 @@ public final class ConnectionGraph {
 	@Getter
 	private final Set<Pair<ReferenceNode, String>> pointsToEdges = new HashSet<>();
 
-	@Getter
-	private final ReferenceNode globalReference;
-
 	public ConnectionGraph(Set<Integer> indexes, Slot[] vars) {
 		objectNodes = new ObjectNodes();
 		fieldEdges = new HashSet<>();
 
-		globalReference = new ReferenceNode(-1, Category.GLOBAL);
-		ObjectNode globalObj = GlobalObject.getInstance();
-
-		referenceNodes.add(globalReference);
-		objectNodes.add(globalObj);
-		pointsToEdges.add(new Pair<ReferenceNode, String>(globalReference, globalObj.getId()));
+		referenceNodes.add(ReferenceNode.getGlobalRef());
+		objectNodes.add(GlobalObject.getInstance());
+		pointsToEdges.add(new Pair<ReferenceNode, String>(ReferenceNode.getGlobalRef(),
+				GlobalObject.getInstance().getId()));
 
 		for (Integer index : indexes) {
 			ReferenceNode ref = new ReferenceNode(index, Category.ARG);
@@ -48,8 +43,6 @@ public final class ConnectionGraph {
 	public ConnectionGraph(ConnectionGraph original) {
 		objectNodes = new ObjectNodes();
 		fieldEdges = new HashSet<>();
-
-		globalReference = original.globalReference;
 
 		objectNodes.addAll(original.objectNodes);
 		referenceNodes.addAll(original.referenceNodes);

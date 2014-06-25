@@ -87,7 +87,7 @@ aspect State {
 	syn ReferenceNode Aastore.getStoreObjectRef(State frame) =
 		(ReferenceNode) frame.getOpStack().get(frame.getOpStack().size() -3);
 	
-	syn ReferenceNode PutStatic.getStoreObjectRef(State frame) = frame.getCg().getGlobalReference();
+	syn ReferenceNode PutStatic.getStoreObjectRef(State frame) = ReferenceNode.getGlobalRef();
 				
 	eq FieldAssignmentInstruction.statesOut() {
 		// notation: obj.field = value
@@ -124,7 +124,7 @@ aspect State {
 	syn ReferenceNode Aaload.getLoadObjectRef(State frame) =
 		(ReferenceNode) frame.getOpStack().get(frame.getOpStack().size() -2);		
 	
-	syn ReferenceNode GetStatic.getLoadObjectRef(State frame) = frame.getCg().getGlobalReference();
+	syn ReferenceNode GetStatic.getLoadObjectRef(State frame) = ReferenceNode.getGlobalRef();
 	
 
 	eq FieldLoadInstruction.statesOut() =
@@ -175,7 +175,7 @@ aspect State {
 					original.getLocalVars(), 
 					original.getOpStack().push(
 						(getConstantType() instanceof org.apache.bcel.generic.ReferenceType ) ? 
-						original.getCg().getGlobalReference() 
+						ReferenceNode.getGlobalRef() 
 						: DontCareSlot.NORMAL_SLOT), 
 					original.getCg());
 			}
