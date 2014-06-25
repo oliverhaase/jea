@@ -60,9 +60,8 @@ aspect State {
 		States.processStates(statesIn(), new StateProcessor() {
 			@Override public State process(State original) {
 				ConnectionGraph cg = original.getCg();
-				ObjectNode obj = InternalObject.getNullObject();
 				ReferenceNode ref = new ReferenceNode(getPosition(), Category.LOCAL);
-				cg = cg.addReferenceAndTarget(ref, obj); 
+				cg = cg.addReferenceAndTarget(ref, InternalObject.getNullObject()); 
 				return new State(
 					original.getLocalVars(), 
 					original.getOpStack().pop(getConsumeStack()).push(ref), 
@@ -70,14 +69,11 @@ aspect State {
 			}
 		});
 	
-	syn ReferenceNode FieldAssignmentInstruction.getStoreObjectRef(State frame) = null;
-	
+	syn ReferenceNode FieldAssignmentInstruction.getStoreObjectRef(State frame) = null;	
 	syn ReferenceNode PutField.getStoreObjectRef(State frame) =
 		(ReferenceNode) frame.getOpStack().get(frame.getOpStack().size() -2);
-
 	syn ReferenceNode Aastore.getStoreObjectRef(State frame) =
 		(ReferenceNode) frame.getOpStack().get(frame.getOpStack().size() -3);
-	
 	syn ReferenceNode PutStatic.getStoreObjectRef(State frame) = ReferenceNode.getGlobalRef();
 				
 	eq FieldAssignmentInstruction.statesOut() {
@@ -87,16 +83,13 @@ aspect State {
 				OpStack opStack = original.getOpStack();
 				ConnectionGraph cg = original.getCg();
 				
-				// inspect type of value 
+				// inspect type of value to be assigned
 				Slot value = opStack.peek();
 				
-				if ( value instanceof ReferenceNode ) {
-					Set<ObjectNode> referredValues = cg.dereference((ReferenceNode) value);
-					
+				if ( value instanceof ReferenceNode ) 
 					for ( ObjectNode obj : cg.dereference(getStoreObjectRef(original)) ) 
-						for ( ObjectNode referredValue : referredValues ) 
+						for ( ObjectNode referredValue : cg.dereference((ReferenceNode) value) ) 
 							cg = cg.addField(obj, getFieldName(), referredValue);
-				}
 				
 				return new State(
 					original.getLocalVars(), 
@@ -108,16 +101,12 @@ aspect State {
 	
 	
 	syn ReferenceNode FieldLoadInstruction.getLoadObjectRef(State frame) = null;
-	
 	syn ReferenceNode GetField.getLoadObjectRef(State frame) =
 		(ReferenceNode) frame.getOpStack().get(frame.getOpStack().size() -1);
-
 	syn ReferenceNode Aaload.getLoadObjectRef(State frame) =
 		(ReferenceNode) frame.getOpStack().get(frame.getOpStack().size() -2);		
-	
 	syn ReferenceNode GetStatic.getLoadObjectRef(State frame) = ReferenceNode.getGlobalRef();
 	
-
 	eq FieldLoadInstruction.statesOut() =
 		// notation: load obj.field 
 		States.processStates(statesIn(), new StateProcessor() {
