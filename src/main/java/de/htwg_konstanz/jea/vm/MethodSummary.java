@@ -16,7 +16,9 @@ import de.htwg_konstanz.jea.vm.ReferenceNode.Category;
 @EqualsAndHashCode
 @ToString
 public class MethodSummary {
-	private final static MethodSummary ALIEN_SUMMARY = new MethodSummary();
+	private final static MethodSummary ALIEN_SUMMARY = new MethodSummary(GlobalObject.getInstance());
+	private final static MethodSummary INITIAL_SUMMARY = new MethodSummary(
+			EmptyReturnObjectSet.getInstance());
 
 	@Getter
 	private final ObjectNodes argEscapeObjects;
@@ -31,15 +33,17 @@ public class MethodSummary {
 	@Getter
 	private final Set<Pair<ReferenceNode, String>> resultPointsToEdges;
 
-	private MethodSummary() {
+	private MethodSummary(ObjectNode returnObject) {
 		this.argEscapeObjects = new ObjectNodes();
+		this.argEscapeObjects.add(EmptyReturnObjectSet.getInstance());
+
 		this.fieldEdges = new HashSet<>();
 		this.escapedObjects = new ObjectNodes();
 		this.localObjects = new ObjectNodes();
 		this.resultReference = new ReferenceNode(0, Category.RETURN);
 		this.resultPointsToEdges = new HashSet<>();
-		this.resultPointsToEdges.add(new Pair<ReferenceNode, String>(resultReference, GlobalObject
-				.getInstance().getId()));
+		this.resultPointsToEdges.add(new Pair<ReferenceNode, String>(resultReference, returnObject
+				.getId()));
 	}
 
 	public MethodSummary(ReturnResult rr) {
@@ -48,6 +52,8 @@ public class MethodSummary {
 
 		Set<FieldEdge> fieldEdges = new HashSet<>();
 		fieldEdges.addAll(rr.getFieldEdges());
+
+		resolveEmptyReturnObjectSet(objectNodes, fieldEdges, rr.getResultValues());
 
 		for (ObjectNode resultObject : rr.getResultValues()) {
 			objectNodes.remove(resultObject);
@@ -62,7 +68,6 @@ public class MethodSummary {
 
 		this.escapedObjects = collapseGlobalGraph(objectNodes, fieldEdges);
 
-		// this.resultReference = new ReferenceNode(0, Category.RETURN);
 		this.resultReference = new ReferenceNode(hashCode(), Category.RETURN);
 		this.resultPointsToEdges = new HashSet<>();
 
@@ -80,6 +85,34 @@ public class MethodSummary {
 		this.argEscapeObjects = objectNodes;
 		this.fieldEdges = fieldEdges;
 
+	}
+
+	private void resolveEmptyReturnObjectSet(ObjectNodes objectNodes, Set<FieldEdge> fieldEdges,
+			Set<ObjectNode> resultObjects) {
+		Set<FieldEdge> edgesToBeRemoved = new HashSet<>();
+		Set<FieldEdge> edgesToBeAdded = new HashSet<>();
+
+		for (FieldEdge edge : fieldEdges) {
+			if (edge.getOriginId().equals(EmptyReturnObjectSet.getInstance().getId())) {
+				for (ObjectNode resultObject : resultObjects)
+					if (!edge.getDestinationId().equals(EmptyReturnObjectSet.getInstance().getId()))
+						edgesToBeAdded.add(new FieldEdge(resultObject.getId(), edge.getFieldName(),
+								edge.getDestinationId()));
+				edgesToBeRemoved.add(edge);
+			}
+			if (edge.getDestinationId().equals(EmptyReturnObjectSet.getInstance().getId())) {
+				for (ObjectNode resultObject : resultObjects)
+					if (!edge.getOriginId().equals(EmptyReturnObjectSet.getInstance().getId()))
+						edgesToBeAdded.add(new FieldEdge(edge.getOriginId(), edge.getFieldName(),
+								resultObject.getId()));
+				edgesToBeRemoved.add(edge);
+			}
+		}
+
+		fieldEdges.removeAll(edgesToBeRemoved);
+		fieldEdges.addAll(edgesToBeAdded);
+
+		objectNodes.remove(EmptyReturnObjectSet.getInstance());
 	}
 
 	private void removeNullObject(ObjectNodes objectNodes, Set<FieldEdge> fieldEdges) {
@@ -174,8 +207,16 @@ public class MethodSummary {
 		return ALIEN_SUMMARY;
 	}
 
+	public static MethodSummary getInitialSummary() {
+		return INITIAL_SUMMARY;
+	}
+
 	public boolean isAlien() {
 		return this == ALIEN_SUMMARY;
+	}
+
+	public boolean isInitial() {
+		return this == INITIAL_SUMMARY;
 	}
 
 	public EscapingTypes globallyEscapingTypes() {
