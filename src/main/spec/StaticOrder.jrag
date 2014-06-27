@@ -10,11 +10,13 @@ aspect StaticOrder {
 	inh Method Instruction.method();	
 	eq Method.getInstruction(int i).method() = this;
 	
+	syn Instruction Method.entryPoint() = getInstruction(0);
+	syn Instruction Method.exitPoint() = getInstruction(getNumInstruction() -1);		
+	
 	inh ByteCodeClass Method.clazz();
 	eq ByteCodeClass.getMethod(int i).clazz() = this;
 	
 	inh Program ByteCodeClass.program();
 	eq Program.getChild().program() = this;
-	
-	syn Instruction Method.exitPoint() = getInstruction(getNumInstruction() -1);						
+					
 }
