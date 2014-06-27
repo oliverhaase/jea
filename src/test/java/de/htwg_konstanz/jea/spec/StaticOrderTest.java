@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import de.htwg_konstanz.jea.ProgramBuilder;
 import de.htwg_konstanz.jea.gen.ByteCodeClass;
+import de.htwg_konstanz.jea.gen.EntryPoint;
 import de.htwg_konstanz.jea.gen.ExitPoint;
 import de.htwg_konstanz.jea.gen.Method;
 import de.htwg_konstanz.jea.gen.Program;
@@ -60,6 +61,16 @@ public class StaticOrderTest {
 	}
 
 	@Test
+	public void testEntryPoint() {
+		assertTrue(f.entryPoint() instanceof EntryPoint);
+	}
+
+	@Test
+	public void testExitPoint() {
+		assertTrue(f.exitPoint() instanceof ExitPoint);
+	}
+
+	@Test
 	public void testClazz() {
 		assertEquals(f.clazz(), testClass);
 	}
@@ -69,8 +80,4 @@ public class StaticOrderTest {
 		assertEquals(testClass.program(), program);
 	}
 
-	@Test
-	public void testExitPoint() {
-		assertTrue(f.exitPoint() instanceof ExitPoint);
-	}
 }
