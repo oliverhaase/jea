@@ -6,7 +6,7 @@ aspect MethodSummary {
 	
 	syn MethodSummary Method.methodSummary() circular [MethodSummary.getInitialSummary()]; 
 	
-	eq MethodSummary Method.methodSummary() =
+	eq Method.methodSummary() =
 		( getIsAbstract() || getIsNative() ) ? MethodSummary.getAlienSummary() :
 			exitPoint().methodSummary();
 	
