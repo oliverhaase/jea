@@ -17,7 +17,7 @@ public class ConfinementChecker {
 				"de.htwg_konstanz.jea.vm.DontCareSlot",
 				"de.htwg_konstanz.jea.vm.EscapingTypes",
 				"de.htwg_konstanz.jea.vm.FieldEdge",
-				// "de.htwg_konstanz.jea.vm.Frame",
+				// "de.htwg_konstanz.jea.vm.State",
 				"de.htwg_konstanz.jea.vm.StateProcessor",
 				"de.htwg_konstanz.jea.vm.States",
 				"de.htwg_konstanz.jea.vm.GlobalObject",
@@ -42,6 +42,9 @@ public class ConfinementChecker {
 		System.out.println("escaping types: ");
 		for (String confinedClass : program.escapingClasses())
 			System.out.println("- " + confinedClass);
+
+		System.out.println();
+		System.out.println("done.");
 
 	}
 }
