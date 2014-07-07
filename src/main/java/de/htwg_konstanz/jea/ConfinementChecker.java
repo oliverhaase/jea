@@ -28,7 +28,7 @@ public class ConfinementChecker {
 				"de.htwg_konstanz.jea.vm.OpStack", "de.htwg_konstanz.jea.vm.Pair",
 				"de.htwg_konstanz.jea.vm.PhantomObject", "de.htwg_konstanz.jea.vm.ReferenceNode",
 				"de.htwg_konstanz.jea.vm.ReturnResult", "de.htwg_konstanz.jea.vm.Slot",
-				"de.htwg_konstanz.jea.vm.SummaryGraph", "de.htwg_konstanz.jea.vm.Triple" };
+				"de.htwg_konstanz.jea.vm.Triple" };
 
 		Program program = new ProgramBuilder(classes).build();
 		program.print();
