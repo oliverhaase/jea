@@ -6,6 +6,7 @@ import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import de.htwg_konstanz.jea.vm.ReferenceNode.Category;
 
 @EqualsAndHashCode
 public final class State {
@@ -132,15 +133,23 @@ public final class State {
 		return result;
 	}
 
-	private ConnectionGraph transferResult(ConnectionGraph cg, MethodSummary summary) {
+	private ConnectionGraph transferResult(ConnectionGraph cg, MethodSummary summary,
+			ReferenceNode ref) {
 		ConnectionGraph result = new ConnectionGraph(cg);
-		result.getReferenceNodes().add(summary.getResultReference());
-		result.getPointsToEdges().addAll(summary.getResultPointsToEdges());
+		// result.getReferenceNodes().add(summary.getResultReference());
+
+		result.getReferenceNodes().add(ref);
+
+		for (Pair<ReferenceNode, String> pointsToEdge : summary.getResultPointsToEdges())
+			result.getPointsToEdges().add(
+					new Pair<ReferenceNode, String>(ref, pointsToEdge.getValue2()));
+
+		// result.getPointsToEdges().addAll(summary.getResultPointsToEdges());
 		return result;
 	}
 
 	public State applyMethodSummary(MethodSummary summary, int consumeStack, int produceStack,
-			org.apache.bcel.generic.Type returnType) {
+			org.apache.bcel.generic.Type returnType, int position) {
 
 		OpStack opStack = this.opStack;
 		ConnectionGraph cg = this.cg;
@@ -152,8 +161,10 @@ public final class State {
 		opStack = opStack.pop(consumeStack);
 
 		if (returnType instanceof org.apache.bcel.generic.ReferenceType) {
-			cg = transferResult(cg, summary);
-			opStack = opStack.push(summary.getResultReference());
+			ReferenceNode ref = new ReferenceNode(position, Category.LOCAL);
+
+			cg = transferResult(cg, summary, ref);
+			opStack = opStack.push(ref);
 		} else
 			opStack = opStack.push(DontCareSlot.values()[produceStack], produceStack);
 

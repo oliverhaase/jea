@@ -188,7 +188,8 @@ aspect State {
 					targetMethod.methodSummary(), 
 					getConsumeStack(), 
 					getProduceStack(), 
-					getReturnType()));
+					getReturnType(),
+					getPosition()));
 					
 		return result;
 	}	
