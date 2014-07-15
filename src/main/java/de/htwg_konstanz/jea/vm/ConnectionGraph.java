@@ -19,6 +19,11 @@ public final class ConnectionGraph {
 	@Getter
 	private final Set<Pair<ReferenceNode, String>> pointsToEdges = new HashSet<>();
 
+	public ConnectionGraph() {
+		objectNodes = new ObjectNodes();
+		fieldEdges = new HashSet<>();
+	}
+
 	public ConnectionGraph(Set<Integer> indexes, Slot[] vars) {
 		objectNodes = new ObjectNodes();
 		fieldEdges = new HashSet<>();
@@ -38,6 +43,7 @@ public final class ConnectionGraph {
 
 			vars[index] = ref;
 		}
+		referenceNodes.add(ReferenceNode.getReturnRef());
 	}
 
 	public ConnectionGraph(ConnectionGraph original) {
@@ -100,9 +106,51 @@ public final class ConnectionGraph {
 		return result;
 	}
 
+	public ConnectionGraph setReturnRef(ReferenceNode ref) {
+		ConnectionGraph result = new ConnectionGraph(this);
+		for (ObjectNode obj : dereference(ref))
+			result.pointsToEdges.add(new Pair<ReferenceNode, String>(ReferenceNode.getReturnRef(),
+					obj.getId()));
+		return result;
+	}
+
+	public ConnectionGraph merge(ConnectionGraph other) {
+		ConnectionGraph result = new ConnectionGraph();
+
+		for (ObjectNode oneObject : this.objectNodes) {
+			boolean found = false;
+			for (ObjectNode otherObject : other.objectNodes) {
+				if (oneObject.equals(otherObject)) {
+					result.objectNodes.add(oneObject.getEscapeState().moreConfinedThan(
+							otherObject.getEscapeState()) ? otherObject : oneObject);
+					found = true;
+				}
+			}
+			if (!found)
+				result.objectNodes.add(oneObject);
+		}
+
+		result.objectNodes.addAll(other.objectNodes);
+
+		result.fieldEdges.addAll(this.fieldEdges);
+		result.fieldEdges.addAll(other.fieldEdges);
+
+		result.referenceNodes.addAll(this.referenceNodes);
+		result.referenceNodes.addAll(other.referenceNodes);
+
+		result.pointsToEdges.addAll(this.pointsToEdges);
+		result.pointsToEdges.addAll(other.pointsToEdges);
+
+		return result;
+	}
+
 	@Override
 	public String toString() {
 		return "CG(" + pointsToEdges + ", " + fieldEdges + ")";
+	}
+
+	public Set<ObjectNode> getResultValues() {
+		return dereference(ReferenceNode.getReturnRef());
 	}
 
 }
