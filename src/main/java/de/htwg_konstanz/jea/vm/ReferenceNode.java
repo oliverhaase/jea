@@ -12,6 +12,8 @@ public class ReferenceNode implements NonObjectNode, Slot {
 	};
 
 	private final static ReferenceNode GLOBAL_REF = new ReferenceNode(-1, Category.GLOBAL);
+	private final static ReferenceNode RETURN_REF = new ReferenceNode(-1, Category.RETURN);
+
 	private final Category category;
 	private final int id;
 
@@ -22,6 +24,10 @@ public class ReferenceNode implements NonObjectNode, Slot {
 
 	public static ReferenceNode getGlobalRef() {
 		return GLOBAL_REF;
+	}
+
+	public static ReferenceNode getReturnRef() {
+		return RETURN_REF;
 	}
 
 	@Override
