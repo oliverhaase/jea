@@ -1,6 +1,44 @@
 
 aspect ReturnResult {
 	
+	syn ConnectionGraph Instruction.returnResult() = null;
+	
+	syn ConnectionGraph ReturnInstruction.returnResult() {
+		ConnectionGraph result = new ConnectionGraph();
+		
+		for ( State state : statesIn() )
+			result = result.merge(state.getCg());
+			
+		return result;	
+	}
+	
+	syn ConnectionGraph Areturn.returnResult() {
+		ConnectionGraph result = new ConnectionGraph();
+		
+		for ( State state : statesIn() )
+			result = result.merge(state.getCg().setReturnRef((ReferenceNode) state.getOpStack().peek()));
+			
+		return result;	
+	}
+	
+	syn ConnectionGraph Athrow.returnResult() {
+		ConnectionGraph result = new ConnectionGraph();
+		
+		for ( State state : statesIn() )
+			result = result.merge(state.getCg().setReturnRef((ReferenceNode) state.getOpStack().peek()));
+			
+		return result;	
+	}	
+	
+	syn ConnectionGraph ExitPoint.returnResult() {
+		ConnectionGraph result = new ConnectionGraph();
+		for ( Instruction predecessor : pred() )
+			result = result.merge(predecessor.returnResult());
+		return result;	
+	}
+	
+	
+/*	
 	syn ReturnResult Instruction.returnResult()  = null;
 		
 	syn ReturnResult ReturnInstruction.returnResult() {
@@ -35,5 +73,6 @@ aspect ReturnResult {
 			result = result.merge(predecessor.returnResult());
 		return result;	
 	}
+	*/
 
 }
