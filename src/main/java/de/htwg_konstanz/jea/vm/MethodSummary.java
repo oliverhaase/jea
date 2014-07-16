@@ -46,50 +46,6 @@ public class MethodSummary {
 				.getId()));
 	}
 
-	// public MethodSummary(ReturnResult rr) {
-	// ObjectNodes objectNodes = new ObjectNodes();
-	// objectNodes.addAll(rr.getObjectNodes());
-	//
-	// Set<FieldEdge> fieldEdges = new HashSet<>();
-	// fieldEdges.addAll(rr.getFieldEdges());
-	//
-	// resolveEmptyReturnObjectSet(objectNodes, fieldEdges,
-	// rr.getResultValues());
-	//
-	// for (ObjectNode resultObject : rr.getResultValues()) {
-	// objectNodes.remove(resultObject);
-	// objectNodes.add(resultObject.increaseEscapeState(EscapeState.ARG_ESCAPE));
-	// }
-	//
-	// removeNullObject(objectNodes, fieldEdges);
-	//
-	// objectNodes = propagateEscapeState(
-	// propagateEscapeState(objectNodes, fieldEdges, EscapeState.GLOBAL_ESCAPE),
-	// fieldEdges, EscapeState.ARG_ESCAPE);
-	//
-	// this.escapedObjects = collapseGlobalGraph(objectNodes, fieldEdges);
-	//
-	// this.resultReference = new ReferenceNode(hashCode(), Category.RETURN);
-	// this.resultPointsToEdges = new HashSet<>();
-	//
-	// for (ObjectNode resultObject : rr.getResultValues()) {
-	// if (this.escapedObjects.existsObject(resultObject.getId()))
-	// this.resultPointsToEdges.add(new Pair<ReferenceNode,
-	// String>(resultReference,
-	// GlobalObject.getInstance().getId()));
-	// else
-	// this.resultPointsToEdges.add(new Pair<ReferenceNode,
-	// String>(resultReference,
-	// resultObject.getId()));
-	// }
-	//
-	// this.localObjects = removeLocalGraph(objectNodes, fieldEdges);
-	//
-	// this.argEscapeObjects = objectNodes;
-	// this.fieldEdges = fieldEdges;
-	//
-	// }
-
 	public MethodSummary(ConnectionGraph cg) {
 		ObjectNodes objectNodes = new ObjectNodes();
 		objectNodes.addAll(cg.getObjectNodes());
