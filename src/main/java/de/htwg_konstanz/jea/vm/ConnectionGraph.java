@@ -24,7 +24,7 @@ public final class ConnectionGraph {
 		fieldEdges = new HashSet<>();
 	}
 
-	public ConnectionGraph(Set<Integer> indexes, Slot[] vars) {
+	public ConnectionGraph(Set<Integer> indexes, Slot[] vars, boolean hasRefReturnType) {
 		objectNodes = new ObjectNodes();
 		fieldEdges = new HashSet<>();
 
@@ -43,7 +43,8 @@ public final class ConnectionGraph {
 
 			vars[index] = ref;
 		}
-		referenceNodes.add(ReferenceNode.getReturnRef());
+		if (hasRefReturnType)
+			referenceNodes.add(ReferenceNode.getReturnRef());
 	}
 
 	public ConnectionGraph(ConnectionGraph original) {

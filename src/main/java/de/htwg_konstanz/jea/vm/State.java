@@ -23,7 +23,7 @@ public final class State {
 		this.cg = cg;
 	}
 
-	public State(Set<Integer> indexes, int maxLocals) {
+	public State(Set<Integer> indexes, int maxLocals, boolean hasRefReturnType) {
 		Slot[] vars = new Slot[maxLocals];
 
 		// initialize local vars
@@ -32,7 +32,7 @@ public final class State {
 		}
 
 		// have ConnectionGraph overwrite reference local vars
-		cg = new ConnectionGraph(indexes, vars);
+		cg = new ConnectionGraph(indexes, vars, hasRefReturnType);
 
 		localVars = new LocalVars(vars);
 		opStack = new OpStack();

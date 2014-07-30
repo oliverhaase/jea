@@ -13,7 +13,9 @@ aspect State {
 				indexes.add(index);
 			index++;	
 		}	
-		return new State(indexes, getMaxLocals());
+		boolean hasRefReturnType = getRetType() instanceof org.apache.bcel.generic.ReferenceType;
+		
+		return new State(indexes, getMaxLocals(), hasRefReturnType);
 	}	
 
 	coll Set<State> Instruction.statesIn() circular [new HashSet<State>()] with addAll root Method;
