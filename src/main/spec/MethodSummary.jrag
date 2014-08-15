@@ -4,7 +4,11 @@ aspect MethodSummary {
 			
 	syn ConnectionGraph ExitPoint.methodSummary() = returnResult().doFinalStuff();
 	
-	syn ConnectionGraph Method.methodSummary() circular [ConnectionGraph.getInitialGraph()]; 
+//	syn ConnectionGraph Method.methodSummary() circular [ConnectionGraph.getInitialGraph()]; 
+
+	syn ConnectionGraph Method.initialCG() = new ConnectionGraph(refParamIndexes(), hasRefReturnType());
+
+	syn ConnectionGraph Method.methodSummary() circular [initialCG()]; 
 	
 	eq Method.methodSummary() =
 		( getIsAbstract() || getIsNative() ) ? ConnectionGraph.getAlienGraph() :
