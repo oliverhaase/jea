@@ -15,9 +15,6 @@ public final class ConnectionGraph {
 	private final static ConnectionGraph ALIEN_GRAPH = new ConnectionGraph(
 			GlobalObject.getInstance());
 
-	private final static ConnectionGraph INITIAL_GRAPH = new ConnectionGraph(
-			EmptyReturnObjectSet.getInstance());
-
 	@Getter
 	private final ObjectNodes objectNodes;
 	@Getter
@@ -173,10 +170,6 @@ public final class ConnectionGraph {
 
 	public boolean isAlien() {
 		return this == ALIEN_GRAPH;
-	}
-
-	public static ConnectionGraph getInitialGraph() {
-		return INITIAL_GRAPH;
 	}
 
 	@Override
