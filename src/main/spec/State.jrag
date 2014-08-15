@@ -1,22 +1,9 @@
 
 aspect State {
 
-	public State Method.createState() {
-		int index = 0;	
-		Set<Integer> indexes = new HashSet<Integer>();
+	syn State Method.createState() =
+		new State(initialCG(), refParamIndexes(), getMaxLocals());
 		
-		if ( !getIsStatic() ) 
-			indexes.add(index++);
-			
-		for ( org.apache.bcel.generic.Type argType : getArgTypes() ) {
-			if ( argType instanceof org.apache.bcel.generic.ReferenceType ) 
-				indexes.add(index);
-			index++;	
-		}	
-		boolean hasRefReturnType = getRetType() instanceof org.apache.bcel.generic.ReferenceType;
-		
-		return new State(indexes, getMaxLocals(), hasRefReturnType);
-	}	
 
 	coll Set<State> Instruction.statesIn() circular [new HashSet<State>()] with addAll root Method;
 	Instruction contributes statesOut() to Instruction.statesIn() for each succ();
