@@ -23,7 +23,10 @@ public final class State {
 		this.cg = cg;
 	}
 
-	public State(Set<Integer> indexes, int maxLocals, boolean hasRefReturnType) {
+	public State(ConnectionGraph cg, Set<Integer> indexes, int maxLocals) {
+		this.cg = cg;
+		opStack = new OpStack();
+
 		Slot[] vars = new Slot[maxLocals];
 
 		// initialize local vars
@@ -31,13 +34,10 @@ public final class State {
 			vars[i] = DontCareSlot.NORMAL_SLOT;
 		}
 
-		cg = new ConnectionGraph(indexes, hasRefReturnType);
-
 		for (Integer index : indexes)
 			vars[index] = cg.getRefToPhantomObject(index);
 
 		localVars = new LocalVars(vars);
-		opStack = new OpStack();
 	}
 
 	private Set<String> mapsTo(String objectId, ConnectionGraph summary, int consumeStack) {
