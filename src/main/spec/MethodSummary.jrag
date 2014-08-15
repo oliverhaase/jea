@@ -1,15 +1,15 @@
 
 aspect MethodSummary {	
-	syn MethodSummary Instruction.methodSummary() = null;
+	syn ConnectionGraph Instruction.methodSummary() = null;
 			
-	syn MethodSummary ExitPoint.methodSummary() = new MethodSummary(returnResult());
+	syn ConnectionGraph ExitPoint.methodSummary() = returnResult().doFinalStuff();
 	
-	syn MethodSummary Method.methodSummary() circular [MethodSummary.getInitialSummary()]; 
+	syn ConnectionGraph Method.methodSummary() circular [ConnectionGraph.getInitialGraph()]; 
 	
 	eq Method.methodSummary() =
-		( getIsAbstract() || getIsNative() ) ? MethodSummary.getAlienSummary() :
+		( getIsAbstract() || getIsNative() ) ? ConnectionGraph.getAlienGraph() :
 			exitPoint().methodSummary();
 	
-	syn MethodSummary AlienMethod.methodSummary() =	MethodSummary.getAlienSummary();
+	syn ConnectionGraph AlienMethod.methodSummary() =	ConnectionGraph.getAlienGraph();
 	
 }
