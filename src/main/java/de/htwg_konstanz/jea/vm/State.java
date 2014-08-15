@@ -31,8 +31,10 @@ public final class State {
 			vars[i] = DontCareSlot.NORMAL_SLOT;
 		}
 
-		// have ConnectionGraph overwrite reference local vars
-		cg = new ConnectionGraph(indexes, vars, hasRefReturnType);
+		cg = new ConnectionGraph(indexes, hasRefReturnType);
+
+		for (Integer index : indexes)
+			vars[index] = cg.getRefToPhantomObject(index);
 
 		localVars = new LocalVars(vars);
 		opStack = new OpStack();

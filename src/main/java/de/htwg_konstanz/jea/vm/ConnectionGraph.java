@@ -47,7 +47,7 @@ public final class ConnectionGraph {
 				returnObject.getId()));
 	}
 
-	public ConnectionGraph(Set<Integer> indexes, Slot[] vars, boolean hasRefReturnType) {
+	public ConnectionGraph(Set<Integer> indexes, boolean hasRefReturnType) {
 		objectNodes = new ObjectNodes();
 		fieldEdges = new HashSet<>();
 
@@ -63,9 +63,8 @@ public final class ConnectionGraph {
 			referenceNodes.add(ref);
 			objectNodes.add(obj);
 			pointsToEdges.add(new Pair<ReferenceNode, String>(ref, obj.getId()));
-
-			vars[index] = ref;
 		}
+
 		if (hasRefReturnType)
 			referenceNodes.add(ReferenceNode.getReturnRef());
 	}
@@ -336,6 +335,13 @@ public final class ConnectionGraph {
 			if (obj instanceof InternalObject)
 				result.add(((InternalObject) obj).getType());
 		return result;
+	}
+
+	public ReferenceNode getRefToPhantomObject(int index) {
+		for (ReferenceNode ref : referenceNodes)
+			if (ref.getCategory() == Category.ARG && ref.getId() == index)
+				return ref;
+		throw new AssertionError("phantom object with id " + index + " doesn not exist");
 	}
 
 }

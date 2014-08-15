@@ -1,6 +1,7 @@
 package de.htwg_konstanz.jea.vm;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import net.jcip.annotations.Immutable;
 
@@ -14,7 +15,9 @@ public class ReferenceNode implements NonObjectNode, Slot {
 	private final static ReferenceNode GLOBAL_REF = new ReferenceNode(-1, Category.GLOBAL);
 	private final static ReferenceNode RETURN_REF = new ReferenceNode(-1, Category.RETURN);
 
+	@Getter
 	private final Category category;
+	@Getter
 	private final int id;
 
 	public ReferenceNode(int id, @NonNull Category category) {
