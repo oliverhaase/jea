@@ -12,13 +12,12 @@ import de.htwg_konstanz.jea.vm.ReferenceNode.Category;
 
 @EqualsAndHashCode
 public final class ConnectionGraph {
-	private final static ConnectionGraph ALIEN_GRAPH = new ConnectionGraph(
-			GlobalObject.getInstance());
+	private final static ConnectionGraph ALIEN_GRAPH = new ConnectionGraph();
 
 	@Getter
-	private final ObjectNodes objectNodes;
+	private final ObjectNodes objectNodes = new ObjectNodes();;
 	@Getter
-	private final Set<FieldEdge> fieldEdges;
+	private final Set<FieldEdge> fieldEdges = new HashSet<>();
 	@Getter
 	private final Set<ReferenceNode> referenceNodes = new HashSet<>();
 	@Getter
@@ -29,25 +28,9 @@ public final class ConnectionGraph {
 	private final ObjectNodes localObjects = new ObjectNodes();
 
 	public ConnectionGraph() {
-		objectNodes = new ObjectNodes();
-		fieldEdges = new HashSet<>();
-	}
-
-	public ConnectionGraph(ObjectNode returnObject) {
-		objectNodes = new ObjectNodes();
-		objectNodes.add(GlobalObject.getInstance());
-		objectNodes.add(EmptyReturnObjectSet.getInstance());
-
-		fieldEdges = new HashSet<>();
-
-		pointsToEdges.add(new Pair<ReferenceNode, String>(ReferenceNode.getReturnRef(),
-				returnObject.getId()));
 	}
 
 	public ConnectionGraph(Set<Integer> indexes, boolean hasRefReturnType) {
-		objectNodes = new ObjectNodes();
-		fieldEdges = new HashSet<>();
-
 		referenceNodes.add(ReferenceNode.getGlobalRef());
 		objectNodes.add(GlobalObject.getInstance());
 		pointsToEdges.add(new Pair<ReferenceNode, String>(ReferenceNode.getGlobalRef(),
@@ -62,14 +45,16 @@ public final class ConnectionGraph {
 			pointsToEdges.add(new Pair<ReferenceNode, String>(ref, obj.getId()));
 		}
 
-		if (hasRefReturnType)
+		if (hasRefReturnType) {
+			objectNodes.add(EmptyReturnObjectSet.getInstance());
 			referenceNodes.add(ReferenceNode.getReturnRef());
+			pointsToEdges.add(new Pair<ReferenceNode, String>(ReferenceNode.getReturnRef(),
+					EmptyReturnObjectSet.getInstance().getId()));
+		}
+
 	}
 
 	public ConnectionGraph(ConnectionGraph original) {
-		objectNodes = new ObjectNodes();
-		fieldEdges = new HashSet<>();
-
 		objectNodes.addAll(original.objectNodes);
 		referenceNodes.addAll(original.referenceNodes);
 
@@ -128,6 +113,14 @@ public final class ConnectionGraph {
 
 	public ConnectionGraph setReturnRef(ReferenceNode ref) {
 		ConnectionGraph result = new ConnectionGraph(this);
+		for (Iterator<Pair<ReferenceNode, String>> it = result.pointsToEdges.iterator(); it
+				.hasNext();) {
+			Pair<ReferenceNode, String> pointsToEdge = it.next();
+			if (pointsToEdge.getValue1().equals(ReferenceNode.getReturnRef())
+					&& pointsToEdge.getValue2().equals(EmptyReturnObjectSet.getInstance().getId()))
+				it.remove();
+		}
+
 		for (ObjectNode obj : dereference(ref))
 			result.pointsToEdges.add(new Pair<ReferenceNode, String>(ReferenceNode.getReturnRef(),
 					obj.getId()));
