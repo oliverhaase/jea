@@ -30,6 +30,20 @@ public final class ConnectionGraph {
 	public ConnectionGraph() {
 	}
 
+	/**
+	 * Initializes the ConnectionGraph with the basic Nodes and the
+	 * corresponding references. These are the GlobalObject and - if the return
+	 * value is a reference - the ReturnObject. Furthermore there is one
+	 * PhantomObject for each argument.
+	 * 
+	 * @param indexes
+	 *            the positions of the reference arguments. The index is used as
+	 *            ID for the Objects.
+	 * @param hasRefReturnType
+	 *            if the return value is of the Type Reference, a new reference
+	 *            to the {@code EmptyReturnObjectSet} is added to the
+	 *            ConnectionGraph
+	 */
 	public ConnectionGraph(Set<Integer> indexes, boolean hasRefReturnType) {
 		referenceNodes.add(ReferenceNode.getGlobalRef());
 		objectNodes.add(GlobalObject.getInstance());
@@ -54,6 +68,9 @@ public final class ConnectionGraph {
 
 	}
 
+	/**
+	 * Copy Constructor
+	 */
 	public ConnectionGraph(ConnectionGraph original) {
 		objectNodes.addAll(original.objectNodes);
 		referenceNodes.addAll(original.referenceNodes);
@@ -62,6 +79,12 @@ public final class ConnectionGraph {
 		fieldEdges.addAll(original.fieldEdges);
 	}
 
+	/**
+	 * As {@code ref} can point to multiple objects, the Set of referneced
+	 * objects is returned.
+	 * 
+	 * @return the objects referenced from {@code ref}
+	 */
 	public Set<ObjectNode> dereference(ReferenceNode ref) {
 		Set<ObjectNode> result = new HashSet<>();
 		for (Pair<ReferenceNode, String> pointsToEdge : pointsToEdges)
@@ -70,6 +93,13 @@ public final class ConnectionGraph {
 		return result;
 	}
 
+	/**
+	 * To publish an object its EscapeState is set to GLOBAL_ESCAPE.
+	 * 
+	 * @param ref
+	 *            the ReferenceNode to publish
+	 * @return the resulting ConnectionGraph
+	 */
 	public ConnectionGraph publish(ReferenceNode ref) {
 		ConnectionGraph result = new ConnectionGraph(this);
 
@@ -81,6 +111,11 @@ public final class ConnectionGraph {
 		return result;
 	}
 
+	/**
+	 * Assigns the {@code value} to the field {@code fieldName} of {@code obj}
+	 * {@code (obj.fieldName = value)}. If the {@code value} doesn't exist
+	 * already in this ConnectionGraph, it is added.
+	 */
 	public ConnectionGraph addField(ObjectNode obj, String fieldName, ObjectNode value) {
 		if (obj.isGlobal())
 			return this;
@@ -94,6 +129,9 @@ public final class ConnectionGraph {
 		return result;
 	}
 
+	/**
+	 * Adds the reference and the object to the ConnectionGraph and links them.
+	 */
 	public ConnectionGraph addReferenceAndTarget(ReferenceNode ref, ObjectNode obj) {
 		ConnectionGraph result = new ConnectionGraph(this);
 		result.referenceNodes.add(ref);
@@ -102,6 +140,10 @@ public final class ConnectionGraph {
 		return result;
 	}
 
+	/**
+	 * Adds the reference and the objects to the ConnectionGraph and links the
+	 * objects to the reference.
+	 */
 	public ConnectionGraph addReferenceToTargets(ReferenceNode ref, Set<ObjectNode> targets) {
 		ConnectionGraph result = new ConnectionGraph(this);
 		result.referenceNodes.add(ref);
@@ -111,6 +153,14 @@ public final class ConnectionGraph {
 		return result;
 	}
 
+	/**
+	 * Removes the EmptyReturnObject and the link from the ReturnReference to it
+	 * and replaces it with the links to the referenced objects of {@code ref}.
+	 * 
+	 * @param ref
+	 *            the ReferenceNode that points to the possible ReturnObjects
+	 * @return
+	 */
 	public ConnectionGraph setReturnRef(ReferenceNode ref) {
 		ConnectionGraph result = new ConnectionGraph(this);
 		for (Iterator<Pair<ReferenceNode, String>> it = result.pointsToEdges.iterator(); it
@@ -127,6 +177,14 @@ public final class ConnectionGraph {
 		return result;
 	}
 
+	/**
+	 * Merges {@code this} ConnectionGraph with the {@code other}. If
+	 * ObjectNodes exist in both, then the less confined ObjectNode is used.
+	 * 
+	 * @param other
+	 *            the ConnectionGraph to merge
+	 * @return the merged ConnectionGraph
+	 */
 	public ConnectionGraph merge(ConnectionGraph other) {
 		ConnectionGraph result = new ConnectionGraph();
 
@@ -174,6 +232,9 @@ public final class ConnectionGraph {
 		return dereference(ReferenceNode.getReturnRef());
 	}
 
+	/**
+	 * Replaces the links to the EmptyReturnObject with the ResultValues. //TODO
+	 */
 	private void resolveEmptyReturnObjectSet() {
 		Set<FieldEdge> edgesToBeRemoved = new HashSet<>();
 		Set<FieldEdge> edgesToBeAdded = new HashSet<>();
@@ -201,6 +262,10 @@ public final class ConnectionGraph {
 		objectNodes.remove(EmptyReturnObjectSet.getInstance());
 	}
 
+	/**
+	 * Removes all NullObjects and the connected fieldEdges from the
+	 * ConnectionGraph.
+	 */
 	private void removeNullObject() {
 		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator.hasNext();)
 			if (objIterator.next().equals(InternalObject.getNullObject()))
@@ -214,6 +279,14 @@ public final class ConnectionGraph {
 		}
 	}
 
+	/**
+	 * Increases the EscapeState of a child ObjectNode to the EscapeState of the
+	 * parent Node for all Nodes with the specified {@code escapeState}.
+	 * 
+	 * @param escapeState
+	 *            the EscapeState for which ObjectNodes the children should be
+	 *            updated
+	 */
 	private void propagateEscapeState(EscapeState escapeState) {
 		Stack<ObjectNode> workingList = new Stack<>();
 		for (ObjectNode objectNode : objectNodes)
@@ -233,6 +306,12 @@ public final class ConnectionGraph {
 		}
 	}
 
+	/**
+	 * Removes all ObjectNodes with GLOBAL_ESCAPE from the CG and adds them to
+	 * the Set of {@code escapedObjects}. Replaces all FieldEdges pointing to
+	 * these ObjectNodes with edges pointing to the GlobalObject and deletes all
+	 * FieldEdges starting from these ObjectNodes.
+	 */
 	private void collapseGlobalGraph() {
 		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator.hasNext();) {
 			ObjectNode current = objIterator.next();
@@ -262,6 +341,11 @@ public final class ConnectionGraph {
 		}
 	}
 
+	/**
+	 * Removes all ObjectNodes with NO_ESCAPE from the CG and adds them to the
+	 * Set of {@code localObjects}. Deletes all FieldEdges starting from these
+	 * ObjectNodes.
+	 */
 	private void removeLocalGraph() {
 		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator.hasNext();) {
 			ObjectNode current = objIterator.next();
@@ -278,6 +362,15 @@ public final class ConnectionGraph {
 		}
 	}
 
+	/**
+	 * Propagates the EscapeStates of the ObjectNodes and deletes all irrelevant
+	 * Nodes. Local Objects (NO_ESCAPE) are removed and global Objects
+	 * (GLOBAL_ESCAPE) are repalced with the {@code GlobalObject}. So only
+	 * ObjectNodes referenced by the arguments (ARG_ESCAPE) and the ReturnValues
+	 * are kept in the CG.
+	 * 
+	 * @return the ConnectionGraph that summarizes all necessary information
+	 */
 	public ConnectionGraph doFinalStuff() {
 		ConnectionGraph result = new ConnectionGraph(this);
 
