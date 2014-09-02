@@ -117,8 +117,11 @@ public final class ConnectionGraph {
 	 * already in this ConnectionGraph, it is added.
 	 */
 	public ConnectionGraph addField(ObjectNode obj, String fieldName, ObjectNode value) {
-		if (obj.isGlobal())
-			return this;
+		// if (obj.isGlobal())
+		// return this;
+
+		if (obj.equals(InternalObject.getNullObject()))
+			throw new AssertionError("assign Object to a field of null");
 
 		ConnectionGraph result = new ConnectionGraph(this);
 
@@ -266,7 +269,7 @@ public final class ConnectionGraph {
 	 * Removes all NullObjects and the connected fieldEdges from the
 	 * ConnectionGraph.
 	 */
-	private void removeNullObject() {
+	protected void removeNullObject() {
 		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator.hasNext();)
 			if (objIterator.next().equals(InternalObject.getNullObject()))
 				objIterator.remove();
@@ -420,7 +423,14 @@ public final class ConnectionGraph {
 		for (ReferenceNode ref : referenceNodes)
 			if (ref.getCategory() == Category.ARG && ref.getId() == index)
 				return ref;
-		throw new AssertionError("phantom object with id " + index + " doesn not exist");
+		throw new AssertionError("phantom object with id " + index + " does not exist");
+	}
+
+	public ObjectNode getObjectNode(String id) {
+		for (ObjectNode obj : objectNodes)
+			if (obj.getId().equals(id))
+				return obj;
+		throw new AssertionError("object with id " + id + " does not exist");
 	}
 
 }
