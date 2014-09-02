@@ -1,37 +1,37 @@
 
 aspect ReturnResult {
 	
-	syn ConnectionGraph Instruction.returnResult() = null;
+	syn Heap Instruction.returnResult() = null;
 	
-	syn ConnectionGraph ReturnInstruction.returnResult() {
-		ConnectionGraph result = new ConnectionGraph();
+	syn Heap ReturnInstruction.returnResult() {
+		Heap result = new Heap();
 		
 		for ( State state : statesIn() )
-			result = result.merge(state.getCg());
+			result = result.merge(state.getHeap());
 			
 		return result;	
 	}
 	
-	syn ConnectionGraph Areturn.returnResult() {
-		ConnectionGraph result = new ConnectionGraph();
+	syn Heap Areturn.returnResult() {
+		Heap result = new Heap();
 		
 		for ( State state : statesIn() )
-			result = result.merge(state.getCg().setReturnRef((ReferenceNode) state.getOpStack().peek()));
+			result = result.merge(state.getHeap().setReturnRef((ReferenceNode) state.getOpStack().peek()));
 			
 		return result;	
 	}
 	
-	syn ConnectionGraph Athrow.returnResult() {
-		ConnectionGraph result = new ConnectionGraph();
+	syn Heap Athrow.returnResult() {
+		Heap result = new Heap();
 		
 		for ( State state : statesIn() )
-			result = result.merge(state.getCg().setReturnRef((ReferenceNode) state.getOpStack().peek()));
+			result = result.merge(state.getHeap().setReturnRef((ReferenceNode) state.getOpStack().peek()));
 			
 		return result;	
 	}	
 	
-	syn ConnectionGraph ExitPoint.returnResult() {
-		ConnectionGraph result = new ConnectionGraph();
+	syn Heap ExitPoint.returnResult() {
+		Heap result = new Heap();
 		for ( Instruction predecessor : pred() )
 			result = result.merge(predecessor.returnResult());
 		return result;	

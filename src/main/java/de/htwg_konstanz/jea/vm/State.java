@@ -15,16 +15,16 @@ public final class State {
 	@Getter
 	private final OpStack opStack;
 	@Getter
-	private final ConnectionGraph cg;
+	private final Heap heap;
 
-	public State(@NonNull LocalVars localVars, @NonNull OpStack opStack, @NonNull ConnectionGraph cg) {
+	public State(@NonNull LocalVars localVars, @NonNull OpStack opStack, @NonNull Heap heap) {
 		this.localVars = localVars;
 		this.opStack = opStack;
-		this.cg = cg;
+		this.heap = heap;
 	}
 
-	public State(ConnectionGraph cg, Set<Integer> indexes, int maxLocals) {
-		this.cg = cg;
+	public State(Heap heap, Set<Integer> indexes, int maxLocals) {
+		this.heap = heap;
 		opStack = new OpStack();
 
 		Slot[] vars = new Slot[maxLocals];
@@ -35,12 +35,12 @@ public final class State {
 		}
 
 		for (Integer index : indexes)
-			vars[index] = cg.getRefToPhantomObject(index);
+			vars[index] = heap.getRefToPhantomObject(index);
 
 		localVars = new LocalVars(vars);
 	}
 
-	private Set<String> mapsTo(String objectId, ConnectionGraph summary, int consumeStack) {
+	private Set<String> mapsTo(String objectId, Heap summary, int consumeStack) {
 		Set<String> result = new HashSet<>();
 
 		// global object
@@ -63,7 +63,7 @@ public final class State {
 				objectId);
 
 		if (phantom.getOrigin() == null) {
-			for (ObjectNode mappingObj : cg.dereference((ReferenceNode) opStack.getArgumentAtIndex(
+			for (ObjectNode mappingObj : heap.dereference((ReferenceNode) opStack.getArgumentAtIndex(
 					phantom.getIndex(), consumeStack))) {
 				result.add(mappingObj.getId());
 			}
@@ -76,8 +76,8 @@ public final class State {
 		}
 
 		for (String mapsToId : mapsTo(phantom.getOrigin().getId(), summary, consumeStack)) {
-			for (ObjectNode field : cg.getObjectNodes().getFieldOf(
-					cg.getObjectNodes().getObjectNode(mapsToId), cg.getFieldEdges(),
+			for (ObjectNode field : heap.getObjectNodes().getFieldOf(
+					heap.getObjectNodes().getObjectNode(mapsToId), heap.getFieldEdges(),
 					phantom.getField())) {
 				result.add(field.getId());
 			}
@@ -86,8 +86,8 @@ public final class State {
 		return result;
 	}
 
-	private ConnectionGraph publishEscapedArgs(ConnectionGraph summary, int consumeStack) {
-		ConnectionGraph result = cg;
+	private Heap publishEscapedArgs(Heap summary, int consumeStack) {
+		Heap result = heap;
 
 		if (summary.isAlien()) {
 			for (int i = 0; i < consumeStack; i++) {
@@ -110,10 +110,10 @@ public final class State {
 		return result;
 	}
 
-	// private ConnectionGraph publishEscapedArgs(MethodSummary summary, OpStack
+	// private Heap publishEscapedArgs(MethodSummary summary, OpStack
 	// opStack,
-	// ConnectionGraph cg, int consumeStack) {
-	// ConnectionGraph result = cg;
+	// Heap heap, int consumeStack) {
+	// Heap result = heap;
 	//
 	// if (summary.isAlien()) {
 	// for (int i = 0; i < consumeStack; i++) {
@@ -136,8 +136,8 @@ public final class State {
 	// return result;
 	// }
 
-	private ConnectionGraph transferInternalObjects(ConnectionGraph cg, ConnectionGraph summary) {
-		ConnectionGraph result = new ConnectionGraph(cg);
+	private Heap transferInternalObjects(Heap heap, Heap summary) {
+		Heap result = new Heap(heap);
 
 		for (ObjectNode object : summary.getArgEscapeObjects())
 			if (object instanceof InternalObject)
@@ -146,9 +146,8 @@ public final class State {
 		return result;
 	}
 
-	private ConnectionGraph transferFieldEdges(ConnectionGraph cg, ConnectionGraph summary,
-			int consumeStack) {
-		ConnectionGraph result = new ConnectionGraph(cg);
+	private Heap transferFieldEdges(Heap heap, Heap summary, int consumeStack) {
+		Heap result = new Heap(heap);
 
 		for (FieldEdge edge : summary.getFieldEdges()) {
 			for (String originId : mapsTo(edge.getOriginId(), summary, consumeStack))
@@ -160,9 +159,8 @@ public final class State {
 		return result;
 	}
 
-	private ConnectionGraph transferResult(ConnectionGraph cg, ConnectionGraph summary,
-			ReferenceNode ref) {
-		ConnectionGraph result = new ConnectionGraph(cg);
+	private Heap transferResult(Heap heap, Heap summary, ReferenceNode ref) {
+		Heap result = new Heap(heap);
 
 		result.getReferenceNodes().add(ref);
 
@@ -177,28 +175,28 @@ public final class State {
 		return result;
 	}
 
-	public State applyMethodSummary(ConnectionGraph summary, int consumeStack, int produceStack,
+	public State applyMethodSummary(Heap summary, int consumeStack, int produceStack,
 			org.apache.bcel.generic.Type returnType, int position) {
 
 		OpStack resultOpStack;
-		ConnectionGraph resultCg;
+		Heap resultHeap;
 
-		resultCg = publishEscapedArgs(summary, consumeStack);
+		resultHeap = publishEscapedArgs(summary, consumeStack);
 
-		resultCg = transferInternalObjects(resultCg, summary);
-		resultCg = transferFieldEdges(resultCg, summary, consumeStack);
+		resultHeap = transferInternalObjects(resultHeap, summary);
+		resultHeap = transferFieldEdges(resultHeap, summary, consumeStack);
 
 		resultOpStack = opStack.pop(consumeStack);
 
 		if (returnType instanceof org.apache.bcel.generic.ReferenceType) {
 			ReferenceNode ref = new ReferenceNode(position, Category.LOCAL);
 
-			resultCg = transferResult(resultCg, summary, ref);
+			resultHeap = transferResult(resultHeap, summary, ref);
 			resultOpStack = resultOpStack.push(ref);
 		} else
 			resultOpStack = resultOpStack.push(DontCareSlot.values()[produceStack], produceStack);
 
-		return new State(localVars, resultOpStack, resultCg);
+		return new State(localVars, resultOpStack, resultHeap);
 
 	}
 
@@ -207,28 +205,28 @@ public final class State {
 	// org.apache.bcel.generic.Type returnType, int position) {
 	//
 	// OpStack opStack = this.opStack;
-	// ConnectionGraph cg = this.cg;
+	// Heap heap = this.heap;
 	//
-	// cg = publishEscapedArgs(summary, opStack, cg, consumeStack);
-	// cg = transferInternalObjects(cg, summary);
-	// cg = transferFieldEdges(cg, summary, consumeStack);
+	// heap = publishEscapedArgs(summary, opStack, heap, consumeStack);
+	// heap = transferInternalObjects(heap, summary);
+	// heap = transferFieldEdges(heap, summary, consumeStack);
 	//
 	// opStack = opStack.pop(consumeStack);
 	//
 	// if (returnType instanceof org.apache.bcel.generic.ReferenceType) {
 	// ReferenceNode ref = new ReferenceNode(position, Category.LOCAL);
 	//
-	// cg = transferResult(cg, summary, ref);
+	// heap = transferResult(heap, summary, ref);
 	// opStack = opStack.push(ref);
 	// } else
 	// opStack = opStack.push(DontCareSlot.values()[produceStack],
 	// produceStack);
 	//
-	// return new State(localVars, opStack, cg);
+	// return new State(localVars, opStack, heap);
 	// }
 
 	@Override
 	public String toString() {
-		return localVars + "| " + opStack + "| " + cg;
+		return localVars + "| " + opStack + "| " + heap;
 	}
 }

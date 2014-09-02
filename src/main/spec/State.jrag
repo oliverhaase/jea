@@ -20,7 +20,7 @@ aspect State {
 						( getProduceStack() > getConsumeStack() ) ? 
 							original.getOpStack().push(DontCareSlot.NORMAL_SLOT, getProduceStack() - getConsumeStack()) :
 							original.getOpStack().pop(getConsumeStack() - getProduceStack()), 
-						original.getCg());
+						original.getHeap());
 			}
 		});
 		
@@ -30,7 +30,7 @@ aspect State {
 				return new State(
 					original.getLocalVars(), 
 					original.getOpStack().pop().push(DontCareSlot.NORMAL_SLOT), 
-					original.getCg()); 
+					original.getHeap()); 
 			}
 		});
 	
@@ -40,7 +40,7 @@ aspect State {
 				return new State(
 					original.getLocalVars(), 
 					original.getOpStack().pop(getConsumeStack()).push(original.getOpStack().peek()), 
-					original.getCg()); 
+					original.getHeap()); 
 			}
 		});		
 	
@@ -48,13 +48,13 @@ aspect State {
 	eq AconstNull.statesOut() =
 		States.processStates(statesIn(), new StateProcessor() {
 			@Override public State process(State original) {
-				ConnectionGraph cg = original.getCg();
+				Heap heap = original.getHeap();
 				ReferenceNode ref = new ReferenceNode(getPosition(), Category.LOCAL);
-				cg = cg.addReferenceAndTarget(ref, InternalObject.getNullObject()); 
+				heap = heap.addReferenceAndTarget(ref, InternalObject.getNullObject()); 
 				return new State(
 					original.getLocalVars(), 
 					original.getOpStack().pop(getConsumeStack()).push(ref), 
-					cg); 
+					heap); 
 			}
 		});
 	
@@ -70,20 +70,20 @@ aspect State {
 		return States.processStates(statesIn(), new StateProcessor() {
 			@Override public State process(State original) {
 				OpStack opStack = original.getOpStack();
-				ConnectionGraph cg = original.getCg();
+				Heap heap = original.getHeap();
 				
 				// inspect type of value to be assigned
 				Slot value = opStack.peek();
 				
 				if ( value instanceof ReferenceNode ) 
-					for ( ObjectNode obj : cg.dereference(getStoreObjectRef(original)) ) 
-						for ( ObjectNode referredValue : cg.dereference((ReferenceNode) value) ) 
-							cg = cg.addField(obj, getFieldName(), referredValue);
+					for ( ObjectNode obj : heap.dereference(getStoreObjectRef(original)) ) 
+						for ( ObjectNode referredValue : heap.dereference((ReferenceNode) value) ) 
+							heap = heap.addField(obj, getFieldName(), referredValue);
 				
 				return new State(
 					original.getLocalVars(), 
 					opStack.pop(getConsumeStack()), 
-					cg);
+					heap);
 			}
 		});	
 	}
@@ -101,26 +101,26 @@ aspect State {
 		States.processStates(statesIn(), new StateProcessor() {
 			@Override public State process(State original) {
 				OpStack opStack = original.getOpStack();
-				ConnectionGraph cg = original.getCg();
+				Heap heap = original.getHeap();
 				Slot result;
 				
 				if ( getFieldType() instanceof org.apache.bcel.generic.ReferenceType ) {
 					result = new ReferenceNode(getPosition(), Category.LOCAL);
 					Set<ObjectNode> allTargets = new HashSet<ObjectNode>();
 
-					for ( ObjectNode obj :  cg.dereference(getLoadObjectRef(original))) {
+					for ( ObjectNode obj :  heap.dereference(getLoadObjectRef(original))) {
 						Set<ObjectNode> targets 
-							= cg.getObjectNodes().getFieldOf(obj, cg.getFieldEdges(), getFieldName());
+							= heap.getObjectNodes().getFieldOf(obj, heap.getFieldEdges(), getFieldName());
 						if ( targets.isEmpty() ) {
 							ObjectNode subObject = 
 								PhantomObject.newSubPhantom(obj, getFieldName());
-							cg = cg.addField(obj, getFieldName(), subObject);
+							heap = heap.addField(obj, getFieldName(), subObject);
 							targets.add(subObject);
 						}
 						allTargets.addAll(targets);
 					}
 							
-					cg = cg.addReferenceToTargets((ReferenceNode) result, allTargets);
+					heap = heap.addReferenceToTargets((ReferenceNode) result, allTargets);
 					
 				} else 
 					result = DontCareSlot.values()[getProduceStack()];					
@@ -128,7 +128,7 @@ aspect State {
 				return new State(
 					original.getLocalVars(), 
 					opStack.pop(getConsumeStack()).push(result, getProduceStack()), 
-					cg);									
+					heap);									
 			}
 		});	
 
@@ -141,7 +141,7 @@ aspect State {
 						(getConstantType() instanceof org.apache.bcel.generic.ReferenceType ) ? 
 						ReferenceNode.getGlobalRef() 
 						: DontCareSlot.NORMAL_SLOT), 
-					original.getCg());
+					original.getHeap());
 			}
 		});	
 
@@ -149,7 +149,7 @@ aspect State {
 	eq NewInstruction.statesOut() =
 		States.processStates(statesIn(), new StateProcessor() {
 			@Override public State process(State original) {
-				ConnectionGraph cg = original.getCg();
+				Heap heap = original.getHeap();
 				
 				ObjectNode obj = new InternalObject(
 					method().clazz().getName() + "." 
@@ -160,11 +160,11 @@ aspect State {
 					ClassHelper.isRunnable(getType()) ? EscapeState.GLOBAL_ESCAPE : EscapeState.NO_ESCAPE);
 					
 				ReferenceNode ref = new ReferenceNode(getPosition(), Category.LOCAL);
-				cg = cg.addReferenceAndTarget(ref, obj); 
+				heap = heap.addReferenceAndTarget(ref, obj); 
 				return new State(
 					original.getLocalVars(), 
 					original.getOpStack().pop(getConsumeStack()).push(ref), 
-					cg); 
+					heap); 
 			}
 		});
 	
@@ -190,7 +190,7 @@ aspect State {
 					original.getLocalVars(), 
 					original.getOpStack().push(original.getLocalVars().get(getIndex()), 
 						getProduceStack()), 
-					original.getCg());
+					original.getHeap());
 			}
 		});
 	
@@ -200,7 +200,7 @@ aspect State {
 				return new State(
 					original.getLocalVars().set(getIndex(), original.getOpStack().peek()), 
 					original.getOpStack().pop(getConsumeStack()), 
-					original.getCg());
+					original.getHeap());
 			}
 		});
 	
@@ -210,7 +210,7 @@ aspect State {
 				return new State(
 					original.getLocalVars(), 
 					original.getOpStack().push(original.getOpStack().peek()), 
-					original.getCg());
+					original.getHeap());
 			}
 		});
 	
@@ -221,7 +221,7 @@ aspect State {
 					original.getLocalVars(), 
 					original.getOpStack().pop().pop().push(original.getOpStack().peek())
 						.push(original.getOpStack().pop().peek()).push(original.getOpStack().peek()), 
-					original.getCg());
+					original.getHeap());
 			}
 		});
 	
@@ -234,7 +234,7 @@ aspect State {
 						.push(original.getOpStack().pop().pop().peek())
 						.push(original.getOpStack().pop().peek())
 						.push(original.getOpStack().peek()), 
-					original.getCg());
+					original.getHeap());
 			}
 		});
 	
@@ -245,7 +245,7 @@ aspect State {
 					original.getLocalVars(), 
 					original.getOpStack().push(original.getOpStack().pop().peek())
 						.push(original.getOpStack().peek()), 
-					original.getCg());
+					original.getHeap());
 			}
 		});
 	
@@ -260,7 +260,7 @@ aspect State {
 						.push(original.getOpStack().pop().pop().peek())
 						.push(original.getOpStack().pop().peek())
 						.push(original.getOpStack().peek()), 
-					original.getCg());
+					original.getHeap());
 			}
 		});
 	
@@ -276,7 +276,7 @@ aspect State {
 						.push(original.getOpStack().pop().pop().peek())
 						.push(original.getOpStack().pop().peek())
 						.push(original.getOpStack().peek()), 
-					original.getCg());
+					original.getHeap());
 			}
 		});
 	
@@ -288,7 +288,7 @@ aspect State {
 					original.getOpStack().pop().pop()
 						.push(original.getOpStack().peek())
 						.push(original.getOpStack().pop().peek()), 
-					original.getCg());
+					original.getHeap());
 			}
 		});
 	

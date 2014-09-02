@@ -10,7 +10,7 @@ import de.htwg_konstanz.jea.vm.States;
 import de.htwg_konstanz.jea.vm.StateProcessor;
 import de.htwg_konstanz.jea.vm.OpStack;
 import de.htwg_konstanz.jea.vm.LocalVars;
-import de.htwg_konstanz.jea.vm.ConnectionGraph;
+import de.htwg_konstanz.jea.vm.Heap;
 import de.htwg_konstanz.jea.vm.ReferenceNode;
 import de.htwg_konstanz.jea.vm.ReferenceNode.Category;
 import de.htwg_konstanz.jea.vm.ObjectNode;

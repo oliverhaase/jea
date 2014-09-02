@@ -13,7 +13,7 @@ public class ConfinementChecker {
 				// "de.htwg_konstanz.jea.JeaDetector",
 				"de.htwg_konstanz.jea.ProgramBuilder",
 				"de.htwg_konstanz.jea.TccTestClass",
-				"de.htwg_konstanz.jea.vm.ConnectionGraph",
+				"de.htwg_konstanz.jea.vm.Heap",
 				"de.htwg_konstanz.jea.vm.DontCareSlot",
 				"de.htwg_konstanz.jea.vm.EscapingTypes",
 				"de.htwg_konstanz.jea.vm.FieldEdge",

@@ -1,19 +1,19 @@
 
 aspect MethodSummary {	
-	syn ConnectionGraph Instruction.methodSummary() = null;
+	syn Heap Instruction.methodSummary() = null;
 			
-	syn ConnectionGraph ExitPoint.methodSummary() = returnResult().doFinalStuff();
+	syn Heap ExitPoint.methodSummary() = returnResult().doFinalStuff();
 	
-//	syn ConnectionGraph Method.methodSummary() circular [ConnectionGraph.getInitialGraph()]; 
+//	syn Heap Method.methodSummary() circular [Heap.getInitialGraph()]; 
 
-	syn ConnectionGraph Method.initialCG() = new ConnectionGraph(refParamIndexes(), hasRefReturnType());
+	syn Heap Method.initialCG() = new Heap(refParamIndexes(), hasRefReturnType());
 
-	syn ConnectionGraph Method.methodSummary() circular [initialCG()]; 
+	syn Heap Method.methodSummary() circular [initialCG()]; 
 	
 	eq Method.methodSummary() =
-		( getIsAbstract() || getIsNative() ) ? ConnectionGraph.getAlienGraph() :
+		( getIsAbstract() || getIsNative() ) ? Heap.getAlienGraph() :
 			exitPoint().methodSummary();
 	
-	syn ConnectionGraph AlienMethod.methodSummary() =	ConnectionGraph.getAlienGraph();
+	syn Heap AlienMethod.methodSummary() =	Heap.getAlienGraph();
 	
 }

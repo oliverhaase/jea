@@ -11,8 +11,8 @@ import de.htwg_konstanz.jea.vm.Node.EscapeState;
 import de.htwg_konstanz.jea.vm.ReferenceNode.Category;
 
 @EqualsAndHashCode
-public final class ConnectionGraph {
-	private final static ConnectionGraph ALIEN_GRAPH = new ConnectionGraph();
+public final class Heap {
+	private final static Heap ALIEN_GRAPH = new Heap();
 
 	@Getter
 	private final ObjectNodes objectNodes = new ObjectNodes();;
@@ -27,24 +27,23 @@ public final class ConnectionGraph {
 	@Getter
 	private final ObjectNodes localObjects = new ObjectNodes();
 
-	public ConnectionGraph() {
+	public Heap() {
 	}
 
 	/**
-	 * Initializes the ConnectionGraph with the basic Nodes and the
-	 * corresponding references. These are the GlobalObject and - if the return
-	 * value is a reference - the ReturnObject. Furthermore there is one
-	 * PhantomObject for each argument.
+	 * Initializes the Heap with the basic Nodes and the corresponding
+	 * references. These are the GlobalObject and - if the return value is a
+	 * reference - the ReturnObject. Furthermore there is one PhantomObject for
+	 * each argument.
 	 * 
 	 * @param indexes
 	 *            the positions of the reference arguments. The index is used as
 	 *            ID for the Objects.
 	 * @param hasRefReturnType
 	 *            if the return value is of the Type Reference, a new reference
-	 *            to the {@code EmptyReturnObjectSet} is added to the
-	 *            ConnectionGraph
+	 *            to the {@code EmptyReturnObjectSet} is added to the Heap
 	 */
-	public ConnectionGraph(Set<Integer> indexes, boolean hasRefReturnType) {
+	public Heap(Set<Integer> indexes, boolean hasRefReturnType) {
 		referenceNodes.add(ReferenceNode.getGlobalRef());
 		objectNodes.add(GlobalObject.getInstance());
 		pointsToEdges.add(new Pair<ReferenceNode, String>(ReferenceNode.getGlobalRef(),
@@ -71,7 +70,7 @@ public final class ConnectionGraph {
 	/**
 	 * Copy Constructor
 	 */
-	public ConnectionGraph(ConnectionGraph original) {
+	public Heap(Heap original) {
 		objectNodes.addAll(original.objectNodes);
 		referenceNodes.addAll(original.referenceNodes);
 
@@ -98,10 +97,10 @@ public final class ConnectionGraph {
 	 * 
 	 * @param ref
 	 *            the ReferenceNode to publish
-	 * @return the resulting ConnectionGraph
+	 * @return the resulting Heap
 	 */
-	public ConnectionGraph publish(ReferenceNode ref) {
-		ConnectionGraph result = new ConnectionGraph(this);
+	public Heap publish(ReferenceNode ref) {
+		Heap result = new Heap(this);
 
 		for (ObjectNode object : dereference(ref)) {
 			result.objectNodes.remove(object);
@@ -114,16 +113,16 @@ public final class ConnectionGraph {
 	/**
 	 * Assigns the {@code value} to the field {@code fieldName} of {@code obj}
 	 * {@code (obj.fieldName = value)}. If the {@code value} doesn't exist
-	 * already in this ConnectionGraph, it is added.
+	 * already in this Heap, it is added.
 	 */
-	public ConnectionGraph addField(ObjectNode obj, String fieldName, ObjectNode value) {
+	public Heap addField(ObjectNode obj, String fieldName, ObjectNode value) {
 		// if (obj.isGlobal())
 		// return this;
 
 		if (obj.equals(InternalObject.getNullObject()))
 			throw new AssertionError("assign Object to a field of null");
 
-		ConnectionGraph result = new ConnectionGraph(this);
+		Heap result = new Heap(this);
 
 		if (!objectNodes.existsObject(value.getId()))
 			result.objectNodes.add(value);
@@ -133,10 +132,10 @@ public final class ConnectionGraph {
 	}
 
 	/**
-	 * Adds the reference and the object to the ConnectionGraph and links them.
+	 * Adds the reference and the object to the Heap and links them.
 	 */
-	public ConnectionGraph addReferenceAndTarget(ReferenceNode ref, ObjectNode obj) {
-		ConnectionGraph result = new ConnectionGraph(this);
+	public Heap addReferenceAndTarget(ReferenceNode ref, ObjectNode obj) {
+		Heap result = new Heap(this);
 		result.referenceNodes.add(ref);
 		result.objectNodes.add(obj);
 		result.pointsToEdges.add(new Pair<ReferenceNode, String>(ref, obj.getId()));
@@ -144,11 +143,11 @@ public final class ConnectionGraph {
 	}
 
 	/**
-	 * Adds the reference and the objects to the ConnectionGraph and links the
-	 * objects to the reference.
+	 * Adds the reference and the objects to the Heap and links the objects to
+	 * the reference.
 	 */
-	public ConnectionGraph addReferenceToTargets(ReferenceNode ref, Set<ObjectNode> targets) {
-		ConnectionGraph result = new ConnectionGraph(this);
+	public Heap addReferenceToTargets(ReferenceNode ref, Set<ObjectNode> targets) {
+		Heap result = new Heap(this);
 		result.referenceNodes.add(ref);
 		for (ObjectNode target : targets)
 			result.pointsToEdges.add(new Pair<ReferenceNode, String>(ref, target.getId()));
@@ -164,8 +163,8 @@ public final class ConnectionGraph {
 	 *            the ReferenceNode that points to the possible ReturnObjects
 	 * @return
 	 */
-	public ConnectionGraph setReturnRef(ReferenceNode ref) {
-		ConnectionGraph result = new ConnectionGraph(this);
+	public Heap setReturnRef(ReferenceNode ref) {
+		Heap result = new Heap(this);
 		for (Iterator<Pair<ReferenceNode, String>> it = result.pointsToEdges.iterator(); it
 				.hasNext();) {
 			Pair<ReferenceNode, String> pointsToEdge = it.next();
@@ -181,15 +180,15 @@ public final class ConnectionGraph {
 	}
 
 	/**
-	 * Merges {@code this} ConnectionGraph with the {@code other}. If
-	 * ObjectNodes exist in both, then the less confined ObjectNode is used.
+	 * Merges {@code this} Heap with the {@code other}. If ObjectNodes exist in
+	 * both, then the less confined ObjectNode is used.
 	 * 
 	 * @param other
-	 *            the ConnectionGraph to merge
-	 * @return the merged ConnectionGraph
+	 *            the Heap to merge
+	 * @return the merged Heap
 	 */
-	public ConnectionGraph merge(ConnectionGraph other) {
-		ConnectionGraph result = new ConnectionGraph();
+	public Heap merge(Heap other) {
+		Heap result = new Heap();
 
 		for (ObjectNode oneObject : this.objectNodes) {
 			boolean found = false;
@@ -218,7 +217,7 @@ public final class ConnectionGraph {
 		return result;
 	}
 
-	public static ConnectionGraph getAlienGraph() {
+	public static Heap getAlienGraph() {
 		return ALIEN_GRAPH;
 	}
 
@@ -266,8 +265,7 @@ public final class ConnectionGraph {
 	}
 
 	/**
-	 * Removes all NullObjects and the connected fieldEdges from the
-	 * ConnectionGraph.
+	 * Removes all NullObjects and the connected fieldEdges from the Heap.
 	 */
 	protected void removeNullObject() {
 		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator.hasNext();)
@@ -372,10 +370,10 @@ public final class ConnectionGraph {
 	 * ObjectNodes referenced by the arguments (ARG_ESCAPE) and the ReturnValues
 	 * are kept in the CG.
 	 * 
-	 * @return the ConnectionGraph that summarizes all necessary information
+	 * @return the Heap that summarizes all necessary information
 	 */
-	public ConnectionGraph doFinalStuff() {
-		ConnectionGraph result = new ConnectionGraph(this);
+	public Heap doFinalStuff() {
+		Heap result = new Heap(this);
 
 		result.resolveEmptyReturnObjectSet();
 

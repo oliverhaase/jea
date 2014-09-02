@@ -43,7 +43,7 @@ aspect CallGraph {
 		
 		getLoadClass();		
 		
-//		for ( ObjectNode targetObject : frame.getCg().dereference(
+//		for ( ObjectNode targetObject : frame.getHeap().dereference(
 //				(ReferenceNode) frame.getOpStack().getArgumentAtIndex(0, getConsumeStack())) ) 
 //			if ( targetObject instanceof InternalObject ) {
 //				result.add(method().clazz().program().getClass(((InternalObject)targetObject).getType())
