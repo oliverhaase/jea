@@ -86,8 +86,7 @@ public final class State {
 		return result;
 	}
 
-	private ConnectionGraph publishEscapedArgs(ConnectionGraph summary, OpStack opStack,
-			ConnectionGraph cg, int consumeStack) {
+	private ConnectionGraph publishEscapedArgs(ConnectionGraph summary, int consumeStack) {
 		ConnectionGraph result = cg;
 
 		if (summary.isAlien()) {
@@ -181,25 +180,25 @@ public final class State {
 	public State applyMethodSummary(ConnectionGraph summary, int consumeStack, int produceStack,
 			org.apache.bcel.generic.Type returnType, int position) {
 
-		OpStack opStack = this.opStack;
-		ConnectionGraph cg = this.cg;
+		OpStack resultOpStack;
+		ConnectionGraph resultCg;
 
-		cg = publishEscapedArgs(summary, opStack, cg, consumeStack);
+		resultCg = publishEscapedArgs(summary, consumeStack);
 
-		cg = transferInternalObjects(cg, summary);
-		cg = transferFieldEdges(cg, summary, consumeStack);
+		resultCg = transferInternalObjects(resultCg, summary);
+		resultCg = transferFieldEdges(resultCg, summary, consumeStack);
 
-		opStack = opStack.pop(consumeStack);
+		resultOpStack = opStack.pop(consumeStack);
 
 		if (returnType instanceof org.apache.bcel.generic.ReferenceType) {
 			ReferenceNode ref = new ReferenceNode(position, Category.LOCAL);
 
-			cg = transferResult(cg, summary, ref);
-			opStack = opStack.push(ref);
+			resultCg = transferResult(resultCg, summary, ref);
+			resultOpStack = resultOpStack.push(ref);
 		} else
-			opStack = opStack.push(DontCareSlot.values()[produceStack], produceStack);
+			resultOpStack = resultOpStack.push(DontCareSlot.values()[produceStack], produceStack);
 
-		return new State(localVars, opStack, cg);
+		return new State(localVars, resultOpStack, resultCg);
 
 	}
 
