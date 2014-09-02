@@ -1,21 +1,17 @@
 package de.htwg_konstanz.jea.vm;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.htwg_konstanz.jea.vm.Node.EscapeState;
 import de.htwg_konstanz.jea.vm.ReferenceNode.Category;
-import edu.umd.cs.findbugs.annotations.ExpectWarning;
 
 public class HeapTest {
 
@@ -235,7 +231,7 @@ public class HeapTest {
 
 	private int size(ObjectNodes argEscapeObjects) {
 		int size = 0;
-		for (ObjectNode objectNode : argEscapeObjects) {
+		for (@SuppressWarnings("unused") ObjectNode objectNode : argEscapeObjects) {
 			size++;
 		}
 		return size;
