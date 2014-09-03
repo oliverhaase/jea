@@ -164,8 +164,10 @@ public class HeapTest {
 		assertFalse(hasFieldEdge(heap, internalObject, nullObject));
 
 		// propagateEscapeState
-		assertEquals(EscapeState.ARG_ESCAPE, heap.getObjectNode("I1").getEscapeState());
-		assertEquals(EscapeState.ARG_ESCAPE, heap.getObjectNode("I2").getEscapeState());
+		assertEquals(EscapeState.ARG_ESCAPE, heap.getObjectNodes().getObjectNode("I1")
+				.getEscapeState());
+		assertEquals(EscapeState.ARG_ESCAPE, heap.getObjectNodes().getObjectNode("I2")
+				.getEscapeState());
 
 		// collapseGlobalGraph
 		assertFalse(heap.getObjectNodes().existsObject("I6"));
@@ -231,7 +233,8 @@ public class HeapTest {
 
 	private int size(ObjectNodes argEscapeObjects) {
 		int size = 0;
-		for (@SuppressWarnings("unused") ObjectNode objectNode : argEscapeObjects) {
+		for (@SuppressWarnings("unused")
+		ObjectNode objectNode : argEscapeObjects) {
 			size++;
 		}
 		return size;

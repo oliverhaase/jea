@@ -424,11 +424,4 @@ public final class Heap {
 		throw new AssertionError("phantom object with id " + index + " does not exist");
 	}
 
-	public ObjectNode getObjectNode(String id) {
-		for (ObjectNode obj : objectNodes)
-			if (obj.getId().equals(id))
-				return obj;
-		throw new AssertionError("object with id " + id + " does not exist");
-	}
-
 }
