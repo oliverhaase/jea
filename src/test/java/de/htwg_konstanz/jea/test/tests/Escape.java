@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import de.htwg_konstanz.jea.gen.Program;
 import de.htwg_konstanz.jea.test.TestHelper;
@@ -28,7 +29,7 @@ public class Escape {
 		this.classToTest = classToTest;
 	}
 
-	@Parameterized.Parameters
+	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> localClasses() {
 		Class<?>[] declaredClasses = Escape.class.getDeclaredClasses();
 		Collection<Object[]> params = new ArrayList<Object[]>();
@@ -42,10 +43,10 @@ public class Escape {
 
 	@Test
 	public void testClass() {
-		String[] classes = { "de.htwg_konstanz.jea.spec.test.classes.SimpleClass", classToTest };
+		String[] classes = { "de.htwg_konstanz.jea.test.classes.SimpleClass", classToTest };
 		Program program = TestHelper.analyze(classes, classToTest);
 		assertTrue(program.escapingClasses().contains(
-				"de.htwg_konstanz.jea.spec.test.classes.SimpleClass"));
+				"de.htwg_konstanz.jea.test.classes.SimpleClass"));
 	}
 
 	private static class EscapeStatic {

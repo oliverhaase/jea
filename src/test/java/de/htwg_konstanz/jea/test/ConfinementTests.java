@@ -34,20 +34,20 @@ public class ConfinementTests {
 
 	@Test
 	public void testConfined() {
-		String[] classes = { "de.htwg_konstanz.jea.spec.test.classes.SimpleClass",
-				"de.htwg_konstanz.jea.spec.test.tests.Confined" };
+		String[] classes = { "de.htwg_konstanz.jea.test.classes.SimpleClass",
+				"de.htwg_konstanz.jea.test.tests.Confined" };
 		Program program = TestHelper.analyze(classes, "Confined");
 		assertTrue(program.confinedClasses().contains(
-				"de.htwg_konstanz.jea.spec.test.classes.SimpleClass"));
+				"de.htwg_konstanz.jea.test.classes.SimpleClass"));
 	}
 
 	@Test
 	public void testEscapeStatic() {
-		String[] classes = { "de.htwg_konstanz.jea.spec.test.classes.SimpleClass",
-				"de.htwg_konstanz.jea.spec.test.tests.EscapeStatic" };
+		String[] classes = { "de.htwg_konstanz.jea.test.classes.SimpleClass",
+				"de.htwg_konstanz.jea.test.tests.EscapeStatic" };
 		Program program = TestHelper.analyze(classes, "Escape Static");
 		assertTrue(program.escapingClasses().contains(
-				"de.htwg_konstanz.jea.spec.test.classes.SimpleClass"));
+				"de.htwg_konstanz.jea.test.classes.SimpleClass"));
 	}
 
 }
