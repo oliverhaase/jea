@@ -1,4 +1,4 @@
-package de.htwg_konstanz.jea.spec.test;
+package de.htwg_konstanz.jea.test;
 
 import static org.junit.Assert.fail;
 import de.htwg_konstanz.jea.ProgramBuilder;

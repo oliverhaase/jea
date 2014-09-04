@@ -1,4 +1,4 @@
-package de.htwg_konstanz.jea.spec.test;
+package de.htwg_konstanz.jea.test;
 
 import static org.junit.Assert.*;
 
@@ -10,8 +10,8 @@ import org.junit.Test;
 
 import de.htwg_konstanz.jea.ProgramBuilder;
 import de.htwg_konstanz.jea.gen.Program;
-import de.htwg_konstanz.jea.spec.test.classes.SimpleClass;
-import de.htwg_konstanz.jea.spec.test.classes.StaticClass;
+import de.htwg_konstanz.jea.test.classes.SimpleClass;
+import de.htwg_konstanz.jea.test.classes.StaticClass;
 
 @SuppressWarnings("unused")
 public class ConfinementTests {

@@ -1,4 +1,4 @@
-package de.htwg_konstanz.jea.spec.test.tests;
+package de.htwg_konstanz.jea.test.tests;
 
 import static org.junit.Assert.assertTrue;
 
@@ -11,9 +11,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import de.htwg_konstanz.jea.gen.Program;
-import de.htwg_konstanz.jea.spec.test.TestHelper;
-import de.htwg_konstanz.jea.spec.test.classes.SimpleClass;
-import de.htwg_konstanz.jea.spec.test.classes.StaticClass;
+import de.htwg_konstanz.jea.test.TestHelper;
+import de.htwg_konstanz.jea.test.classes.SimpleClass;
+import de.htwg_konstanz.jea.test.classes.StaticClass;
 
 @SuppressWarnings("unused")
 @RunWith(Parameterized.class)

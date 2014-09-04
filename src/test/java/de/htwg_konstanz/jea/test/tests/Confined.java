@@ -1,7 +1,7 @@
-package de.htwg_konstanz.jea.spec.test.tests;
+package de.htwg_konstanz.jea.test.tests;
 
-import de.htwg_konstanz.jea.spec.test.classes.SimpleClass;
-import de.htwg_konstanz.jea.spec.test.classes.StaticClass;
+import de.htwg_konstanz.jea.test.classes.SimpleClass;
+import de.htwg_konstanz.jea.test.classes.StaticClass;
 
 @SuppressWarnings("unused")
 public class Confined {
