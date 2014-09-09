@@ -77,4 +77,117 @@ public class Confined {
 		}
 	}
 
+	private static class ToField {
+
+		private SimpleClass simpleClass;
+
+		private void test() {
+			simpleClass = new SimpleClass();
+		}
+	}
+
+	private static class NullToField {
+
+		private SimpleClass simpleClass;
+
+		private void test() {
+			SimpleClass sc = null;
+			simpleClass = sc;
+		}
+
+		private void test(SimpleClass o) {
+			simpleClass = o;
+		}
+
+		private void callTest() {
+			test(null);
+		}
+	}
+
+	private static class ParameterToField {
+
+		private SimpleClass simpleClass;
+
+		private void test(SimpleClass sc) {
+			simpleClass = sc;
+		}
+	}
+
+	private static class CallParameterToField {
+
+		private void test() {
+			ParameterToField parameterToField = new ParameterToField();
+			parameterToField.test(new SimpleClass());
+		}
+	}
+
+	private static class ToPublicField {
+
+		public SimpleClass simpleClass;
+
+		private void test() {
+			simpleClass = new SimpleClass();
+		}
+	}
+
+	private static class Recursive {
+		private void test(int i) {
+			if (i < 5)
+				test(++i);
+		}
+	}
+
+	private static class RecursiveReturn {
+		private int recursive(int i) {
+			int result;
+			if (i < 5) {
+				result = recursive(++i);
+			} else
+				return i;
+			return i + result;
+		}
+
+		public void test() {
+			recursive(0);
+		}
+	}
+
+	private static class RecursiveReturnReference {
+		private Object recursive(Object o) {
+			Object result;
+			if (o == this) {
+				result = recursive(o);
+			} else
+				return o;
+			return result;
+		}
+
+		public void test() {
+			recursive(new SimpleClass());
+		}
+	}
+
+	private static class RecursiveReturnInteger {
+		private int recursive(Integer i) {
+			int result;
+			if (i < 5) {
+				result = recursive(++i);
+			} else
+				return i;
+			return i + result;
+		}
+
+		public void test() {
+			recursive(0);
+
+		}
+	}
+
+	private static class CallRecursive {
+		private void test() {
+			RecursiveReturnReference r = new RecursiveReturnReference();
+			r.recursive(new SimpleClass());
+			r.test();
+		}
+	}
 }

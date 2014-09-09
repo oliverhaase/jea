@@ -13,6 +13,8 @@ import org.junit.runners.Parameterized.Parameters;
 
 import de.htwg_konstanz.jea.gen.Program;
 import de.htwg_konstanz.jea.test.TestHelper;
+import de.htwg_konstanz.jea.test.classes.PublicClass;
+import de.htwg_konstanz.jea.test.classes.RunnableClass;
 import de.htwg_konstanz.jea.test.classes.SimpleClass;
 import de.htwg_konstanz.jea.test.classes.StaticClass;
 
@@ -49,9 +51,16 @@ public class Escape {
 				"de.htwg_konstanz.jea.test.classes.SimpleClass"));
 	}
 
-	private static class EscapeStatic {
+	private static class EscapeToAlienMethod {
 		private void test() {
-			StaticClass.s = new SimpleClass();
+			new PublicClass().escape(new SimpleClass());
+		}
+	}
+
+	private static class EscapeToGlobalObject {
+		private void test() {
+			SimpleClass simpleClass = new PublicClass().getSimpleClass();
+			simpleClass.field = new SimpleClass();
 		}
 	}
 
@@ -70,4 +79,14 @@ public class Escape {
 			StaticClass.s = simpleClass;
 		}
 	}
+
+	private static class EscapeToRunnable {
+		private void test() {
+			RunnableClass runnable = new RunnableClass();
+
+			runnable.f = new SimpleClass();
+
+		}
+	}
+
 }
