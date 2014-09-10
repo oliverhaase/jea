@@ -44,25 +44,17 @@ public final class Heap {
 	 *            to the {@code EmptyReturnObjectSet} is added to the Heap
 	 */
 	public Heap(Set<Integer> indexes, boolean hasRefReturnType) {
-		referenceNodes.add(ReferenceNode.getGlobalRef());
-		objectNodes.add(GlobalObject.getInstance());
-		pointsToEdges.add(new Pair<ReferenceNode, String>(ReferenceNode.getGlobalRef(),
-				GlobalObject.getInstance().getId()));
+		addPointsToEdge(ReferenceNode.getGlobalRef(), GlobalObject.getInstance());
 
 		for (Integer index : indexes) {
 			ReferenceNode ref = new ReferenceNode(index, Category.ARG);
 			ObjectNode obj = PhantomObject.newPhantomObject(index);
 
-			referenceNodes.add(ref);
-			objectNodes.add(obj);
-			pointsToEdges.add(new Pair<ReferenceNode, String>(ref, obj.getId()));
+			addPointsToEdge(ref, obj);
 		}
 
 		if (hasRefReturnType) {
-			objectNodes.add(EmptyReturnObjectSet.getInstance());
-			referenceNodes.add(ReferenceNode.getReturnRef());
-			pointsToEdges.add(new Pair<ReferenceNode, String>(ReferenceNode.getReturnRef(),
-					EmptyReturnObjectSet.getInstance().getId()));
+			addPointsToEdge(ReferenceNode.getReturnRef(), EmptyReturnObjectSet.getInstance());
 		}
 
 	}
@@ -134,11 +126,18 @@ public final class Heap {
 	/**
 	 * Adds the reference and the object to the Heap and links them.
 	 */
+	private void addPointsToEdge(ReferenceNode ref, ObjectNode obj) {
+		referenceNodes.add(ref);
+		objectNodes.add(obj);
+		pointsToEdges.add(new Pair<ReferenceNode, String>(ref, obj.getId()));
+	}
+
+	/**
+	 * Adds the reference and the object to the Heap and links them.
+	 */
 	public Heap addReferenceAndTarget(ReferenceNode ref, ObjectNode obj) {
 		Heap result = new Heap(this);
-		result.referenceNodes.add(ref);
-		result.objectNodes.add(obj);
-		result.pointsToEdges.add(new Pair<ReferenceNode, String>(ref, obj.getId()));
+		result.addPointsToEdge(ref, obj);
 		return result;
 	}
 
