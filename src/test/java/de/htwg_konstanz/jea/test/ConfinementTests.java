@@ -16,31 +16,6 @@ import de.htwg_konstanz.jea.test.classes.StaticClass;
 @SuppressWarnings("unused")
 public class ConfinementTests {
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
-
-	@Before
-	public void setUp() throws Exception {
-	}
-
-	@After
-	public void tearDown() throws Exception {
-	}
-
-	@Test
-	public void testConfined() {
-		String[] classes = { "de.htwg_konstanz.jea.test.classes.SimpleClass",
-				"de.htwg_konstanz.jea.test.tests.Confined" };
-		Program program = TestHelper.analyze(classes, "Confined");
-		assertTrue(program.confinedClasses().contains(
-				"de.htwg_konstanz.jea.test.classes.SimpleClass"));
-	}
-
 	@Test
 	public void testEscapeStatic() {
 		String[] classes = { "de.htwg_konstanz.jea.test.classes.SimpleClass",

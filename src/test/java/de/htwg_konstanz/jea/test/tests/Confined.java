@@ -21,10 +21,6 @@ import de.htwg_konstanz.jea.test.classes.StaticClass;
 public class Confined {
 	private String classToTest;
 
-	@Before
-	public void initialize() {
-	}
-
 	public Confined(String classToTest) {
 		this.classToTest = classToTest;
 	}

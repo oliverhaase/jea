@@ -5,31 +5,36 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.junit.Before;
+import org.apache.bcel.classfile.ConstantPool;
+import org.apache.bcel.classfile.JavaClass;
+import org.apache.bcel.generic.ConstantPoolGen;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import de.htwg_konstanz.jea.AstConverterVisitor;
+import de.htwg_konstanz.jea.gen.ByteCodeClass;
+import de.htwg_konstanz.jea.gen.Field;
 import de.htwg_konstanz.jea.gen.Program;
 import de.htwg_konstanz.jea.test.TestHelper;
 import de.htwg_konstanz.jea.test.classes.PublicClass;
-import de.htwg_konstanz.jea.test.classes.RunnableClass;
 import de.htwg_konstanz.jea.test.classes.SimpleClass;
 import de.htwg_konstanz.jea.test.classes.StaticClass;
+import edu.umd.cs.findbugs.classfile.engine.bcel.ConstantPoolGenFactory;
 
 @SuppressWarnings("unused")
 @RunWith(Parameterized.class)
-public class Escape {
+public class Executable {
 	private String classToTest;
 
-	public Escape(String classToTest) {
+	public Executable(String classToTest) {
 		this.classToTest = classToTest;
 	}
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> localClasses() {
-		Class<?>[] declaredClasses = Escape.class.getDeclaredClasses();
+		Class<?>[] declaredClasses = Executable.class.getDeclaredClasses();
 		Collection<Object[]> params = new ArrayList<Object[]>();
 
 		for (Class<?> clazz : declaredClasses) {
@@ -41,48 +46,22 @@ public class Escape {
 
 	@Test
 	public void testClass() {
-		String[] classes = { "de.htwg_konstanz.jea.test.classes.SimpleClass", classToTest };
+		String[] classes = { classToTest };
 		Program program = TestHelper.analyze(classes, classToTest);
-		assertTrue(program.escapingClasses().contains(
-				"de.htwg_konstanz.jea.test.classes.SimpleClass"));
 	}
 
-	private static class EscapeToAlienMethod {
-		private void test() {
-			new PublicClass().escape(new SimpleClass());
-		}
-	}
+	private static class TestClass {
 
-	private static class EscapeToGlobalObject {
-		private void test() {
-			SimpleClass simpleClass = new PublicClass().getSimpleClass();
-			simpleClass.field = new SimpleClass();
-		}
-	}
+		private SimpleClass refParam;
 
-	private static class EscapeStaticLocalVariable {
 		private void test() {
 			SimpleClass simpleClass = new SimpleClass();
-			StaticClass.s = simpleClass;
+			SimpleClass sc = refParam(simpleClass);
+			refParam = sc;
+		}
+
+		private SimpleClass refParam(SimpleClass sc) {
+			return sc;
 		}
 	}
-
-	private static class EscapeStaticField {
-		private SimpleClass simpleClass;
-
-		private void test() {
-			simpleClass = new SimpleClass();
-			StaticClass.s = simpleClass;
-		}
-	}
-
-	private static class EscapeToRunnable {
-		private void test() {
-			RunnableClass runnable = new RunnableClass();
-
-			runnable.f = new SimpleClass();
-
-		}
-	}
-
 }
