@@ -168,9 +168,11 @@ public final class State {
 			result.getPointsToEdges().add(
 					new Pair<ReferenceNode, String>(ref, GlobalObject.getInstance().getId()));
 		else
-			for (ObjectNode resultValue : summary.getResultValues())
-				result.getPointsToEdges().add(
-						new Pair<ReferenceNode, String>(ref, resultValue.getId()));
+			for (ObjectNode resultValue : summary.getResultValues()) {
+				// result.getPointsToEdges().add(
+				// new Pair<ReferenceNode, String>(ref, resultValue.getId()));
+				result.addReferenceAndTarget(ref, resultValue);
+			}
 
 		return result;
 	}
