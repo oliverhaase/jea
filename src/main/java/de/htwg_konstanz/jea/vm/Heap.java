@@ -2,6 +2,7 @@ package de.htwg_konstanz.jea.vm;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Stack;
 
@@ -20,7 +21,6 @@ public final class Heap {
 	private final Set<FieldEdge> fieldEdges = new HashSet<>();
 	@Getter
 	private final Set<ReferenceNode> referenceNodes = new HashSet<>();
-	@Getter
 	private final Set<Pair<ReferenceNode, String>> pointsToEdges = new HashSet<>();
 	@Getter
 	private final ObjectNodes escapedObjects = new ObjectNodes();
@@ -115,6 +115,9 @@ public final class Heap {
 			throw new AssertionError("assign Object to a field of null");
 
 		Heap result = new Heap(this);
+
+		if (!objectNodes.existsObject(obj.getId()))
+			throw new NoSuchElementException(obj + "doesn't exist in this Heap");
 
 		if (!objectNodes.existsObject(value.getId()))
 			result.objectNodes.add(value);

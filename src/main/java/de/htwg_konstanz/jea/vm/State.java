@@ -162,15 +162,10 @@ public final class State {
 	private Heap transferResult(Heap heap, Heap summary, ReferenceNode ref) {
 		Heap result = new Heap(heap);
 
-		result.getReferenceNodes().add(ref);
-
 		if (summary.isAlien())
-			result.getPointsToEdges().add(
-					new Pair<ReferenceNode, String>(ref, GlobalObject.getInstance().getId()));
+			result.addReferenceAndTarget(ref, GlobalObject.getInstance());
 		else
 			for (ObjectNode resultValue : summary.getResultValues()) {
-				// result.getPointsToEdges().add(
-				// new Pair<ReferenceNode, String>(ref, resultValue.getId()));
 				result.addReferenceAndTarget(ref, resultValue);
 			}
 

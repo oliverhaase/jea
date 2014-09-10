@@ -14,6 +14,13 @@ public class ObjectNodes implements Iterable<ObjectNode> {
 		nodes = new HashSet<ObjectNode>();
 	}
 
+	/**
+	 * Adds the specified element to this set if it is not already present
+	 * (optional operation).
+	 * 
+	 * @param node
+	 *            the ObjectNode to add
+	 */
 	public void add(ObjectNode node) {
 		nodes.add(node);
 	}
