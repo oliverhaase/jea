@@ -227,7 +227,12 @@ public final class Heap {
 
 	@Override
 	public String toString() {
-		return "Heap(" + pointsToEdges + ", " + fieldEdges + ")";
+		StringBuilder sb = new StringBuilder("Heap( [");
+		for (Pair<ReferenceNode, String> pair : pointsToEdges)
+			sb.append("(").append(pair.getValue1().toString()).append(" -> ")
+					.append(pair.getValue2()).append(") ");
+		sb.append("] ; ").append(fieldEdges.toString()).append(")");
+		return sb.toString();
 	}
 
 	public Set<ObjectNode> getResultValues() {

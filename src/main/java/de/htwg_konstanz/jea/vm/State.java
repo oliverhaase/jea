@@ -63,8 +63,8 @@ public final class State {
 				objectId);
 
 		if (phantom.getOrigin() == null) {
-			for (ObjectNode mappingObj : heap.dereference((ReferenceNode) opStack.getArgumentAtIndex(
-					phantom.getIndex(), consumeStack))) {
+			for (ObjectNode mappingObj : heap.dereference((ReferenceNode) opStack
+					.getArgumentAtIndex(phantom.getIndex(), consumeStack))) {
 				result.add(mappingObj.getId());
 			}
 			return result;
@@ -227,6 +227,6 @@ public final class State {
 
 	@Override
 	public String toString() {
-		return localVars + "| " + opStack + "| " + heap;
+		return localVars + " || " + opStack + " || " + heap;
 	}
 }

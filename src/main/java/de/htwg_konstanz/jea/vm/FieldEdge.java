@@ -22,6 +22,6 @@ public class FieldEdge {
 
 	@Override
 	public String toString() {
-		return "(" + originId + ", " + fieldName + ", " + destinationId + ")";
+		return "(" + originId + "." + fieldName + " = " + destinationId + ")";
 	}
 }
