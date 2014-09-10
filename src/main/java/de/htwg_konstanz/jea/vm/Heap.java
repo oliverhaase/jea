@@ -227,7 +227,7 @@ public final class Heap {
 
 	@Override
 	public String toString() {
-		return "CG(" + pointsToEdges + ", " + fieldEdges + ")";
+		return "Heap(" + pointsToEdges + ", " + fieldEdges + ")";
 	}
 
 	public Set<ObjectNode> getResultValues() {
@@ -308,7 +308,7 @@ public final class Heap {
 	}
 
 	/**
-	 * Removes all ObjectNodes with GLOBAL_ESCAPE from the CG and adds them to
+	 * Removes all ObjectNodes with GLOBAL_ESCAPE from the Heap and adds them to
 	 * the Set of {@code escapedObjects}. Replaces all FieldEdges pointing to
 	 * these ObjectNodes with edges pointing to the GlobalObject and deletes all
 	 * FieldEdges starting from these ObjectNodes.
@@ -343,7 +343,7 @@ public final class Heap {
 	}
 
 	/**
-	 * Removes all ObjectNodes with NO_ESCAPE from the CG and adds them to the
+	 * Removes all ObjectNodes with NO_ESCAPE from the Heap and adds them to the
 	 * Set of {@code localObjects}. Deletes all FieldEdges starting from these
 	 * ObjectNodes.
 	 */
@@ -368,7 +368,7 @@ public final class Heap {
 	 * Nodes. Local Objects (NO_ESCAPE) are removed and global Objects
 	 * (GLOBAL_ESCAPE) are repalced with the {@code GlobalObject}. So only
 	 * ObjectNodes referenced by the arguments (ARG_ESCAPE) and the ReturnValues
-	 * are kept in the CG.
+	 * are kept in the Heap.
 	 * 
 	 * @return the Heap that summarizes all necessary information
 	 */

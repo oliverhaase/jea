@@ -2,7 +2,7 @@
 aspect State {
 
 	syn State Method.createState() =
-		new State(initialCG(), refParamIndexes(), getMaxLocals());
+		new State(initialHeap(), refParamIndexes(), getMaxLocals());
 		
 
 	coll Set<State> Instruction.statesIn() circular [new HashSet<State>()] with addAll root Method;

@@ -6,9 +6,9 @@ aspect MethodSummary {
 	
 //	syn Heap Method.methodSummary() circular [Heap.getInitialGraph()]; 
 
-	syn Heap Method.initialCG() = new Heap(refParamIndexes(), hasRefReturnType());
+	syn Heap Method.initialHeap() = new Heap(refParamIndexes(), hasRefReturnType());
 
-	syn Heap Method.methodSummary() circular [initialCG()]; 
+	syn Heap Method.methodSummary() circular [initialHeap()]; 
 	
 	eq Method.methodSummary() =
 		( getIsAbstract() || getIsNative() ) ? Heap.getAlienGraph() :
