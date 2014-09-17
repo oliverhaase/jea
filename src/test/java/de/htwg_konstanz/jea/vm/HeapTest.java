@@ -78,13 +78,18 @@ public class HeapTest {
 		heap = heap.addField(internalObject, "f", internalObject2);
 		heap = heap.addField(internalObject, "f2", nullObject);
 
-		heap = heap.addReferenceAndTarget(new ReferenceNode(4, Category.LOCAL), nullObject);
+		ReferenceNode nullRef = new ReferenceNode(4, Category.LOCAL);
+		heap = heap.addReferenceAndTarget(nullRef, nullObject);
+
+		heap.dereference(nullRef);
 
 		assertEquals(6, size(heap.getObjectNodes()));
 
 		heap.removeNullObject();
 
 		assertEquals(5, size(heap.getObjectNodes()));
+
+		heap.dereference(nullRef);
 
 		Iterator<FieldEdge> iterator = heap.getFieldEdges().iterator();
 		FieldEdge edge = iterator.next();

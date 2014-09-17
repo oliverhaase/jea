@@ -272,7 +272,8 @@ public final class Heap {
 	}
 
 	/**
-	 * Removes all NullObjects and the connected fieldEdges from the Heap.
+	 * Removes all NullObjects and the connected fieldEdges and pointsToEdges
+	 * from the Heap.
 	 */
 	protected void removeNullObject() {
 		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator.hasNext();)
@@ -282,6 +283,13 @@ public final class Heap {
 		for (Iterator<FieldEdge> edgeIterator = fieldEdges.iterator(); edgeIterator.hasNext();) {
 			FieldEdge edge = edgeIterator.next();
 			if (edge.getDestinationId().equals(InternalObject.getNullObject().getId()))
+				edgeIterator.remove();
+		}
+
+		for (Iterator<Pair<ReferenceNode, String>> edgeIterator = pointsToEdges.iterator(); edgeIterator
+				.hasNext();) {
+			Pair<ReferenceNode, String> edge = edgeIterator.next();
+			if (edge.getValue2().equals(InternalObject.getNullObject().getId()))
 				edgeIterator.remove();
 		}
 	}
