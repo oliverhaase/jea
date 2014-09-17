@@ -105,7 +105,8 @@ public final class Heap {
 	/**
 	 * Assigns the {@code value} to the field {@code fieldName} of {@code obj}
 	 * {@code (obj.fieldName = value)}. If the {@code value} doesn't exist
-	 * already in this Heap, it is added.
+	 * already in this Heap, it is added. If the {@code obj} doesn't exist a
+	 * NoSuchElementException is thrown.
 	 */
 	public Heap addField(ObjectNode obj, String fieldName, ObjectNode value) {
 		// if (obj.isGlobal())
@@ -117,7 +118,8 @@ public final class Heap {
 		Heap result = new Heap(this);
 
 		if (!objectNodes.existsObject(obj.getId()))
-			throw new NoSuchElementException(obj + "doesn't exist in this Heap");
+			throw new NoSuchElementException("To the object " + obj
+					+ " should be added a field, but it bedoesn't exist in this Heap");
 
 		if (!objectNodes.existsObject(value.getId()))
 			result.objectNodes.add(value);
@@ -150,10 +152,8 @@ public final class Heap {
 	 */
 	public Heap addReferenceToTargets(ReferenceNode ref, Set<ObjectNode> targets) {
 		Heap result = new Heap(this);
-		result.referenceNodes.add(ref);
 		for (ObjectNode target : targets)
-			result.pointsToEdges.add(new Pair<ReferenceNode, String>(ref, target.getId()));
-
+			result.addPointsToEdge(ref, target);
 		return result;
 	}
 
@@ -281,8 +281,7 @@ public final class Heap {
 
 		for (Iterator<FieldEdge> edgeIterator = fieldEdges.iterator(); edgeIterator.hasNext();) {
 			FieldEdge edge = edgeIterator.next();
-			if (edge.getOriginId().equals(InternalObject.getNullObject().getId())
-					|| edge.getDestinationId().equals(InternalObject.getNullObject().getId()))
+			if (edge.getDestinationId().equals(InternalObject.getNullObject().getId()))
 				edgeIterator.remove();
 		}
 	}
