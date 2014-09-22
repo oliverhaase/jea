@@ -325,7 +325,7 @@ public final class Heap {
 	 * Removes all ObjectNodes with GLOBAL_ESCAPE from the Heap and adds them to
 	 * the Set of {@code escapedObjects}. Replaces all FieldEdges pointing to
 	 * these ObjectNodes with edges pointing to the GlobalObject and deletes all
-	 * FieldEdges starting from these ObjectNodes.
+	 * FieldEdges starting from these ObjectNodes. Replaces all pointsToEdges.
 	 */
 	private void collapseGlobalGraph() {
 		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator.hasNext();) {
@@ -351,10 +351,27 @@ public final class Heap {
 									.getId()));
 				}
 
+				replacePointsToEdge(current, GlobalObject.getInstance());
+
 				escapedObjects.add(current);
 				objIterator.remove();
 			}
 		}
+	}
+
+	private void replacePointsToEdge(ObjectNode oldObject, ObjectNode newObject) {
+		Set<Pair<ReferenceNode, String>> edgesToAdd = new HashSet<>();
+		for (Iterator<Pair<ReferenceNode, String>> edgeIterator = pointsToEdges.iterator(); edgeIterator
+				.hasNext();) {
+			Pair<ReferenceNode, String> edge = edgeIterator.next();
+
+			if (edge.getValue2().equals(oldObject.getId())) {
+				edgesToAdd
+						.add(new Pair<ReferenceNode, String>(edge.getValue1(), newObject.getId()));
+				edgeIterator.remove();
+			}
+		}
+		pointsToEdges.addAll(edgesToAdd);
 	}
 
 	/**
