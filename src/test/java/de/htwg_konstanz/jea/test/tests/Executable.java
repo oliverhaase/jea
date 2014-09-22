@@ -1,27 +1,16 @@
 package de.htwg_konstanz.jea.test.tests;
 
-import static org.junit.Assert.assertTrue;
-
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.apache.bcel.classfile.ConstantPool;
-import org.apache.bcel.classfile.JavaClass;
-import org.apache.bcel.generic.ConstantPoolGen;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import de.htwg_konstanz.jea.AstConverterVisitor;
-import de.htwg_konstanz.jea.gen.ByteCodeClass;
-import de.htwg_konstanz.jea.gen.Field;
 import de.htwg_konstanz.jea.gen.Program;
 import de.htwg_konstanz.jea.test.TestHelper;
-import de.htwg_konstanz.jea.test.classes.PublicClass;
 import de.htwg_konstanz.jea.test.classes.SimpleClass;
-import de.htwg_konstanz.jea.test.classes.StaticClass;
-import edu.umd.cs.findbugs.classfile.engine.bcel.ConstantPoolGenFactory;
 
 @SuppressWarnings("unused")
 @RunWith(Parameterized.class)
@@ -61,6 +50,20 @@ public class Executable {
 		}
 
 		private SimpleClass refParam(SimpleClass sc) {
+			return sc;
+		}
+	}
+
+	private static class ReturnGlobalObject {
+
+		public static SimpleClass sc = null;
+
+		private void test() {
+
+			SimpleClass sm = getSc();
+		}
+
+		public static SimpleClass getSc() {
 			return sc;
 		}
 	}
