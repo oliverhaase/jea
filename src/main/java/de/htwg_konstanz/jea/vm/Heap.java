@@ -331,7 +331,8 @@ public final class Heap {
 		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator.hasNext();) {
 			ObjectNode current = objIterator.next();
 
-			if (current.getEscapeState() == EscapeState.GLOBAL_ESCAPE) {
+			if (current.getEscapeState() == EscapeState.GLOBAL_ESCAPE
+					&& !current.equals(GlobalObject.getInstance())) {
 				Set<FieldEdge> edgesTerminatingAtCurrent = new HashSet<>();
 
 				for (Iterator<FieldEdge> edgeIterator = fieldEdges.iterator(); edgeIterator
