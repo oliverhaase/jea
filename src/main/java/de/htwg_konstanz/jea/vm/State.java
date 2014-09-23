@@ -62,7 +62,7 @@ public final class State {
 		PhantomObject phantom = (PhantomObject) summary.getArgEscapeObjects().getObjectNode(
 				objectId);
 
-		if (phantom.getOrigin() == null) {
+		if (!phantom.isSubPhantom()) {
 			for (ObjectNode mappingObj : heap.dereference((ReferenceNode) opStack
 					.getArgumentAtIndex(phantom.getIndex(), consumeStack))) {
 				result.add(mappingObj.getId());
@@ -101,7 +101,7 @@ public final class State {
 		for (ObjectNode object : summary.getEscapedObjects()) {
 			if (object instanceof PhantomObject) {
 				PhantomObject phantom = (PhantomObject) object;
-				if (phantom.getOrigin() == null) {
+				if (!phantom.isSubPhantom()) {
 					result = result.publish(opStack.getArgumentAtIndex(phantom.getIndex(),
 							consumeStack));
 				}

@@ -46,6 +46,10 @@ public final class PhantomObject extends ObjectNode {
 		return this;
 	}
 
+	public boolean isSubPhantom() {
+		return origin != null;
+	}
+
 	@Override
 	public String toString() {
 		return this.getId() + getEscapeState().toString();
