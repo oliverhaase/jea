@@ -8,21 +8,21 @@ public final class PhantomObject extends ObjectNode {
 	@Getter
 	private final int index;
 	@Getter
-	private final ObjectNode origin;
+	private final ObjectNode parent;
 	@Getter
 	private final String field;
 
 	private PhantomObject(int index, EscapeState escapeState) {
 		super("p" + index, escapeState);
 		this.index = index;
-		this.origin = null;
+		this.parent = null;
 		this.field = null;
 	}
 
-	private PhantomObject(String id, ObjectNode origin, String field, EscapeState escapeState) {
+	private PhantomObject(String id, ObjectNode parent, String field, EscapeState escapeState) {
 		super(id, escapeState);
 		this.index = -1;
-		this.origin = origin;
+		this.parent = parent;
 		this.field = field;
 	}
 
@@ -30,9 +30,9 @@ public final class PhantomObject extends ObjectNode {
 		return new PhantomObject(index, EscapeState.ARG_ESCAPE);
 	}
 
-	public static PhantomObject newSubPhantom(ObjectNode origin, String fieldName) {
-		return new PhantomObject(origin.getId() + "." + fieldName, origin, fieldName,
-				origin.getEscapeState());
+	public static PhantomObject newSubPhantom(ObjectNode parent, String fieldName) {
+		return new PhantomObject(parent.getId() + "." + fieldName, parent, fieldName,
+				parent.getEscapeState());
 	}
 
 	@Override
@@ -41,13 +41,13 @@ public final class PhantomObject extends ObjectNode {
 			if (this.index != -1)
 				return new PhantomObject(this.getIndex(), escapeState);
 			else
-				return new PhantomObject(this.getId(), this.origin, field, escapeState);
+				return new PhantomObject(this.getId(), this.parent, field, escapeState);
 
 		return this;
 	}
 
 	public boolean isSubPhantom() {
-		return origin != null;
+		return parent != null;
 	}
 
 	@Override
