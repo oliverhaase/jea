@@ -15,6 +15,9 @@ public class FieldEdge {
 
 	public FieldEdge(@NonNull String originId, @NonNull String fieldName,
 			@NonNull String destinationId) {
+		if (originId.equals("null"))
+			throw new AssertionError("assigned field to null");
+
 		this.originId = originId;
 		this.fieldName = fieldName;
 		this.destinationId = destinationId;
