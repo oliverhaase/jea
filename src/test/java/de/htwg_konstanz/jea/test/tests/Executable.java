@@ -39,6 +39,28 @@ public class Executable {
 		Program program = TestHelper.analyze(classes, classToTest);
 	}
 
+	private static class NullParam {
+		private void test() {
+			refParam(null);
+		}
+
+		private void refParam(SimpleClass sc) {
+			if (sc != null)
+				sc.field = new SimpleClass();
+		}
+	}
+
+	private static class NewToNull {
+		private void test() {
+			SimpleClass sc = null;
+			sc = refParam();
+		}
+
+		private SimpleClass refParam() {
+			return new SimpleClass();
+		}
+	}
+
 	private static class TestClass {
 
 		private SimpleClass refParam;
