@@ -378,7 +378,8 @@ public final class Heap {
 	/**
 	 * Removes all ObjectNodes with NO_ESCAPE from the Heap and adds them to the
 	 * Set of {@code localObjects}. Deletes all FieldEdges starting from these
-	 * ObjectNodes.
+	 * ObjectNodes. Deletes all pointsToEdges to these ObjectNodes and if there
+	 * are no other pointsToEdges from the ReferenceNode it will be removed too.
 	 */
 	private void removeLocalGraph() {
 		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator.hasNext();) {
@@ -390,10 +391,31 @@ public final class Heap {
 					if (edgeIterator.next().getOriginId().equals(current.getId()))
 						edgeIterator.remove();
 
+				for (Iterator<Pair<ReferenceNode, String>> edgeIterator = pointsToEdges.iterator(); edgeIterator
+						.hasNext();) {
+					Pair<ReferenceNode, String> next = edgeIterator.next();
+					if (next.getValue2().equals(current.getId())) {
+						edgeIterator.remove();
+						removeRefWithoutEdge(next);
+					}
+				}
+
 				localObjects.add(current);
 				objIterator.remove();
 			}
 		}
+	}
+
+	private void removeRefWithoutEdge(Pair<ReferenceNode, String> next) {
+		boolean hasNoOtherEdges = true;
+		for (Pair<ReferenceNode, String> pair : pointsToEdges) {
+			if (pair.getValue1().equals(next.getValue1())) {
+				hasNoOtherEdges = false;
+				break;
+			}
+		}
+		if (hasNoOtherEdges)
+			referenceNodes.remove(next.getValue1());
 	}
 
 	/**
