@@ -10,20 +10,20 @@ public final class PhantomObject extends ObjectNode {
 	@Getter
 	private final ObjectNode parent;
 	@Getter
-	private final String field;
+	private final String fieldName;
 
 	private PhantomObject(int index, EscapeState escapeState) {
 		super("p" + index, escapeState);
 		this.index = index;
 		this.parent = null;
-		this.field = null;
+		this.fieldName = null;
 	}
 
-	private PhantomObject(String id, ObjectNode parent, String field, EscapeState escapeState) {
+	private PhantomObject(String id, ObjectNode parent, String fieldName, EscapeState escapeState) {
 		super(id, escapeState);
 		this.index = -1;
 		this.parent = parent;
-		this.field = field;
+		this.fieldName = fieldName;
 	}
 
 	public static PhantomObject newPhantomObject(int index) {
@@ -41,7 +41,7 @@ public final class PhantomObject extends ObjectNode {
 			if (this.index != -1)
 				return new PhantomObject(this.getIndex(), escapeState);
 			else
-				return new PhantomObject(this.getId(), this.parent, field, escapeState);
+				return new PhantomObject(this.getId(), this.parent, fieldName, escapeState);
 
 		return this;
 	}
