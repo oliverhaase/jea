@@ -40,53 +40,84 @@ public final class State {
 		localVars = new LocalVars(vars);
 	}
 
-	private Set<String> mapsTo(String objectId, Heap summary, int consumeStack) {
-		Set<String> result = new HashSet<>();
+	/**
+	 * Returns the corresponding ObjectNodes to the {@code objectNode} in this
+	 * states Heap.
+	 * 
+	 * @param objectNode
+	 *            the ObjectNode to search the corresponding ObjectNodes for
+	 * @param consumeStack
+	 *            how much elements the method containing the {@code objectNode}
+	 *            consumes (to locate the corresponding argument on this states
+	 *            OpStack)
+	 * 
+	 * @return a Set of ObjectNode representing the {@code objectNode} in this
+	 *         states Heap
+	 */
+	private Set<ObjectNode> mapsToObjects(ObjectNode objectNode, int consumeStack) {
+		Set<ObjectNode> result = new HashSet<>();
 
-		// global object
+		// objectNode is global object
 
-		if (objectId.equals(GlobalObject.getInstance().getId())) {
-			result.add(objectId);
+		if (objectNode.equals(GlobalObject.getInstance())) {
+			result.add(objectNode);
 			return result;
 		}
 
-		// internal object
+		// objectNode is internal object
 
-		if (summary.getArgEscapeObjects().getObjectNode(objectId) instanceof InternalObject) {
-			result.add(objectId);
+		if (objectNode instanceof InternalObject) {
+			result.add(objectNode);
 			return result;
 		}
 
-		// phantomObject
+		// objectNode is a Parameter (phantomObject) -> get corresponding
+		// arguments in this Heap
 
-		PhantomObject phantom = (PhantomObject) summary.getArgEscapeObjects().getObjectNode(
-				objectId);
+		PhantomObject phantom = (PhantomObject) objectNode;
 
 		if (!phantom.isSubPhantom()) {
 			for (ObjectNode mappingObj : heap.dereference((ReferenceNode) opStack
 					.getArgumentAtIndex(phantom.getIndex(), consumeStack))) {
-				result.add(mappingObj.getId());
+				result.add(mappingObj);
 			}
 			return result;
 		}
 
-		if (phantom.getOrigin().isGlobal()) {
-			result.add(GlobalObject.getInstance().getId());
+		// objectNode is Child of Global Parameter
+
+		if (phantom.getParent().isGlobal()) {
+			result.add(GlobalObject.getInstance());
 			return result;
 		}
 
-		for (String mapsToId : mapsTo(phantom.getOrigin().getId(), summary, consumeStack)) {
-			for (ObjectNode field : heap.getObjectNodes().getFieldOf(
-					heap.getObjectNodes().getObjectNode(mapsToId), heap.getFieldEdges(),
-					phantom.getField())) {
-				result.add(field.getId());
+		// objectNode is Child of Parameter
+
+		for (ObjectNode parent : mapsToObjects(phantom.getParent(), consumeStack)) {
+			for (ObjectNode field : heap.getFieldOf(parent, phantom.getFieldName())) {
+				result.add(field);
 			}
 		}
 
 		return result;
 	}
 
-	private Heap publishEscapedArgs(Heap summary, int consumeStack) {
+	/**
+	 * If a parameter in {@code summary} is escaped the corresponding argument
+	 * in this heap is published. If {@code summary} represents an alien method
+	 * all reference parameters are published.
+	 * 
+	 * @param heap
+	 *            the Heap to publish
+	 * @param summary
+	 *            the Heap with the side effects of the method to apply to the
+	 *            {@code heap}
+	 * @param consumeStack
+	 *            how many parameters the method of {@code summary} has. To
+	 *            locate the corresponding objects on the Stack
+	 * @return the resulting Heap
+	 */
+	private Heap publishEscapedArgs(Heap heap, Heap summary, int consumeStack) {
 		Heap result = heap;
 
 		if (summary.isAlien()) {
@@ -110,117 +141,79 @@ public final class State {
 		return result;
 	}
 
-	// private Heap publishEscapedArgs(MethodSummary summary, OpStack
-	// opStack,
-	// Heap heap, int consumeStack) {
-	// Heap result = heap;
-	//
-	// if (summary.isAlien()) {
-	// for (int i = 0; i < consumeStack; i++) {
-	// Slot arg = opStack.get(opStack.size() - consumeStack + i);
-	// if (arg instanceof ReferenceNode)
-	// result = result.publish((ReferenceNode) arg);
-	// }
-	// return result;
-	// }
-	//
-	// for (ObjectNode object : summary.getEscapedObjects()) {
-	// if (object instanceof PhantomObject) {
-	// PhantomObject phantom = (PhantomObject) object;
-	// if (phantom.getOrigin() == null) {
-	// result = result.publish(opStack.getArgumentAtIndex(phantom.getIndex(),
-	// consumeStack));
-	// }
-	// }
-	// }
-	// return result;
-	// }
-
-	private Heap transferInternalObjects(Heap heap, Heap summary) {
-		Heap result = new Heap(heap);
-
-		for (ObjectNode object : summary.getArgEscapeObjects())
-			if (object instanceof InternalObject)
-				result.getObjectNodes().add(((InternalObject) object).resetEscapeState());
-
-		return result;
-	}
-
+	/**
+	 * Adds the fieldEdges from the summary and replaces the objects of the
+	 * summary with the corresponding objects in this states heap.
+	 * 
+	 * @param heap
+	 *            the Heap to transfer the edges to
+	 * @param summary
+	 *            the Heap to transfer the edges from
+	 * @param consumeStack
+	 *            how many parameters the method of {@code summary} has. To
+	 *            locate the corresponding objects on the Stack
+	 * @return the resulting Heap
+	 */
 	private Heap transferFieldEdges(Heap heap, Heap summary, int consumeStack) {
 		Heap result = new Heap(heap);
 
 		for (FieldEdge edge : summary.getFieldEdges()) {
-			for (String originId : mapsTo(edge.getOriginId(), summary, consumeStack))
-				for (String destinationId : mapsTo(edge.getDestinationId(), summary, consumeStack))
-					result.getFieldEdges().add(
-							new FieldEdge(originId, edge.getFieldName(), destinationId));
+			ObjectNode originOfEdge = summary.getArgEscapeObjects().getObjectNode(
+					edge.getOriginId());
+			ObjectNode destinationOfEdge = summary.getArgEscapeObjects().getObjectNode(
+					edge.getDestinationId());
+
+			for (ObjectNode origin : mapsToObjects(originOfEdge, consumeStack))
+				for (ObjectNode destination : mapsToObjects(destinationOfEdge, consumeStack))
+					result = result.addField(origin, edge.getFieldName(), destination);
 		}
 
 		return result;
 	}
 
-	private Heap transferResult(Heap heap, Heap summary, ReferenceNode ref) {
-		Heap result = new Heap(heap);
-
-		if (summary.isAlien())
-			result.addReferenceAndTarget(ref, GlobalObject.getInstance());
-		else
-			for (ObjectNode resultValue : summary.getResultValues()) {
-				result.addReferenceAndTarget(ref, resultValue);
-			}
-
-		return result;
-	}
-
+	/**
+	 * Applies the MetohdSummary {@code summary} to this state, so the effect of
+	 * the method to the heap and the stack are applied to this state. Publishes
+	 * the arguments that escape in the method. Adds the objects that are linked
+	 * to the arguments. Adds the fields of these objects.
+	 * 
+	 * @param summary
+	 *            the Heap which represents the side effects of the method
+	 * @param consumeStack
+	 *            how much elements the method consumes from the stack
+	 * @param produceStack
+	 *            how much elements the method produces for the stack
+	 * @param returnType
+	 *            whether the return value is a reference or a basic Type
+	 * @param position
+	 *            the position of the instruction in the current method to
+	 *            create a unique id for the return object
+	 * @return the resulting State
+	 */
 	public State applyMethodSummary(Heap summary, int consumeStack, int produceStack,
 			org.apache.bcel.generic.Type returnType, int position) {
 
-		OpStack resultOpStack;
-		Heap resultHeap;
+		OpStack resultOpStack = opStack;
+		Heap resultHeap = heap;
 
-		resultHeap = publishEscapedArgs(summary, consumeStack);
+		resultHeap = publishEscapedArgs(resultHeap, summary, consumeStack);
 
-		resultHeap = transferInternalObjects(resultHeap, summary);
+		resultHeap = resultHeap.transferInternalObjectsFrom(summary);
 		resultHeap = transferFieldEdges(resultHeap, summary, consumeStack);
 
-		resultOpStack = opStack.pop(consumeStack);
+		resultOpStack = resultOpStack.pop(consumeStack);
 
 		if (returnType instanceof org.apache.bcel.generic.ReferenceType) {
-			ReferenceNode ref = new ReferenceNode(position, Category.LOCAL);
+			ReferenceNode resultRef = new ReferenceNode(position, Category.LOCAL);
 
-			resultHeap = transferResult(resultHeap, summary, ref);
-			resultOpStack = resultOpStack.push(ref);
+			resultHeap = resultHeap.transferResultFrom(summary, resultRef);
+			resultOpStack = resultOpStack.push(resultRef);
 		} else
 			resultOpStack = resultOpStack.push(DontCareSlot.values()[produceStack], produceStack);
 
 		return new State(localVars, resultOpStack, resultHeap);
 
 	}
-
-	// public State applyMethodSummary(MethodSummary summary, int consumeStack,
-	// int produceStack,
-	// org.apache.bcel.generic.Type returnType, int position) {
-	//
-	// OpStack opStack = this.opStack;
-	// Heap heap = this.heap;
-	//
-	// heap = publishEscapedArgs(summary, opStack, heap, consumeStack);
-	// heap = transferInternalObjects(heap, summary);
-	// heap = transferFieldEdges(heap, summary, consumeStack);
-	//
-	// opStack = opStack.pop(consumeStack);
-	//
-	// if (returnType instanceof org.apache.bcel.generic.ReferenceType) {
-	// ReferenceNode ref = new ReferenceNode(position, Category.LOCAL);
-	//
-	// heap = transferResult(heap, summary, ref);
-	// opStack = opStack.push(ref);
-	// } else
-	// opStack = opStack.push(DontCareSlot.values()[produceStack],
-	// produceStack);
-	//
-	// return new State(localVars, opStack, heap);
-	// }
 
 	@Override
 	public String toString() {

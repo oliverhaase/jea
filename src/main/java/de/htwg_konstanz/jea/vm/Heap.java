@@ -85,7 +85,8 @@ public final class Heap {
 	}
 
 	/**
-	 * To publish an object its EscapeState is set to GLOBAL_ESCAPE.
+	 * To publish an object its EscapeState is set to GLOBAL_ESCAPE. To publish
+	 * child objects too, propagateEscpaeState() should be called.
 	 * 
 	 * @param ref
 	 *            the ReferenceNode to publish
@@ -456,4 +457,48 @@ public final class Heap {
 		throw new AssertionError("phantom object with id " + index + " does not exist");
 	}
 
+	/**
+	 * Adds all internal objects of {@code summary} that are linked to an
+	 * argument to {@code this}.
+	 * 
+	 * @param summary
+	 *            the Heap representing the MethodSummary
+	 * @return the resulting Heap
+	 */
+	Heap transferInternalObjectsFrom(Heap summary) {
+		Heap result = new Heap(this);
+
+		for (ObjectNode object : summary.getArgEscapeObjects())
+			if (object instanceof InternalObject)
+				result.getObjectNodes().add(((InternalObject) object).resetEscapeState());
+
+		return result;
+	}
+
+	/**
+	 * Links the resultValues from {@code summary} to the {@code resultRef} and
+	 * adds the {@code resultRef} and the result Objects to {@code this}.
+	 * 
+	 * @param summary
+	 *            the Heap representing the MethodSummary
+	 * @param resultRef
+	 *            the Reference to link the results to
+	 * @return the resulting Heap
+	 */
+	Heap transferResultFrom(Heap summary, ReferenceNode resultRef) {
+		Heap result = new Heap(this);
+
+		if (summary.isAlien())
+			result.addReferenceAndTarget(resultRef, GlobalObject.getInstance());
+		else
+			for (ObjectNode resultValue : summary.getResultValues()) {
+				result.addReferenceAndTarget(resultRef, resultValue);
+			}
+
+		return result;
+	}
+
+	public Set<ObjectNode> getFieldOf(ObjectNode object, String field) {
+		return objectNodes.getFieldOf(object, fieldEdges, field);
+	}
 }
