@@ -287,12 +287,7 @@ public final class Heap {
 				edgeIterator.remove();
 		}
 
-		for (Iterator<Pair<ReferenceNode, String>> edgeIterator = pointsToEdges.iterator(); edgeIterator
-				.hasNext();) {
-			Pair<ReferenceNode, String> edge = edgeIterator.next();
-			if (edge.getValue2().equals(InternalObject.getNullObject().getId()))
-				edgeIterator.remove();
-		}
+		removePointsToEdge(InternalObject.getNullObject());
 	}
 
 	/**
@@ -391,14 +386,7 @@ public final class Heap {
 					if (edgeIterator.next().getOriginId().equals(current.getId()))
 						edgeIterator.remove();
 
-				for (Iterator<Pair<ReferenceNode, String>> edgeIterator = pointsToEdges.iterator(); edgeIterator
-						.hasNext();) {
-					Pair<ReferenceNode, String> next = edgeIterator.next();
-					if (next.getValue2().equals(current.getId())) {
-						edgeIterator.remove();
-						removeRefWithoutEdge(next);
-					}
-				}
+				removePointsToEdge(current);
 
 				localObjects.add(current);
 				objIterator.remove();
@@ -406,16 +394,38 @@ public final class Heap {
 		}
 	}
 
-	private void removeRefWithoutEdge(Pair<ReferenceNode, String> next) {
+	/**
+	 * Removes all pointsToEdges pointing to the {@code obj}. If there are no
+	 * other pointsToEdges from the removed Reference, it will be removed too.
+	 * 
+	 * @param obj
+	 *            the ObjectNode the edge to delete points to
+	 */
+	private void removePointsToEdge(ObjectNode obj) {
+		for (Iterator<Pair<ReferenceNode, String>> edgeIterator = pointsToEdges.iterator(); edgeIterator
+				.hasNext();) {
+			Pair<ReferenceNode, String> next = edgeIterator.next();
+			if (next.getValue2().equals(obj.getId())) {
+				edgeIterator.remove();
+				removeRefWithoutEdge(next.getValue1());
+			}
+		}
+	}
+
+	/**
+	 * Removes the {@code reference} if there are no pointsToEdges starting from
+	 * it.
+	 */
+	private void removeRefWithoutEdge(ReferenceNode reference) {
 		boolean hasNoOtherEdges = true;
 		for (Pair<ReferenceNode, String> pair : pointsToEdges) {
-			if (pair.getValue1().equals(next.getValue1())) {
+			if (pair.getValue1().equals(reference)) {
 				hasNoOtherEdges = false;
 				break;
 			}
 		}
 		if (hasNoOtherEdges)
-			referenceNodes.remove(next.getValue1());
+			referenceNodes.remove(reference);
 	}
 
 	/**
