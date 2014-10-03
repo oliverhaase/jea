@@ -18,7 +18,8 @@
 <!-- TARGET gen: generate source files -->
 <target name="basicgen">
    <!-- run jastadd to generate AST files -->
-    <jastadd package="de/htwg_konstanz/jea/gen" beaver="false" outdir="./java" lineColumnNumbers="true">
+	
+    <jastadd package="de/htwg_konstanz/jea/gen" cacheall="true"  beaver="false" outdir="./java" lineColumnNumbers="true">
         <fileset dir=".">
             <include name="**/spec/*.ast"/>
             <include name="**/spec/*.jrag"/>
