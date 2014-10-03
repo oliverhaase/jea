@@ -1,5 +1,14 @@
 package de.htwg_konstanz.jea;
 
+import java.util.Set;
+
+import org.reflections.Reflections;
+import org.reflections.scanners.ResourcesScanner;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
+import org.reflections.util.FilterBuilder;
+
 import de.htwg_konstanz.jea.gen.Program;
 
 public class ConfinementChecker {
@@ -20,7 +29,11 @@ public class ConfinementChecker {
 				"de.htwg_konstanz.jea.vm.PhantomObject", "de.htwg_konstanz.jea.vm.ReferenceNode",
 				"de.htwg_konstanz.jea.vm.Slot", "de.htwg_konstanz.jea.vm.Triple" };
 
-		Program program = new ProgramBuilder(classes).build();
+		String[] allClasses = getClasses("de.htwg_konstanz.jea");
+		Program program = new ProgramBuilder(allClasses).build();
+
+		// Program program = new ProgramBuilder(classes).build();
+
 		program.print();
 
 		System.out.println("confined types: ");
@@ -36,5 +49,25 @@ public class ConfinementChecker {
 		System.out.println();
 		System.out.println("done.");
 
+	}
+
+	private static String[] getClasses(String packageName) {
+		ClassLoader[] classLoaders = { ClasspathHelper.contextClassLoader(),
+				ClasspathHelper.staticClassLoader() };
+
+		Reflections reflections = new Reflections(new ConfigurationBuilder()
+				.setScanners(new SubTypesScanner(false), new ResourcesScanner())
+				.setUrls(ClasspathHelper.forClassLoader(classLoaders))
+				.filterInputsBy(new FilterBuilder().include(FilterBuilder.prefix(packageName))));
+
+		Set<Class<?>> classes = reflections.getSubTypesOf(Object.class);
+
+		int i = 0;
+		String[] classNames = new String[classes.size()];
+		for (Class<?> cls : classes) {
+			classNames[i++] = cls.getName();
+		}
+
+		return classNames;
 	}
 }
