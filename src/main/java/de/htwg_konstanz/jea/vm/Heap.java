@@ -106,17 +106,19 @@ public final class Heap {
 	/**
 	 * Assigns the {@code value} to the field {@code fieldName} of {@code obj}
 	 * {@code (obj.fieldName = value)}. If the {@code value} doesn't exist
-	 * already in this Heap, it is added. If the {@code obj} doesn't exist a
+	 * already in this Heap, it is added. If the {@code obj} is NULL no
+	 * fieldEdge is added. If the {@code obj} doesn't exist a
 	 * NoSuchElementException is thrown.
 	 */
 	public Heap addField(ObjectNode obj, String fieldName, ObjectNode value) {
 		// if (obj.isGlobal())
 		// return this;
+		Heap result = new Heap(this);
 
 		if (obj.equals(InternalObject.getNullObject()))
-			throw new AssertionError("assign Object to a field of null");
-
-		Heap result = new Heap(this);
+			// throw new AssertionError("assigned field to null " + obj + "." +
+			// fieldName + "=" + value);
+			return result;
 
 		if (!objectNodes.existsObject(obj.getId()))
 			throw new NoSuchElementException("To the object " + obj
