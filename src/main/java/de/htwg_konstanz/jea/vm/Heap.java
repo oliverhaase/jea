@@ -6,6 +6,8 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Stack;
 
+import javax.annotation.CheckReturnValue;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import de.htwg_konstanz.jea.vm.Node.EscapeState;
@@ -523,10 +525,10 @@ public final class Heap {
 		Heap result = new Heap(this);
 
 		if (summary.isAlien())
-			result.addReferenceAndTarget(resultRef, GlobalObject.getInstance());
+			result = result.addReferenceAndTarget(resultRef, GlobalObject.getInstance());
 		else
 			for (ObjectNode resultValue : summary.getResultValues()) {
-				result.addReferenceAndTarget(resultRef, resultValue);
+				result = result.addReferenceAndTarget(resultRef, resultValue);
 			}
 
 		return result;
