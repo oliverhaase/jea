@@ -44,7 +44,7 @@ public class HeapTest {
 		checkConnection(heap, 2, "p" + 2);
 	}
 
-	@Test(expected = AssertionError.class)
+	@Test
 	public void testFieldToNull() {
 		Heap heap = new Heap(new HashSet<Integer>(), false);
 
@@ -54,6 +54,7 @@ public class HeapTest {
 				EscapeState.NO_ESCAPE);
 		heap = heap.addReferenceAndTarget(internalRef, internalObject);
 		heap = heap.addField(nullObject, "f", internalObject);
+		assertTrue(heap.getFieldEdges().isEmpty());
 	}
 
 	@Test
