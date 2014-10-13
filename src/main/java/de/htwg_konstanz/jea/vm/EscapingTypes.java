@@ -3,6 +3,8 @@ package de.htwg_konstanz.jea.vm;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.annotation.CheckReturnValue;
+
 public class EscapingTypes {
 	private final static EscapingTypes ALL_TYPES = new EscapingTypes();
 
@@ -25,6 +27,7 @@ public class EscapingTypes {
 		return false;
 	}
 
+	@CheckReturnValue
 	public EscapingTypes merge(EscapingTypes other) {
 		if (this == ALL_TYPES || other == ALL_TYPES)
 			return ALL_TYPES;

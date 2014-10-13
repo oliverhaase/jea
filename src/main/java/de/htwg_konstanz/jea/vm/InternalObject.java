@@ -1,5 +1,7 @@
 package de.htwg_konstanz.jea.vm;
 
+import javax.annotation.CheckReturnValue;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -22,12 +24,14 @@ public final class InternalObject extends ObjectNode {
 	}
 
 	@Override
+	@CheckReturnValue
 	public InternalObject increaseEscapeState(EscapeState escapeState) {
 		if (this.getEscapeState().moreConfinedThan(escapeState))
 			return new InternalObject(this.getId(), this.type, escapeState);
 		return this;
 	}
 
+	@CheckReturnValue
 	public InternalObject resetEscapeState() {
 		if (EscapeState.NO_ESCAPE.moreConfinedThan(this.getEscapeState()))
 			return new InternalObject(this.getId(), this.type, EscapeState.NO_ESCAPE);

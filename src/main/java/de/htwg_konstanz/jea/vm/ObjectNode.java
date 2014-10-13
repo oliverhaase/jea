@@ -1,5 +1,7 @@
 package de.htwg_konstanz.jea.vm;
 
+import javax.annotation.CheckReturnValue;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -17,5 +19,6 @@ public abstract class ObjectNode implements Node {
 
 	public abstract boolean isGlobal();
 
+	@CheckReturnValue
 	public abstract ObjectNode increaseEscapeState(EscapeState escapeState);
 }

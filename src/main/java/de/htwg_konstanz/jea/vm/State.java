@@ -3,6 +3,8 @@ package de.htwg_konstanz.jea.vm;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.annotation.CheckReturnValue;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -117,6 +119,7 @@ public final class State {
 	 *            locate the corresponding objects on the Stack
 	 * @return the resulting Heap
 	 */
+	@CheckReturnValue
 	private Heap publishEscapedArgs(Heap heap, Heap summary, int consumeStack) {
 		Heap result = heap;
 
@@ -154,6 +157,7 @@ public final class State {
 	 *            locate the corresponding objects on the Stack
 	 * @return the resulting Heap
 	 */
+	@CheckReturnValue
 	private Heap transferFieldEdges(Heap heap, Heap summary, int consumeStack) {
 		Heap result = new Heap(heap);
 
@@ -190,6 +194,7 @@ public final class State {
 	 *            create a unique id for the return object
 	 * @return the resulting State
 	 */
+	@CheckReturnValue
 	public State applyMethodSummary(Heap summary, int consumeStack, int produceStack,
 			org.apache.bcel.generic.Type returnType, int position) {
 

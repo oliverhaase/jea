@@ -1,5 +1,7 @@
 package de.htwg_konstanz.jea.vm;
 
+import javax.annotation.CheckReturnValue;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -36,6 +38,7 @@ public final class PhantomObject extends ObjectNode {
 	}
 
 	@Override
+	@CheckReturnValue
 	public PhantomObject increaseEscapeState(EscapeState escapeState) {
 		if (this.getEscapeState().moreConfinedThan(escapeState))
 			if (this.index != -1)

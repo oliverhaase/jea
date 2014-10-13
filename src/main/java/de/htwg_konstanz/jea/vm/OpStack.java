@@ -2,6 +2,8 @@ package de.htwg_konstanz.jea.vm;
 
 import java.util.Stack;
 
+import javax.annotation.CheckReturnValue;
+
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import net.jcip.annotations.Immutable;
@@ -23,12 +25,14 @@ public final class OpStack {
 		}
 	}
 
+	@CheckReturnValue
 	public OpStack push(@NonNull Slot slot) {
 		OpStack result = new OpStack(this);
 		result.stack.push(slot);
 		return result;
 	}
 
+	@CheckReturnValue
 	public OpStack push(Slot slot, int n) {
 		OpStack result = new OpStack(this);
 		for (int i = 0; i < n; i++)
@@ -36,6 +40,7 @@ public final class OpStack {
 		return result;
 	}
 
+	@CheckReturnValue
 	public OpStack pop() {
 		OpStack result = new OpStack(this);
 		result.stack.pop();
@@ -46,6 +51,7 @@ public final class OpStack {
 		return stack.peek();
 	}
 
+	@CheckReturnValue
 	public OpStack pop(int n) {
 		OpStack result = new OpStack(this);
 		for (int i = 0; i < n; i++)

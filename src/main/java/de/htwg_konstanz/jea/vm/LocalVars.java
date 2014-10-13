@@ -2,6 +2,8 @@ package de.htwg_konstanz.jea.vm;
 
 import java.util.Arrays;
 
+import javax.annotation.CheckReturnValue;
+
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import net.jcip.annotations.Immutable;
@@ -29,6 +31,7 @@ public class LocalVars {
 		return vars[index];
 	}
 
+	@CheckReturnValue
 	public LocalVars set(int index, Slot slot) {
 		LocalVars result = new LocalVars(this);
 		result.vars[index] = slot;

@@ -1,5 +1,7 @@
 package de.htwg_konstanz.jea.vm;
 
+import javax.annotation.CheckReturnValue;
+
 public final class GlobalObject extends ObjectNode {
 	private final static GlobalObject INSTANCE = new GlobalObject();
 
@@ -12,6 +14,7 @@ public final class GlobalObject extends ObjectNode {
 	}
 
 	@Override
+	@CheckReturnValue
 	public ObjectNode increaseEscapeState(EscapeState escapeState) {
 		return this;
 	}

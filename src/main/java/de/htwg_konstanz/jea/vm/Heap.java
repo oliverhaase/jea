@@ -94,6 +94,7 @@ public final class Heap {
 	 *            the ReferenceNode to publish
 	 * @return the resulting Heap
 	 */
+	@CheckReturnValue
 	public Heap publish(ReferenceNode ref) {
 		Heap result = new Heap(this);
 
@@ -112,6 +113,7 @@ public final class Heap {
 	 * fieldEdge is added. If the {@code obj} doesn't exist a
 	 * NoSuchElementException is thrown.
 	 */
+	@CheckReturnValue
 	public Heap addField(ObjectNode obj, String fieldName, ObjectNode value) {
 		// if (obj.isGlobal())
 		// return this;
@@ -145,6 +147,7 @@ public final class Heap {
 	/**
 	 * Adds the reference and the object to the Heap and links them.
 	 */
+	@CheckReturnValue
 	public Heap addReferenceAndTarget(ReferenceNode ref, ObjectNode obj) {
 		Heap result = new Heap(this);
 		result.addPointsToEdge(ref, obj);
@@ -155,6 +158,7 @@ public final class Heap {
 	 * Adds the reference and the objects to the Heap and links the objects to
 	 * the reference.
 	 */
+	@CheckReturnValue
 	public Heap addReferenceToTargets(ReferenceNode ref, Set<ObjectNode> targets) {
 		Heap result = new Heap(this);
 		for (ObjectNode target : targets)
@@ -170,6 +174,7 @@ public final class Heap {
 	 *            the ReferenceNode that points to the possible ReturnObjects
 	 * @return
 	 */
+	@CheckReturnValue
 	public Heap setReturnRef(ReferenceNode ref) {
 		Heap result = new Heap(this);
 		for (Iterator<Pair<ReferenceNode, String>> it = result.pointsToEdges.iterator(); it
@@ -194,6 +199,7 @@ public final class Heap {
 	 *            the Heap to merge
 	 * @return the merged Heap
 	 */
+	@CheckReturnValue
 	public Heap merge(Heap other) {
 		Heap result = new Heap();
 
@@ -441,6 +447,7 @@ public final class Heap {
 	 * 
 	 * @return the Heap that summarizes all necessary information
 	 */
+	@CheckReturnValue
 	public Heap doFinalStuff() {
 		Heap result = new Heap(this);
 
@@ -501,6 +508,7 @@ public final class Heap {
 	 *            the Heap representing the MethodSummary
 	 * @return the resulting Heap
 	 */
+	@CheckReturnValue
 	Heap transferInternalObjectsFrom(Heap summary) {
 		Heap result = new Heap(this);
 
@@ -521,6 +529,7 @@ public final class Heap {
 	 *            the Reference to link the results to
 	 * @return the resulting Heap
 	 */
+	@CheckReturnValue
 	Heap transferResultFrom(Heap summary, ReferenceNode resultRef) {
 		Heap result = new Heap(this);
 
