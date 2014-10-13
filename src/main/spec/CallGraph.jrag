@@ -32,11 +32,13 @@ aspect CallGraph {
 	
 	syn Set<Method> InvokeSpecial.resolveTargetMethod() =		
 		Collections.singleton(method().clazz().program().getClass(getLoadClass())
-    		.lookup(getMethodName(), getArgTypes()));
-    			
+    		.resolveTargetClass(getMethodName(), getArgTypes())
+			.lookup(getMethodName(), getArgTypes()));
+    		
 	syn Set<Method> InvokeStatic.resolveTargetMethod() =		
 		Collections.singleton(method().clazz().program().getClass(getLoadClass())
-    		.lookup(getMethodName(), getArgTypes()));
+    		.resolveTargetClass(getMethodName(), getArgTypes())
+			.lookup(getMethodName(), getArgTypes()));
 	
 	syn Set<Method> InvokeVirtual.resolveTargetMethod() {
 		Set<Method> result = new HashSet<Method>();
