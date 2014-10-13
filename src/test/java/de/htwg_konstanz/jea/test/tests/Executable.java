@@ -11,6 +11,7 @@ import org.junit.runners.Parameterized.Parameters;
 import de.htwg_konstanz.jea.gen.Program;
 import de.htwg_konstanz.jea.test.TestHelper;
 import de.htwg_konstanz.jea.test.classes.SimpleClass;
+import de.htwg_konstanz.jea.test.classes.SubClass;
 
 @SuppressWarnings("unused")
 @RunWith(Parameterized.class)
@@ -39,6 +40,45 @@ public class Executable {
 		Program program = TestHelper.analyze(classes, classToTest);
 	}
 
+	private static class NullFieldIf {
+		private void test(int i) {
+			SimpleClass sc;
+			if (12 < i)
+				sc = null;
+			else
+				sc = new SimpleClass();
+
+			sc.field = new SimpleClass();
+		}
+	}
+
+	private static class NullField {
+		private void test() {
+			SimpleClass sc = null;
+			if (sc != null)
+				sc.field = new SimpleClass();
+			else
+				new Object();
+		}
+	}
+
+	private static class NullParamIf {
+		private void test(int i) {
+			SimpleClass sc;
+			if (12 < i)
+				sc = null;
+			else
+				sc = new SimpleClass();
+
+			refParam(sc);
+		}
+
+		private void refParam(SimpleClass sc) {
+			if (sc != null)
+				sc.field = new SimpleClass();
+		}
+	}
+
 	private static class NullParam {
 		private void test() {
 			refParam(null);
@@ -47,6 +87,8 @@ public class Executable {
 		private void refParam(SimpleClass sc) {
 			if (sc != null)
 				sc.field = new SimpleClass();
+			else
+				new Object();
 		}
 	}
 
@@ -87,6 +129,14 @@ public class Executable {
 
 		public static SimpleClass getSc() {
 			return sc;
+		}
+	}
+
+	private static class SuperClassTest {
+
+		private void test() {
+			SubClass subClass = new SubClass();
+			SubClass.test();
 		}
 	}
 }
