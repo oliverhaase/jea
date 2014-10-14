@@ -2,13 +2,13 @@
 
 Program ::= ByteCodeClass*;
 
-ByteCodeClass ::= <Name:String> <SuperClass:String> Field* Method*;
+ByteCodeClass ::= <Name:String> <SuperClass:String> <IsFinal:boolean> Field* Method*;
 
 Field ::= <Name:String>;
 
-Method ::= <IsStatic:boolean> <IsAbstract:boolean> <IsNative:boolean> <IsPrivate:boolean> <MethodName:String> 
-	<SignatureIndex:int> <ArgTypes:org.apache.bcel.generic.Type[]> <RetType:org.apache.bcel.generic.Type> 
-	<MaxLocals:int> Instruction*;
+Method ::= <IsStatic:boolean> <IsAbstract:boolean> <IsNative:boolean> <IsPrivate:boolean> <IsFinal:boolean>
+           <MethodName:String> <SignatureIndex:int> <ArgTypes:org.apache.bcel.generic.Type[]>
+           <RetType:org.apache.bcel.generic.Type> <MaxLocals:int> Instruction*;
 
 
 abstract Instruction ::= <Label:String> <Position:int> <ConsumeStack:int> <ProduceStack:int>;

@@ -24,6 +24,7 @@ public class AstConverter {
 		ByteCodeClass clazz = new ByteCodeClass();
 		clazz.setName(bcelClass.getClassName());
 		clazz.setSuperClass(bcelClass.getSuperclassName());
+		clazz.setIsFinal(bcelClass.isFinal());
 
 		for (org.apache.bcel.classfile.Field bcelField : bcelClass.getFields()) {
 			Field field = new Field(bcelField.getName());
@@ -44,6 +45,7 @@ public class AstConverter {
 			method.setArgTypes(bcelMethod.getArgumentTypes());
 			method.setIsPrivate(bcelMethod.isPrivate());
 			method.setRetType(bcelMethod.getReturnType());
+			method.setIsFinal(bcelMethod.isFinal());
 
 			clazz.addMethod(method);
 
