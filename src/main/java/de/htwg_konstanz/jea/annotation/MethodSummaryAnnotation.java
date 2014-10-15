@@ -1,9 +1,9 @@
 package de.htwg_konstanz.jea.annotation;
 
 public @interface MethodSummaryAnnotation {
-	public InternalObjectAnnotation[] knownInternalObjects();
+	public InternalObjectAnnotation[] internalObjects();
 
-	public PhantomObjectAnnotation[] knownPhantomObjects();
+	public PhantomObjectAnnotation[] phantomObjects();
 
 	// all nodes from objectNodes
 	public String[] argEscapedObjectIDs();
