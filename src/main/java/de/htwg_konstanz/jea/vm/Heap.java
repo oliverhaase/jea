@@ -23,7 +23,7 @@ public final class Heap {
 	private final Set<FieldEdge> fieldEdges = new HashSet<>();
 	@Getter
 	private final Set<ReferenceNode> referenceNodes = new HashSet<>();
-	private final Set<Pair<ReferenceNode, String>> pointsToEdges = new HashSet<>();
+	private final Set<Pair<String, String>> pointsToEdges = new HashSet<>();
 	@Getter
 	private final ObjectNodes escapedObjects = new ObjectNodes();
 	@Getter
@@ -80,8 +80,8 @@ public final class Heap {
 	 */
 	public Set<ObjectNode> dereference(ReferenceNode ref) {
 		Set<ObjectNode> result = new HashSet<>();
-		for (Pair<ReferenceNode, String> pointsToEdge : pointsToEdges)
-			if (pointsToEdge.getValue1().equals(ref))
+		for (Pair<String, String> pointsToEdge : pointsToEdges)
+			if (pointsToEdge.getValue1().equals(ref.getId()))
 				result.add(objectNodes.getObjectNode(pointsToEdge.getValue2()));
 		return result;
 	}
@@ -141,7 +141,7 @@ public final class Heap {
 	private void addPointsToEdge(ReferenceNode ref, ObjectNode obj) {
 		referenceNodes.add(ref);
 		objectNodes.add(obj);
-		pointsToEdges.add(new Pair<ReferenceNode, String>(ref, obj.getId()));
+		pointsToEdges.add(new Pair<String, String>(ref.getId(), obj.getId()));
 	}
 
 	/**
@@ -177,16 +177,15 @@ public final class Heap {
 	@CheckReturnValue
 	public Heap setReturnRef(ReferenceNode ref) {
 		Heap result = new Heap(this);
-		for (Iterator<Pair<ReferenceNode, String>> it = result.pointsToEdges.iterator(); it
-				.hasNext();) {
-			Pair<ReferenceNode, String> pointsToEdge = it.next();
-			if (pointsToEdge.getValue1().equals(ReferenceNode.getReturnRef())
+		for (Iterator<Pair<String, String>> it = result.pointsToEdges.iterator(); it.hasNext();) {
+			Pair<String, String> pointsToEdge = it.next();
+			if (pointsToEdge.getValue1().equals(ReferenceNode.getReturnRef().getId())
 					&& pointsToEdge.getValue2().equals(EmptyReturnObjectSet.getInstance().getId()))
 				it.remove();
 		}
 
 		for (ObjectNode obj : dereference(ref))
-			result.pointsToEdges.add(new Pair<ReferenceNode, String>(ReferenceNode.getReturnRef(),
+			result.pointsToEdges.add(new Pair<String, String>(ReferenceNode.getReturnRef().getId(),
 					obj.getId()));
 		return result;
 	}
@@ -241,9 +240,9 @@ public final class Heap {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder("Heap( [");
-		for (Pair<ReferenceNode, String> pair : pointsToEdges)
-			sb.append("(").append(pair.getValue1().toString()).append(" -> ")
-					.append(pair.getValue2()).append(") ");
+		for (Pair<String, String> pair : pointsToEdges)
+			sb.append("(").append(pair.getValue1()).append(" -> ").append(pair.getValue2())
+					.append(") ");
 		sb.append("] ; ").append(fieldEdges.toString()).append(")");
 		return sb.toString();
 	}
@@ -366,14 +365,13 @@ public final class Heap {
 	}
 
 	private void replacePointsToEdge(ObjectNode oldObject, ObjectNode newObject) {
-		Set<Pair<ReferenceNode, String>> edgesToAdd = new HashSet<>();
-		for (Iterator<Pair<ReferenceNode, String>> edgeIterator = pointsToEdges.iterator(); edgeIterator
+		Set<Pair<String, String>> edgesToAdd = new HashSet<>();
+		for (Iterator<Pair<String, String>> edgeIterator = pointsToEdges.iterator(); edgeIterator
 				.hasNext();) {
-			Pair<ReferenceNode, String> edge = edgeIterator.next();
+			Pair<String, String> edge = edgeIterator.next();
 
 			if (edge.getValue2().equals(oldObject.getId())) {
-				edgesToAdd
-						.add(new Pair<ReferenceNode, String>(edge.getValue1(), newObject.getId()));
+				edgesToAdd.add(new Pair<String, String>(edge.getValue1(), newObject.getId()));
 				edgeIterator.remove();
 			}
 		}
@@ -412,9 +410,9 @@ public final class Heap {
 	 *            the ObjectNode the edge to delete points to
 	 */
 	private void removePointsToEdge(ObjectNode obj) {
-		for (Iterator<Pair<ReferenceNode, String>> edgeIterator = pointsToEdges.iterator(); edgeIterator
+		for (Iterator<Pair<String, String>> edgeIterator = pointsToEdges.iterator(); edgeIterator
 				.hasNext();) {
-			Pair<ReferenceNode, String> next = edgeIterator.next();
+			Pair<String, String> next = edgeIterator.next();
 			if (next.getValue2().equals(obj.getId())) {
 				edgeIterator.remove();
 				removeRefWithoutEdge(next.getValue1());
@@ -426,9 +424,9 @@ public final class Heap {
 	 * Removes the {@code reference} if there are no pointsToEdges starting from
 	 * it.
 	 */
-	private void removeRefWithoutEdge(ReferenceNode reference) {
+	private void removeRefWithoutEdge(String reference) {
 		boolean hasNoOtherEdges = true;
-		for (Pair<ReferenceNode, String> pair : pointsToEdges) {
+		for (Pair<String, String> pair : pointsToEdges) {
 			if (pair.getValue1().equals(reference)) {
 				hasNoOtherEdges = false;
 				break;
