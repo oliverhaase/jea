@@ -1,17 +1,19 @@
 package de.htwg_konstanz.jea.vm;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode
 public class ObjectNodes implements Iterable<ObjectNode> {
-	private final Set<ObjectNode> nodes;
+	private final Map<String, ObjectNode> nodes;
 
 	public ObjectNodes() {
-		nodes = new HashSet<ObjectNode>();
+		nodes = new HashMap<String, ObjectNode>();
 	}
 
 	/**
@@ -22,11 +24,11 @@ public class ObjectNodes implements Iterable<ObjectNode> {
 	 *            the ObjectNode to add
 	 */
 	public void add(ObjectNode node) {
-		nodes.add(node);
+		nodes.put(node.getId(), node);
 	}
 
 	public void addAll(ObjectNodes other) {
-		nodes.addAll(other.nodes);
+		nodes.putAll(other.nodes);
 	}
 
 	public void remove(ObjectNode node) {
@@ -34,17 +36,14 @@ public class ObjectNodes implements Iterable<ObjectNode> {
 	}
 
 	public boolean existsObject(String id) {
-		for (ObjectNode objectNode : nodes)
-			if (objectNode.getId().equals(id))
-				return true;
-		return false;
+		return nodes.containsKey(id);
 	}
 
 	public ObjectNode getObjectNode(String id) {
-		for (ObjectNode objectNode : nodes)
-			if (objectNode.getId().equals(id))
-				return objectNode;
-		throw new AssertionError("invalid object id: " + id + ", not in " + nodes);
+		ObjectNode node = nodes.get(id);
+		if (node == null)
+			throw new AssertionError("invalid object id: " + id + ", not in " + nodes);
+		return node;
 	}
 
 	public ObjectNodes getSubObjectsOf(ObjectNode origin, Set<FieldEdge> fieldEdges) {
@@ -75,7 +74,7 @@ public class ObjectNodes implements Iterable<ObjectNode> {
 
 	@Override
 	public Iterator<ObjectNode> iterator() {
-		return nodes.iterator();
+		return nodes.values().iterator();
 	}
 
 	@Override
