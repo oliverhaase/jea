@@ -495,7 +495,7 @@ public final class Heap {
 
 	public ReferenceNode getRefToPhantomObject(int index) {
 		for (ReferenceNode ref : referenceNodes)
-			if (ref.getCategory() == Category.ARG && ref.getId() == index)
+			if (ref.getId().equals(Category.ARG.toString() + index))
 				return ref;
 		throw new AssertionError("phantom object with id " + index + " does not exist");
 	}

@@ -16,13 +16,10 @@ public class ReferenceNode implements NonObjectNode, Slot {
 	private final static ReferenceNode RETURN_REF = new ReferenceNode(-1, Category.RETURN);
 
 	@Getter
-	private final Category category;
-	@Getter
-	private final int id;
+	private final String id;
 
 	public ReferenceNode(int id, @NonNull Category category) {
-		this.id = id;
-		this.category = category;
+		this.id = category.toString() + id;
 	}
 
 	public static ReferenceNode getGlobalRef() {
@@ -35,7 +32,7 @@ public class ReferenceNode implements NonObjectNode, Slot {
 
 	@Override
 	public String toString() {
-		return category.toString() + id;
+		return id;
 	}
 
 	@Override
