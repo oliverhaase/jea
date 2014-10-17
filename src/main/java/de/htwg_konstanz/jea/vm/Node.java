@@ -10,6 +10,19 @@ public interface Node {
 			this.symbol = symbol;
 		}
 
+		public static EscapeState getFromString(String symbol) {
+			switch (symbol) {
+			case "^":
+				return GLOBAL_ESCAPE;
+			case ">":
+				return ARG_ESCAPE;
+			case "v":
+				return NO_ESCAPE;
+			default:
+				throw new AssertionError("May not happen!");
+			}
+		}
+
 		public boolean moreConfinedThan(EscapeState other) {
 			return ordinal() > other.ordinal();
 		}
