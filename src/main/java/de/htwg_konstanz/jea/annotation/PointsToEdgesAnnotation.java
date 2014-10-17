@@ -8,8 +8,7 @@ import java.lang.annotation.Target;
 @Retention(value = RetentionPolicy.RUNTIME)
 @Target(value = ElementType.METHOD)
 public @interface PointsToEdgesAnnotation {
-	// internalID from @ReferenceNodeAnnotation
-	public int internalReferenceNodeID();
+	public int referenceNodeID();
 
 	public String objectID();
 }
