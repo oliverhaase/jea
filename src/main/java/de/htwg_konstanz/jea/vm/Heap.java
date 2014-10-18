@@ -1,15 +1,33 @@
 package de.htwg_konstanz.jea.vm;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Stack;
+
+import javassist.bytecode.ConstPool;
+import javassist.bytecode.annotation.Annotation;
+import javassist.bytecode.annotation.AnnotationMemberValue;
+import javassist.bytecode.annotation.MemberValue;
+import javassist.bytecode.annotation.StringMemberValue;
 
 import javax.annotation.CheckReturnValue;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
+import de.htwg_konstanz.jea.annotation.AnnotationHelper;
+import de.htwg_konstanz.jea.annotation.FieldEdgeAnnotation;
+import de.htwg_konstanz.jea.annotation.InternalObjectAnnotation;
+import de.htwg_konstanz.jea.annotation.MethodSummaryAnnotation;
+import de.htwg_konstanz.jea.annotation.PhantomObjectAnnotation;
+import de.htwg_konstanz.jea.annotation.PointsToEdgesAnnotation;
+import de.htwg_konstanz.jea.annotation.ReferenceNodeAnnotation;
 import de.htwg_konstanz.jea.vm.Node.EscapeState;
 import de.htwg_konstanz.jea.vm.ReferenceNode.Category;
 
@@ -46,7 +64,8 @@ public final class Heap {
 	 *            to the {@code EmptyReturnObjectSet} is added to the Heap
 	 */
 	public Heap(Set<Integer> indexes, boolean hasRefReturnType) {
-		addPointsToEdge(ReferenceNode.getGlobalRef(), GlobalObject.getInstance());
+		addPointsToEdge(ReferenceNode.getGlobalRef(),
+				GlobalObject.getInstance());
 
 		for (Integer index : indexes) {
 			ReferenceNode ref = new ReferenceNode(index, Category.ARG);
@@ -56,7 +75,8 @@ public final class Heap {
 		}
 
 		if (hasRefReturnType) {
-			addPointsToEdge(ReferenceNode.getReturnRef(), EmptyReturnObjectSet.getInstance());
+			addPointsToEdge(ReferenceNode.getReturnRef(),
+					EmptyReturnObjectSet.getInstance());
 		}
 
 	}
@@ -70,6 +90,47 @@ public final class Heap {
 
 		pointsToEdges.addAll(original.pointsToEdges);
 		fieldEdges.addAll(original.fieldEdges);
+	}
+
+	/**
+	 * Creates a Heap instance from a MethodSummaryAnnotation.
+	 * 
+	 * @param a
+	 *            the MethodSummaryAnnotation
+	 * @return the Heap representation
+	 */
+	public static Heap newInstanceByAnnotation(
+			@NonNull MethodSummaryAnnotation a) {
+		Heap heap = new Heap();
+		ObjectNodes allNodes = new ObjectNodes();
+		for (InternalObjectAnnotation internalObject : a.internalObjects()) {
+			allNodes.add(InternalObject.newInstanceByAnnotation(internalObject));
+		}
+		for (PhantomObjectAnnotation phantomObject : a.phantomObjects()) {
+			allNodes.add(PhantomObject.newInstanceByAnnotation(phantomObject));
+		}
+		for (String argEscapedObjectID : a.argEscapedObjectIDs()) {
+			heap.objectNodes.add(allNodes.getObjectNode(argEscapedObjectID));
+		}
+		for (String globallyEscapedObjectID : a.globallyEscapedObjectIDs()) {
+			heap.escapedObjects.add(allNodes
+					.getObjectNode(globallyEscapedObjectID));
+		}
+		for (String localObjectID : a.localObjectIDs()) {
+			heap.localObjects.add(allNodes.getObjectNode(localObjectID));
+		}
+		for (FieldEdgeAnnotation fieldEdge : a.fieldEdges()) {
+			heap.fieldEdges.add(FieldEdge.newInstanceByAnnotation(fieldEdge));
+		}
+		for (ReferenceNodeAnnotation referenceNode : a.referenceNodes()) {
+			heap.referenceNodes.add(ReferenceNode
+					.newInstanceByAnnotation(referenceNode));
+		}
+		for (PointsToEdgesAnnotation pointsToEdge : a.pointsToEdges()) {
+			heap.pointsToEdges.add(new Pair<String, String>(pointsToEdge
+					.referenceNodeID(), pointsToEdge.objectID()));
+		}
+		return heap;
 	}
 
 	/**
@@ -100,7 +161,8 @@ public final class Heap {
 
 		for (ObjectNode object : dereference(ref)) {
 			result.objectNodes.remove(object);
-			result.objectNodes.add(object.increaseEscapeState(EscapeState.GLOBAL_ESCAPE));
+			result.objectNodes.add(object
+					.increaseEscapeState(EscapeState.GLOBAL_ESCAPE));
 		}
 
 		return result;
@@ -125,13 +187,16 @@ public final class Heap {
 			return result;
 
 		if (!objectNodes.existsObject(obj.getId()))
-			throw new NoSuchElementException("To the object " + obj
-					+ " should be added a field, but it bedoesn't exist in this Heap");
+			throw new NoSuchElementException(
+					"To the object "
+							+ obj
+							+ " should be added a field, but it bedoesn't exist in this Heap");
 
 		if (!objectNodes.existsObject(value.getId()))
 			result.objectNodes.add(value);
 
-		result.fieldEdges.add(new FieldEdge(obj.getId(), fieldName, value.getId()));
+		result.fieldEdges.add(new FieldEdge(obj.getId(), fieldName, value
+				.getId()));
 		return result;
 	}
 
@@ -177,16 +242,19 @@ public final class Heap {
 	@CheckReturnValue
 	public Heap setReturnRef(ReferenceNode ref) {
 		Heap result = new Heap(this);
-		for (Iterator<Pair<String, String>> it = result.pointsToEdges.iterator(); it.hasNext();) {
+		for (Iterator<Pair<String, String>> it = result.pointsToEdges
+				.iterator(); it.hasNext();) {
 			Pair<String, String> pointsToEdge = it.next();
-			if (pointsToEdge.getValue1().equals(ReferenceNode.getReturnRef().getId())
-					&& pointsToEdge.getValue2().equals(EmptyReturnObjectSet.getInstance().getId()))
+			if (pointsToEdge.getValue1().equals(
+					ReferenceNode.getReturnRef().getId())
+					&& pointsToEdge.getValue2().equals(
+							EmptyReturnObjectSet.getInstance().getId()))
 				it.remove();
 		}
 
 		for (ObjectNode obj : dereference(ref))
-			result.pointsToEdges.add(new Pair<String, String>(ReferenceNode.getReturnRef().getId(),
-					obj.getId()));
+			result.pointsToEdges.add(new Pair<String, String>(ReferenceNode
+					.getReturnRef().getId(), obj.getId()));
 		return result;
 	}
 
@@ -206,8 +274,10 @@ public final class Heap {
 			boolean found = false;
 			for (ObjectNode otherObject : other.objectNodes) {
 				if (oneObject.equals(otherObject)) {
-					result.objectNodes.add(oneObject.getEscapeState().moreConfinedThan(
-							otherObject.getEscapeState()) ? otherObject : oneObject);
+					result.objectNodes
+							.add(oneObject.getEscapeState().moreConfinedThan(
+									otherObject.getEscapeState()) ? otherObject
+									: oneObject);
 					found = true;
 				}
 			}
@@ -241,8 +311,8 @@ public final class Heap {
 	public String toString() {
 		StringBuilder sb = new StringBuilder("Heap( [");
 		for (Pair<String, String> pair : pointsToEdges)
-			sb.append("(").append(pair.getValue1()).append(" -> ").append(pair.getValue2())
-					.append(") ");
+			sb.append("(").append(pair.getValue1()).append(" -> ")
+					.append(pair.getValue2()).append(") ");
 		sb.append("] ; ").append(fieldEdges.toString()).append(")");
 		return sb.toString();
 	}
@@ -259,18 +329,22 @@ public final class Heap {
 		Set<FieldEdge> edgesToBeAdded = new HashSet<>();
 
 		for (FieldEdge edge : fieldEdges) {
-			if (edge.getOriginId().equals(EmptyReturnObjectSet.getInstance().getId())) {
+			if (edge.getOriginId().equals(
+					EmptyReturnObjectSet.getInstance().getId())) {
 				for (ObjectNode resultObject : getResultValues())
-					if (!edge.getDestinationId().equals(EmptyReturnObjectSet.getInstance().getId()))
-						edgesToBeAdded.add(new FieldEdge(resultObject.getId(), edge.getFieldName(),
-								edge.getDestinationId()));
+					if (!edge.getDestinationId().equals(
+							EmptyReturnObjectSet.getInstance().getId()))
+						edgesToBeAdded.add(new FieldEdge(resultObject.getId(),
+								edge.getFieldName(), edge.getDestinationId()));
 				edgesToBeRemoved.add(edge);
 			}
-			if (edge.getDestinationId().equals(EmptyReturnObjectSet.getInstance().getId())) {
+			if (edge.getDestinationId().equals(
+					EmptyReturnObjectSet.getInstance().getId())) {
 				for (ObjectNode resultObject : getResultValues())
-					if (!edge.getOriginId().equals(EmptyReturnObjectSet.getInstance().getId()))
-						edgesToBeAdded.add(new FieldEdge(edge.getOriginId(), edge.getFieldName(),
-								resultObject.getId()));
+					if (!edge.getOriginId().equals(
+							EmptyReturnObjectSet.getInstance().getId()))
+						edgesToBeAdded.add(new FieldEdge(edge.getOriginId(),
+								edge.getFieldName(), resultObject.getId()));
 				edgesToBeRemoved.add(edge);
 			}
 		}
@@ -286,13 +360,16 @@ public final class Heap {
 	 * from the Heap.
 	 */
 	protected void removeNullObject() {
-		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator.hasNext();)
+		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator
+				.hasNext();)
 			if (objIterator.next().equals(InternalObject.getNullObject()))
 				objIterator.remove();
 
-		for (Iterator<FieldEdge> edgeIterator = fieldEdges.iterator(); edgeIterator.hasNext();) {
+		for (Iterator<FieldEdge> edgeIterator = fieldEdges.iterator(); edgeIterator
+				.hasNext();) {
 			FieldEdge edge = edgeIterator.next();
-			if (edge.getDestinationId().equals(InternalObject.getNullObject().getId()))
+			if (edge.getDestinationId().equals(
+					InternalObject.getNullObject().getId()))
 				edgeIterator.remove();
 		}
 
@@ -316,9 +393,11 @@ public final class Heap {
 		while (!workingList.isEmpty()) {
 			ObjectNode current = workingList.pop();
 
-			for (ObjectNode subObject : objectNodes.getSubObjectsOf(current, fieldEdges))
+			for (ObjectNode subObject : objectNodes.getSubObjectsOf(current,
+					fieldEdges))
 				if (subObject.getEscapeState().moreConfinedThan(escapeState)) {
-					ObjectNode updatedSubObject = subObject.increaseEscapeState(escapeState);
+					ObjectNode updatedSubObject = subObject
+							.increaseEscapeState(escapeState);
 					objectNodes.remove(subObject);
 					objectNodes.add(updatedSubObject);
 					workingList.push(updatedSubObject);
@@ -333,7 +412,8 @@ public final class Heap {
 	 * FieldEdges starting from these ObjectNodes. Replaces all pointsToEdges.
 	 */
 	private void collapseGlobalGraph() {
-		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator.hasNext();) {
+		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator
+				.hasNext();) {
 			ObjectNode current = objIterator.next();
 
 			if (current.getEscapeState() == EscapeState.GLOBAL_ESCAPE
@@ -351,8 +431,10 @@ public final class Heap {
 				}
 				for (FieldEdge edgeTerminatingAtCurrent : edgesTerminatingAtCurrent) {
 					fieldEdges.remove(edgeTerminatingAtCurrent);
-					fieldEdges.add(new FieldEdge(edgeTerminatingAtCurrent.getOriginId(),
-							edgeTerminatingAtCurrent.getFieldName(), GlobalObject.getInstance()
+					fieldEdges
+							.add(new FieldEdge(edgeTerminatingAtCurrent
+									.getOriginId(), edgeTerminatingAtCurrent
+									.getFieldName(), GlobalObject.getInstance()
 									.getId()));
 				}
 
@@ -366,12 +448,13 @@ public final class Heap {
 
 	private void replacePointsToEdge(ObjectNode oldObject, ObjectNode newObject) {
 		Set<Pair<String, String>> edgesToAdd = new HashSet<>();
-		for (Iterator<Pair<String, String>> edgeIterator = pointsToEdges.iterator(); edgeIterator
-				.hasNext();) {
+		for (Iterator<Pair<String, String>> edgeIterator = pointsToEdges
+				.iterator(); edgeIterator.hasNext();) {
 			Pair<String, String> edge = edgeIterator.next();
 
 			if (edge.getValue2().equals(oldObject.getId())) {
-				edgesToAdd.add(new Pair<String, String>(edge.getValue1(), newObject.getId()));
+				edgesToAdd.add(new Pair<String, String>(edge.getValue1(),
+						newObject.getId()));
 				edgeIterator.remove();
 			}
 		}
@@ -385,13 +468,15 @@ public final class Heap {
 	 * are no other pointsToEdges from the ReferenceNode it will be removed too.
 	 */
 	private void removeLocalGraph() {
-		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator.hasNext();) {
+		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator
+				.hasNext();) {
 			ObjectNode current = objIterator.next();
 
 			if (current.getEscapeState() == EscapeState.NO_ESCAPE) {
 				for (Iterator<FieldEdge> edgeIterator = fieldEdges.iterator(); edgeIterator
 						.hasNext();)
-					if (edgeIterator.next().getOriginId().equals(current.getId()))
+					if (edgeIterator.next().getOriginId()
+							.equals(current.getId()))
 						edgeIterator.remove();
 
 				removePointsToEdge(current);
@@ -410,8 +495,8 @@ public final class Heap {
 	 *            the ObjectNode the edge to delete points to
 	 */
 	private void removePointsToEdge(ObjectNode obj) {
-		for (Iterator<Pair<String, String>> edgeIterator = pointsToEdges.iterator(); edgeIterator
-				.hasNext();) {
+		for (Iterator<Pair<String, String>> edgeIterator = pointsToEdges
+				.iterator(); edgeIterator.hasNext();) {
 			Pair<String, String> next = edgeIterator.next();
 			if (next.getValue2().equals(obj.getId())) {
 				edgeIterator.remove();
@@ -453,7 +538,8 @@ public final class Heap {
 
 		for (ObjectNode resultObject : result.getResultValues()) {
 			result.objectNodes.remove(resultObject);
-			result.objectNodes.add(resultObject.increaseEscapeState(EscapeState.ARG_ESCAPE));
+			result.objectNodes.add(resultObject
+					.increaseEscapeState(EscapeState.ARG_ESCAPE));
 		}
 
 		result.removeNullObject();
@@ -495,7 +581,8 @@ public final class Heap {
 		for (ReferenceNode ref : referenceNodes)
 			if (ref.getId().equals(Category.ARG.toString() + index))
 				return ref;
-		throw new AssertionError("phantom object with id " + index + " does not exist");
+		throw new AssertionError("phantom object with id " + index
+				+ " does not exist");
 	}
 
 	/**
@@ -512,7 +599,8 @@ public final class Heap {
 
 		for (ObjectNode object : summary.getArgEscapeObjects())
 			if (object instanceof InternalObject)
-				result.getObjectNodes().add(((InternalObject) object).resetEscapeState());
+				result.getObjectNodes().add(
+						((InternalObject) object).resetEscapeState());
 
 		return result;
 	}
@@ -532,7 +620,8 @@ public final class Heap {
 		Heap result = new Heap(this);
 
 		if (summary.isAlien())
-			result = result.addReferenceAndTarget(resultRef, GlobalObject.getInstance());
+			result = result.addReferenceAndTarget(resultRef,
+					GlobalObject.getInstance());
 		else
 			for (ObjectNode resultValue : summary.getResultValues()) {
 				result = result.addReferenceAndTarget(resultRef, resultValue);
@@ -544,4 +633,103 @@ public final class Heap {
 	public Set<ObjectNode> getFieldOf(ObjectNode object, String field) {
 		return objectNodes.getFieldOf(object, fieldEdges, field);
 	}
+
+	/**
+	 * Creates an {@reference=MethodSummaryAnnotation} representation of this
+	 * Heap nested in a {@reference=javassist.bytecode.annotation.Annotation}.
+	 * 
+	 * @return
+	 */
+	public Annotation convertToAnnotation(ConstPool cp) {
+		Map<String, MemberValue> values = new HashMap<>();
+
+		// create temporary lists
+		List<MemberValue> internalObjects = new ArrayList<>();
+		List<MemberValue> phantomPbjects = new ArrayList<>();
+		List<MemberValue> argEscapedObjectIDs = new ArrayList<>();
+		List<MemberValue> globallyEscapedObjectIDs = new ArrayList<>();
+		List<MemberValue> localObjectIDs = new ArrayList<>();
+		List<MemberValue> fieldEdges = new ArrayList<>();
+		List<MemberValue> referenceNodes = new ArrayList<>();
+		List<MemberValue> pointsToEdges = new ArrayList<>();
+
+		// separate objectNodes into lists
+		separateObjectNodes(objectNodes, argEscapedObjectIDs, internalObjects,
+				phantomPbjects, cp);
+		separateObjectNodes(escapedObjects, globallyEscapedObjectIDs,
+				internalObjects, phantomPbjects, cp);
+		separateObjectNodes(localObjects, localObjectIDs, internalObjects,
+				phantomPbjects, cp);
+
+		// convert fieldEdges
+		for (FieldEdge fieldEdge : this.fieldEdges) {
+			fieldEdges.add(new AnnotationMemberValue(fieldEdge
+					.convertToAnnotation(cp), cp));
+		}
+
+		// convert referenceNodes
+		for (ReferenceNode referenceNode : this.referenceNodes) {
+			referenceNodes.add(new AnnotationMemberValue(referenceNode
+					.convertToAnnotation(cp), cp));
+		}
+
+		// convert pointsToEdges
+		for (Pair<String, String> pointsToEdge : this.pointsToEdges) {
+			Map<String, MemberValue> vals = new HashMap<>();
+			vals.put("referenceNodeID",
+					new StringMemberValue(pointsToEdge.getValue1(), cp));
+			vals.put("objectID", new StringMemberValue(
+					pointsToEdge.getValue2(), cp));
+			pointsToEdges.add(new AnnotationMemberValue(AnnotationHelper
+					.createAnnotation(vals,
+							PointsToEdgesAnnotation.class.getName(), cp), cp));
+		}
+
+		// add lists to values
+		values.put("internalObjects",
+				AnnotationHelper.convertToAnnotationArray(internalObjects, cp));
+		values.put("phantomObjects",
+				AnnotationHelper.convertToAnnotationArray(phantomPbjects, cp));
+		values.put("argEscapedObjectIDs",
+				AnnotationHelper.convertToStringArray(argEscapedObjectIDs, cp));
+		values.put("globallyEscapedObjectIDs", AnnotationHelper
+				.convertToStringArray(globallyEscapedObjectIDs, cp));
+		values.put("localObjectIDs",
+				AnnotationHelper.convertToStringArray(localObjectIDs, cp));
+		values.put("fieldEdges",
+				AnnotationHelper.convertToAnnotationArray(fieldEdges, cp));
+		values.put("referenceNodes",
+				AnnotationHelper.convertToAnnotationArray(referenceNodes, cp));
+		values.put("pointsToEdges",
+				AnnotationHelper.convertToAnnotationArray(pointsToEdges, cp));
+		return AnnotationHelper.createAnnotation(values,
+				MethodSummaryAnnotation.class.getName(), cp);
+	}
+
+	private void separateObjectNodes(ObjectNodes source,
+			List<MemberValue> target, List<MemberValue> internalObjects,
+			List<MemberValue> phantomPbjects, ConstPool cp) {
+		for (ObjectNode objectNode : source) {
+			if (objectNode instanceof PhantomObject) {
+				PhantomObject current = (PhantomObject) objectNode;
+				phantomPbjects.add(new AnnotationMemberValue(current
+						.convertToAnnotation(cp), cp));
+			} else if (objectNode instanceof InternalObject) {
+				// null object is singelton, we can compare references
+				if (objectNode == InternalObject.getNullObject()) {
+					throw new AssertionError(
+							"ObjectNodes contains null object!");
+				}
+				InternalObject current = (InternalObject) objectNode;
+				internalObjects.add(new AnnotationMemberValue(current
+						.convertToAnnotation(cp), cp));
+			} else {
+				throw new AssertionError(
+						"ObjectNodes contains EmptyReturnObjectSet or GlobalObject!");
+			}
+			target.add(new StringMemberValue(objectNode.getId(), cp));
+		}
+
+	}
+
 }
