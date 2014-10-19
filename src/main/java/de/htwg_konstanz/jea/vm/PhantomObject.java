@@ -22,7 +22,7 @@ public final class PhantomObject extends ObjectNode {
 	@Getter
 	private final int index;
 	@Getter
-	private final ObjectNode parent;
+	private final String parent;
 	@Getter
 	private final String fieldName;
 
@@ -33,16 +33,15 @@ public final class PhantomObject extends ObjectNode {
 		this.fieldName = null;
 	}
 
-	private PhantomObject(String id, EscapeState escapeState, int index,
-			ObjectNode parent, String fieldName) {
+	private PhantomObject(String id, EscapeState escapeState, int index, String parent,
+			String fieldName) {
 		super(id, escapeState);
 		this.index = index;
 		this.parent = parent;
 		this.fieldName = fieldName;
 	}
 
-	private PhantomObject(String id, ObjectNode parent, String fieldName,
-			EscapeState escapeState) {
+	private PhantomObject(String id, String parent, String fieldName, EscapeState escapeState) {
 		super(id, escapeState);
 		this.index = -1;
 		this.parent = parent;
@@ -53,10 +52,9 @@ public final class PhantomObject extends ObjectNode {
 		return new PhantomObject(index, EscapeState.ARG_ESCAPE);
 	}
 
-	public static PhantomObject newSubPhantom(ObjectNode parent,
-			String fieldName) {
-		return new PhantomObject(parent.getId() + "." + fieldName, parent,
-				fieldName, parent.getEscapeState());
+	public static PhantomObject newSubPhantom(ObjectNode parent, String fieldName) {
+		return new PhantomObject(parent.getId() + "." + fieldName, parent.getId(), fieldName,
+				parent.getEscapeState());
 	}
 
 	/**
@@ -66,12 +64,10 @@ public final class PhantomObject extends ObjectNode {
 	 *            the PhantomObjectAnnotation
 	 * @return the PhantomObject representation
 	 */
-	public static PhantomObject newInstanceByAnnotation(
-			@NonNull PhantomObjectAnnotation a) {
+	public static PhantomObject newInstanceByAnnotation(@NonNull PhantomObjectAnnotation a) {
 		// TODO replace NullObject with a.parentID()
-		return new PhantomObject(a.id(), EscapeState.getFromString(a
-				.escapeState()), a.index(), InternalObject.getNullObject(),
-				a.fieldName());
+		return new PhantomObject(a.id(), EscapeState.getFromString(a.escapeState()), a.index(),
+				InternalObject.getNullObject().getId(), a.fieldName());
 	}
 
 	@Override
@@ -81,8 +77,7 @@ public final class PhantomObject extends ObjectNode {
 			if (this.index != -1)
 				return new PhantomObject(this.getIndex(), escapeState);
 			else
-				return new PhantomObject(this.getId(), this.parent, fieldName,
-						escapeState);
+				return new PhantomObject(this.getId(), this.parent, fieldName, escapeState);
 
 		return this;
 	}
@@ -111,14 +106,13 @@ public final class PhantomObject extends ObjectNode {
 	public Annotation convertToAnnotation(ConstPool cp) {
 		Map<String, MemberValue> values = new HashMap<>();
 		values.put("id", new StringMemberValue(getId(), cp));
-		values.put("escapeState", new StringMemberValue(getEscapeState()
-				.toString(), cp));
+		values.put("escapeState", new StringMemberValue(getEscapeState().toString(), cp));
 		values.put("index", new IntegerMemberValue(index, cp));
 		// TODO replace "" with parentId
 		values.put("parentID", new StringMemberValue("", cp));
 		values.put("fieldName", new StringMemberValue(fieldName, cp));
-		return AnnotationHelper.createAnnotation(values,
-				PhantomObjectAnnotation.class.getName(), cp);
+		return AnnotationHelper.createAnnotation(values, PhantomObjectAnnotation.class.getName(),
+				cp);
 	}
 
 }

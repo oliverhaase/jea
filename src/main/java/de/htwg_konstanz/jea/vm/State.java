@@ -88,14 +88,15 @@ public final class State {
 
 		// objectNode is Child of Global Parameter
 
-		if (phantom.getParent().isGlobal()) {
+		if (heap.getObjectNodes().getObjectNode(phantom.getParent()).isGlobal()) {
 			result.add(GlobalObject.getInstance());
 			return result;
 		}
 
 		// objectNode is Child of Parameter
 
-		for (ObjectNode parent : mapsToObjects(phantom.getParent(), consumeStack)) {
+		for (ObjectNode parent : mapsToObjects(
+				heap.getObjectNodes().getObjectNode(phantom.getParent()), consumeStack)) {
 			for (ObjectNode field : heap.getFieldOf(parent, phantom.getFieldName())) {
 				result.add(field);
 			}
