@@ -333,6 +333,10 @@ public final class Heap {
 		fieldEdges.removeAll(edgesToBeRemoved);
 		fieldEdges.addAll(edgesToBeAdded);
 
+		for (ObjectNode resultObject : getResultValues()) {
+			replacePointsToEdge(EmptyReturnObjectSet.getInstance(), resultObject);
+		}
+
 		objectNodes.remove(EmptyReturnObjectSet.getInstance());
 	}
 
