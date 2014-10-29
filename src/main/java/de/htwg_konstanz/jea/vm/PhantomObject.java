@@ -2,6 +2,7 @@ package de.htwg_konstanz.jea.vm;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.annotation.Annotation;
@@ -65,8 +66,22 @@ public final class PhantomObject extends ObjectNode {
 	 * @return the PhantomObject representation
 	 */
 	public static PhantomObject newInstanceByAnnotation(@NonNull PhantomObjectAnnotation a) {
-		return new PhantomObject(a.id(), EscapeState.getFromString(a.escapeState()), a.index(),
-				a.parentID(), a.fieldName());
+		// special treatment for null-able fields
+		String id = convertStringToNull(a.id());
+		String escapeState = convertStringToNull(a.escapeState());
+		String parentId = convertStringToNull(a.parentID());
+		String fieldName = convertStringToNull(a.fieldName());
+
+		return new PhantomObject(id, EscapeState.getFromString(escapeState), a.index(), parentId,
+				fieldName);
+	}
+
+	private static String convertNullToString(String value) {
+		return value == null ? "NULLSTRING" : value;
+	}
+
+	private static String convertStringToNull(@NonNull String value) {
+		return value.equals("NULLSTRING") ? null : value;
 	}
 
 	@Override
@@ -103,11 +118,17 @@ public final class PhantomObject extends ObjectNode {
 	 * @return
 	 */
 	public Annotation convertToAnnotation(ConstPool cp) {
+		// special treatment for null-able fields
+		String id = convertNullToString(getId());
+		String escapeState = convertNullToString(Objects.toString(getEscapeState()));
+		String parentId = convertNullToString(parent);
+		String fieldName = convertNullToString(this.fieldName);
+
 		Map<String, MemberValue> values = new HashMap<>();
-		values.put("id", new StringMemberValue(getId(), cp));
-		values.put("escapeState", new StringMemberValue(getEscapeState().toString(), cp));
+		values.put("id", new StringMemberValue(id, cp));
+		values.put("escapeState", new StringMemberValue(escapeState, cp));
 		values.put("index", new IntegerMemberValue(index, cp));
-		values.put("parentID", new StringMemberValue(parent, cp));
+		values.put("parentID", new StringMemberValue(parentId, cp));
 		values.put("fieldName", new StringMemberValue(fieldName, cp));
 		return AnnotationHelper.createAnnotation(values, PhantomObjectAnnotation.class.getName(),
 				cp);

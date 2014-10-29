@@ -11,6 +11,10 @@ public interface Node {
 		}
 
 		public static EscapeState getFromString(String symbol) {
+			// special treatment because null is not permitted
+			if (symbol == null)
+				return null;
+
 			switch (symbol) {
 			case "^":
 				return GLOBAL_ESCAPE;
