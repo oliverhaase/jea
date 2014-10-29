@@ -32,7 +32,7 @@ public class ObjectNodes implements Iterable<ObjectNode> {
 	}
 
 	public void remove(ObjectNode node) {
-		nodes.remove(node);
+		nodes.remove(node.getId());
 	}
 
 	public boolean existsObject(String id) {
