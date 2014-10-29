@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import lombok.EqualsAndHashCode;
+import de.htwg_konstanz.jea.vm.Node.EscapeState;
 
 @EqualsAndHashCode
 public class ObjectNodes implements Iterable<ObjectNode> {
@@ -44,6 +45,29 @@ public class ObjectNodes implements Iterable<ObjectNode> {
 		if (node == null)
 			throw new AssertionError("invalid object id: " + id + ", not in " + nodes);
 		return node;
+	}
+
+	/**
+	 * Increases the escapeState of the {@code object} to the
+	 * {@code escapeState}. If the escapeState is less confined nothing is done
+	 * and null is returned.
+	 * 
+	 * @param object
+	 *            the object to increase
+	 * @param escapeState
+	 *            the new escape state
+	 * @return the object with the increased escapeState
+	 */
+	public ObjectNode increaseEscapeState(ObjectNode object, EscapeState escapeState) {
+		ObjectNode increasedObject = null;
+
+		if (object.getEscapeState().moreConfinedThan(escapeState)) {
+			increasedObject = object.increaseEscapeState(escapeState);
+			remove(object);
+			add(increasedObject);
+		}
+
+		return increasedObject;
 	}
 
 	public ObjectNodes getSubObjectsOf(ObjectNode origin, Set<FieldEdge> fieldEdges) {

@@ -155,8 +155,7 @@ public final class Heap {
 		Heap result = new Heap(this);
 
 		for (ObjectNode object : dereference(ref)) {
-			result.objectNodes.remove(object);
-			result.objectNodes.add(object.increaseEscapeState(EscapeState.GLOBAL_ESCAPE));
+			result.objectNodes.increaseEscapeState(object, EscapeState.GLOBAL_ESCAPE);
 		}
 
 		return result;
@@ -372,13 +371,11 @@ public final class Heap {
 		while (!workingList.isEmpty()) {
 			ObjectNode current = workingList.pop();
 
-			for (ObjectNode subObject : objectNodes.getSubObjectsOf(current, fieldEdges))
-				if (subObject.getEscapeState().moreConfinedThan(escapeState)) {
-					ObjectNode updatedSubObject = subObject.increaseEscapeState(escapeState);
-					objectNodes.remove(subObject);
-					objectNodes.add(updatedSubObject);
-					workingList.push(updatedSubObject);
-				}
+			for (ObjectNode subObject : objectNodes.getSubObjectsOf(current, fieldEdges)) {
+				ObjectNode increasedObj = objectNodes.increaseEscapeState(subObject, escapeState);
+				if (increasedObj != null)
+					workingList.push(increasedObj);
+			}
 		}
 	}
 
@@ -508,8 +505,7 @@ public final class Heap {
 		result.resolveEmptyReturnObjectSet();
 
 		for (ObjectNode resultObject : result.getResultValues()) {
-			result.objectNodes.remove(resultObject);
-			result.objectNodes.add(resultObject.increaseEscapeState(EscapeState.ARG_ESCAPE));
+			result.objectNodes.increaseEscapeState(resultObject, EscapeState.ARG_ESCAPE);
 		}
 
 		result.removeNullObject();
