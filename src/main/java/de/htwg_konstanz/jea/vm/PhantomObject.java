@@ -65,9 +65,8 @@ public final class PhantomObject extends ObjectNode {
 	 * @return the PhantomObject representation
 	 */
 	public static PhantomObject newInstanceByAnnotation(@NonNull PhantomObjectAnnotation a) {
-		// TODO replace NullObject with a.parentID()
 		return new PhantomObject(a.id(), EscapeState.getFromString(a.escapeState()), a.index(),
-				InternalObject.getNullObject().getId(), a.fieldName());
+				a.parentID(), a.fieldName());
 	}
 
 	@Override
@@ -108,8 +107,7 @@ public final class PhantomObject extends ObjectNode {
 		values.put("id", new StringMemberValue(getId(), cp));
 		values.put("escapeState", new StringMemberValue(getEscapeState().toString(), cp));
 		values.put("index", new IntegerMemberValue(index, cp));
-		// TODO replace "" with parentId
-		values.put("parentID", new StringMemberValue("", cp));
+		values.put("parentID", new StringMemberValue(parent, cp));
 		values.put("fieldName", new StringMemberValue(fieldName, cp));
 		return AnnotationHelper.createAnnotation(values, PhantomObjectAnnotation.class.getName(),
 				cp);
