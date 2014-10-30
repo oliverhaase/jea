@@ -12,6 +12,8 @@ public @interface MethodSummaryAnnotation {
 
 	public PhantomObjectAnnotation[] phantomObjects();
 
+	public GlobalObjectAnnotation globalObject();
+
 	// all nodes from objectNodes
 	public String[] argEscapedObjectIDs();
 

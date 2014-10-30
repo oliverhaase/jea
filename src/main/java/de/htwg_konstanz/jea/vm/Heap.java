@@ -13,6 +13,7 @@ import java.util.Stack;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.annotation.Annotation;
 import javassist.bytecode.annotation.AnnotationMemberValue;
+import javassist.bytecode.annotation.BooleanMemberValue;
 import javassist.bytecode.annotation.MemberValue;
 import javassist.bytecode.annotation.StringMemberValue;
 
@@ -23,6 +24,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import de.htwg_konstanz.jea.annotation.AnnotationHelper;
 import de.htwg_konstanz.jea.annotation.FieldEdgeAnnotation;
+import de.htwg_konstanz.jea.annotation.GlobalObjectAnnotation;
 import de.htwg_konstanz.jea.annotation.InternalObjectAnnotation;
 import de.htwg_konstanz.jea.annotation.MethodSummaryAnnotation;
 import de.htwg_konstanz.jea.annotation.PhantomObjectAnnotation;
@@ -109,12 +111,18 @@ public final class Heap {
 		for (String argEscapedObjectID : a.argEscapedObjectIDs()) {
 			heap.objectNodes.add(allNodes.getObjectNode(argEscapedObjectID));
 		}
+		if (a.globalObject().containedInArgEscapedObjects())
+			heap.objectNodes.add(GlobalObject.getInstance());
 		for (String globallyEscapedObjectID : a.globallyEscapedObjectIDs()) {
 			heap.escapedObjects.add(allNodes.getObjectNode(globallyEscapedObjectID));
 		}
+		if (a.globalObject().containedInGloballyEscapedObjects())
+			heap.escapedObjects.add(GlobalObject.getInstance());
 		for (String localObjectID : a.localObjectIDs()) {
 			heap.localObjects.add(allNodes.getObjectNode(localObjectID));
 		}
+		if (a.globalObject().containedInLocalObjects())
+			heap.localObjects.add(GlobalObject.getInstance());
 		for (FieldEdgeAnnotation fieldEdge : a.fieldEdges()) {
 			heap.fieldEdges.add(FieldEdge.newInstanceByAnnotation(fieldEdge));
 		}
@@ -620,11 +628,26 @@ public final class Heap {
 		List<MemberValue> referenceNodes = new ArrayList<>();
 		List<MemberValue> pointsToEdges = new ArrayList<>();
 
-		// separate objectNodes into lists
-		separateObjectNodes(objectNodes, argEscapedObjectIDs, internalObjects, phantomPbjects, cp);
-		separateObjectNodes(escapedObjects, globallyEscapedObjectIDs, internalObjects,
-				phantomPbjects, cp);
-		separateObjectNodes(localObjects, localObjectIDs, internalObjects, phantomPbjects, cp);
+		// separate objectNodes into lists and check for GlobalObject
+		boolean goInObjectNodes = separateObjectNodes(objectNodes, argEscapedObjectIDs,
+				internalObjects, phantomPbjects, cp);
+		boolean goInEscapedObjects = separateObjectNodes(escapedObjects, globallyEscapedObjectIDs,
+				internalObjects, phantomPbjects, cp);
+		boolean goInLocalObjects = separateObjectNodes(localObjects, localObjectIDs,
+				internalObjects, phantomPbjects, cp);
+
+		// create GlobalObjectAnnotation
+		Map<String, MemberValue> globalObjectValues = new HashMap<>();
+		globalObjectValues.put("containedInArgEscapedObjects", new BooleanMemberValue(
+				goInObjectNodes, cp));
+		globalObjectValues.put("containedInGloballyEscapedObjects", new BooleanMemberValue(
+				goInEscapedObjects, cp));
+		globalObjectValues.put("containedInLocalObjects", new BooleanMemberValue(goInLocalObjects,
+				cp));
+		values.put(
+				"globalObject",
+				new AnnotationMemberValue(AnnotationHelper.createAnnotation(globalObjectValues,
+						GlobalObjectAnnotation.class.getName(), cp), cp));
 
 		// convert fieldEdges
 		for (FieldEdge fieldEdge : this.fieldEdges) {
@@ -662,10 +685,14 @@ public final class Heap {
 				cp);
 	}
 
-	private void separateObjectNodes(ObjectNodes source, List<MemberValue> target,
+	private boolean separateObjectNodes(ObjectNodes source, List<MemberValue> target,
 			List<MemberValue> internalObjects, List<MemberValue> phantomPbjects, ConstPool cp) {
+		boolean containsGlobalObject = false;
 		for (ObjectNode objectNode : source) {
-			if (objectNode instanceof PhantomObject) {
+			if (objectNode instanceof GlobalObject) {
+				containsGlobalObject = true;
+				continue;
+			} else if (objectNode instanceof PhantomObject) {
 				PhantomObject current = (PhantomObject) objectNode;
 				phantomPbjects.add(new AnnotationMemberValue(current.convertToAnnotation(cp), cp));
 			} else if (objectNode instanceof InternalObject) {
@@ -676,12 +703,11 @@ public final class Heap {
 				InternalObject current = (InternalObject) objectNode;
 				internalObjects.add(new AnnotationMemberValue(current.convertToAnnotation(cp), cp));
 			} else {
-				throw new AssertionError(
-						"ObjectNodes contains EmptyReturnObjectSet or GlobalObject!");
+				throw new AssertionError("ObjectNodes contains EmptyReturnObjectSet!");
 			}
 			target.add(new StringMemberValue(objectNode.getId(), cp));
 		}
-
+		return containsGlobalObject;
 	}
 
 }
