@@ -127,7 +127,7 @@ public final class PhantomObject extends ObjectNode {
 		Map<String, MemberValue> values = new HashMap<>();
 		values.put("id", new StringMemberValue(id, cp));
 		values.put("escapeState", new StringMemberValue(escapeState, cp));
-		values.put("index", new IntegerMemberValue(index, cp));
+		values.put("index", new IntegerMemberValue(cp, index));
 		values.put("parentID", new StringMemberValue(parentId, cp));
 		values.put("fieldName", new StringMemberValue(fieldName, cp));
 		return AnnotationHelper.createAnnotation(values, PhantomObjectAnnotation.class.getName(),
