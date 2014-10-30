@@ -615,24 +615,24 @@ public final class Heap {
 		Map<String, MemberValue> values = new HashMap<>();
 
 		List<MemberValue> internalObjects = new ArrayList<>();
-		List<MemberValue> phantomPbjects = new ArrayList<>();
+		List<MemberValue> phantomObjects = new ArrayList<>();
 
 		values.put(
 				"argEscapedObjectIDs",
-				seperateObjectNodesByTypeAndGetIds(objectNodes, internalObjects, phantomPbjects, cp));
+				seperateObjectNodesByTypeAndGetIds(objectNodes, internalObjects, phantomObjects, cp));
 		values.put(
 				"globallyEscapedObjectIDs",
-				seperateObjectNodesByTypeAndGetIds(escapedObjects, internalObjects, phantomPbjects,
+				seperateObjectNodesByTypeAndGetIds(escapedObjects, internalObjects, phantomObjects,
 						cp));
 		values.put(
 				"localObjectIDs",
-				seperateObjectNodesByTypeAndGetIds(localObjects, internalObjects, phantomPbjects,
+				seperateObjectNodesByTypeAndGetIds(localObjects, internalObjects, phantomObjects,
 						cp));
 
 		values.put("internalObjects",
 				convertListToArrayMember(internalObjects, new AnnotationMemberValue(cp), cp));
 		values.put("phantomObjects",
-				convertListToArrayMember(phantomPbjects, new AnnotationMemberValue(cp), cp));
+				convertListToArrayMember(phantomObjects, new AnnotationMemberValue(cp), cp));
 
 		values.put("fieldEdges", convertFieldEdges(cp));
 
