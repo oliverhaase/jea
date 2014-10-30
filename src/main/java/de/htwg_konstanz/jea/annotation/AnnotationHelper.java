@@ -3,7 +3,6 @@ package de.htwg_konstanz.jea.annotation;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import javassist.CannotCompileException;
@@ -15,10 +14,7 @@ import javassist.NotFoundException;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.annotation.Annotation;
-import javassist.bytecode.annotation.AnnotationMemberValue;
-import javassist.bytecode.annotation.ArrayMemberValue;
 import javassist.bytecode.annotation.MemberValue;
-import javassist.bytecode.annotation.StringMemberValue;
 
 import com.google.common.base.Objects;
 
@@ -47,7 +43,7 @@ public final class AnnotationHelper {
 			success = false;
 			e.printStackTrace();
 		}
-		
+
 		return success;
 	}
 
@@ -59,18 +55,6 @@ public final class AnnotationHelper {
 		}
 
 		return annotation;
-	}
-
-	public static ArrayMemberValue convertToAnnotationArray(List<MemberValue> list, ConstPool cp) {
-		ArrayMemberValue value = new ArrayMemberValue(new AnnotationMemberValue(cp), cp);
-		value.setValue(list.toArray(new MemberValue[list.size()]));
-		return value;
-	}
-
-	public static ArrayMemberValue convertToStringArray(List<MemberValue> list, ConstPool cp) {
-		ArrayMemberValue value = new ArrayMemberValue(new StringMemberValue(cp), cp);
-		value.setValue(list.toArray(new MemberValue[list.size()]));
-		return value;
 	}
 
 	static Heap getMethodSummaryFromClassWithOneMethod(String path) throws ClassNotFoundException {

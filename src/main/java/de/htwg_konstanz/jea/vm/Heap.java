@@ -13,7 +13,7 @@ import java.util.Stack;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.annotation.Annotation;
 import javassist.bytecode.annotation.AnnotationMemberValue;
-import javassist.bytecode.annotation.BooleanMemberValue;
+import javassist.bytecode.annotation.ArrayMemberValue;
 import javassist.bytecode.annotation.MemberValue;
 import javassist.bytecode.annotation.StringMemberValue;
 
@@ -24,7 +24,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import de.htwg_konstanz.jea.annotation.AnnotationHelper;
 import de.htwg_konstanz.jea.annotation.FieldEdgeAnnotation;
-import de.htwg_konstanz.jea.annotation.GlobalObjectAnnotation;
 import de.htwg_konstanz.jea.annotation.InternalObjectAnnotation;
 import de.htwg_konstanz.jea.annotation.MethodSummaryAnnotation;
 import de.htwg_konstanz.jea.annotation.PhantomObjectAnnotation;
@@ -102,6 +101,8 @@ public final class Heap {
 	public static Heap newInstanceByAnnotation(@NonNull MethodSummaryAnnotation a) {
 		Heap heap = new Heap();
 		ObjectNodes allNodes = new ObjectNodes();
+		allNodes.add(GlobalObject.getInstance());
+
 		for (InternalObjectAnnotation internalObject : a.internalObjects()) {
 			allNodes.add(InternalObject.newInstanceByAnnotation(internalObject));
 		}
@@ -111,18 +112,12 @@ public final class Heap {
 		for (String argEscapedObjectID : a.argEscapedObjectIDs()) {
 			heap.objectNodes.add(allNodes.getObjectNode(argEscapedObjectID));
 		}
-		if (a.globalObject().containedInArgEscapedObjects())
-			heap.objectNodes.add(GlobalObject.getInstance());
 		for (String globallyEscapedObjectID : a.globallyEscapedObjectIDs()) {
 			heap.escapedObjects.add(allNodes.getObjectNode(globallyEscapedObjectID));
 		}
-		if (a.globalObject().containedInGloballyEscapedObjects())
-			heap.escapedObjects.add(GlobalObject.getInstance());
 		for (String localObjectID : a.localObjectIDs()) {
 			heap.localObjects.add(allNodes.getObjectNode(localObjectID));
 		}
-		if (a.globalObject().containedInLocalObjects())
-			heap.localObjects.add(GlobalObject.getInstance());
 		for (FieldEdgeAnnotation fieldEdge : a.fieldEdges()) {
 			heap.fieldEdges.add(FieldEdge.newInstanceByAnnotation(fieldEdge));
 		}
@@ -616,98 +611,104 @@ public final class Heap {
 	 * @return
 	 */
 	public Annotation convertToAnnotation(ConstPool cp) {
+
 		Map<String, MemberValue> values = new HashMap<>();
 
-		// create temporary lists
 		List<MemberValue> internalObjects = new ArrayList<>();
 		List<MemberValue> phantomPbjects = new ArrayList<>();
-		List<MemberValue> argEscapedObjectIDs = new ArrayList<>();
-		List<MemberValue> globallyEscapedObjectIDs = new ArrayList<>();
-		List<MemberValue> localObjectIDs = new ArrayList<>();
-		List<MemberValue> fieldEdges = new ArrayList<>();
-		List<MemberValue> referenceNodes = new ArrayList<>();
-		List<MemberValue> pointsToEdges = new ArrayList<>();
 
-		// separate objectNodes into lists and check for GlobalObject
-		boolean goInObjectNodes = separateObjectNodes(objectNodes, argEscapedObjectIDs,
-				internalObjects, phantomPbjects, cp);
-		boolean goInEscapedObjects = separateObjectNodes(escapedObjects, globallyEscapedObjectIDs,
-				internalObjects, phantomPbjects, cp);
-		boolean goInLocalObjects = separateObjectNodes(localObjects, localObjectIDs,
-				internalObjects, phantomPbjects, cp);
-
-		// create GlobalObjectAnnotation
-		Map<String, MemberValue> globalObjectValues = new HashMap<>();
-		globalObjectValues.put("containedInArgEscapedObjects", new BooleanMemberValue(
-				goInObjectNodes, cp));
-		globalObjectValues.put("containedInGloballyEscapedObjects", new BooleanMemberValue(
-				goInEscapedObjects, cp));
-		globalObjectValues.put("containedInLocalObjects", new BooleanMemberValue(goInLocalObjects,
-				cp));
 		values.put(
-				"globalObject",
-				new AnnotationMemberValue(AnnotationHelper.createAnnotation(globalObjectValues,
-						GlobalObjectAnnotation.class.getName(), cp), cp));
+				"argEscapedObjectIDs",
+				seperateObjectNodesByTypeAndGetIds(objectNodes, internalObjects, phantomPbjects, cp));
+		values.put(
+				"globallyEscapedObjectIDs",
+				seperateObjectNodesByTypeAndGetIds(escapedObjects, internalObjects, phantomPbjects,
+						cp));
+		values.put(
+				"localObjectIDs",
+				seperateObjectNodesByTypeAndGetIds(localObjects, internalObjects, phantomPbjects,
+						cp));
 
-		// convert fieldEdges
-		for (FieldEdge fieldEdge : this.fieldEdges) {
-			fieldEdges.add(new AnnotationMemberValue(fieldEdge.convertToAnnotation(cp), cp));
-		}
-
-		// convert referenceNodes
-		for (ReferenceNode referenceNode : this.referenceNodes) {
-			referenceNodes
-					.add(new AnnotationMemberValue(referenceNode.convertToAnnotation(cp), cp));
-		}
-
-		// convert pointsToEdges
-		for (Pair<String, String> pointsToEdge : this.pointsToEdges) {
-			Map<String, MemberValue> vals = new HashMap<>();
-			vals.put("referenceNodeID", new StringMemberValue(pointsToEdge.getValue1(), cp));
-			vals.put("objectID", new StringMemberValue(pointsToEdge.getValue2(), cp));
-			pointsToEdges.add(new AnnotationMemberValue(AnnotationHelper.createAnnotation(vals,
-					PointsToEdgesAnnotation.class.getName(), cp), cp));
-		}
-
-		// add lists to values
 		values.put("internalObjects",
-				AnnotationHelper.convertToAnnotationArray(internalObjects, cp));
-		values.put("phantomObjects", AnnotationHelper.convertToAnnotationArray(phantomPbjects, cp));
-		values.put("argEscapedObjectIDs",
-				AnnotationHelper.convertToStringArray(argEscapedObjectIDs, cp));
-		values.put("globallyEscapedObjectIDs",
-				AnnotationHelper.convertToStringArray(globallyEscapedObjectIDs, cp));
-		values.put("localObjectIDs", AnnotationHelper.convertToStringArray(localObjectIDs, cp));
-		values.put("fieldEdges", AnnotationHelper.convertToAnnotationArray(fieldEdges, cp));
-		values.put("referenceNodes", AnnotationHelper.convertToAnnotationArray(referenceNodes, cp));
-		values.put("pointsToEdges", AnnotationHelper.convertToAnnotationArray(pointsToEdges, cp));
+				convertListToArrayMember(internalObjects, new AnnotationMemberValue(cp), cp));
+		values.put("phantomObjects",
+				convertListToArrayMember(phantomPbjects, new AnnotationMemberValue(cp), cp));
+
+		values.put("fieldEdges", convertFieldEdges(cp));
+
+		values.put("referenceNodes", convertReferenceNodes(cp));
+
+		values.put("pointsToEdges", convertPointsToEdges(cp));
+
+		// create and return annotation
 		return AnnotationHelper.createAnnotation(values, MethodSummaryAnnotation.class.getName(),
 				cp);
 	}
 
-	private boolean separateObjectNodes(ObjectNodes source, List<MemberValue> target,
+	private static ArrayMemberValue seperateObjectNodesByTypeAndGetIds(ObjectNodes source,
 			List<MemberValue> internalObjects, List<MemberValue> phantomPbjects, ConstPool cp) {
-		boolean containsGlobalObject = false;
-		for (ObjectNode objectNode : source) {
-			if (objectNode instanceof GlobalObject) {
-				containsGlobalObject = true;
-				continue;
-			} else if (objectNode instanceof PhantomObject) {
-				PhantomObject current = (PhantomObject) objectNode;
-				phantomPbjects.add(new AnnotationMemberValue(current.convertToAnnotation(cp), cp));
-			} else if (objectNode instanceof InternalObject) {
-				// null object is singelton, we can compare references
-				if (objectNode == InternalObject.getNullObject()) {
-					throw new AssertionError("ObjectNodes contains null object!");
-				}
-				InternalObject current = (InternalObject) objectNode;
-				internalObjects.add(new AnnotationMemberValue(current.convertToAnnotation(cp), cp));
-			} else {
-				throw new AssertionError("ObjectNodes contains EmptyReturnObjectSet!");
+		List<MemberValue> ids = new ArrayList<>();
+
+		for (ObjectNode node : source) {
+			// null object is singelton, safe to compare references
+			if (node == InternalObject.getNullObject()) {
+				throw new AssertionError("ObjectNodes contains null object!");
 			}
-			target.add(new StringMemberValue(objectNode.getId(), cp));
+
+			if (node instanceof EmptyReturnObjectSet) {
+				throw new AssertionError("ObjectNodes contains null object!");
+			}
+
+			if (node instanceof PhantomObject) {
+				phantomPbjects.add(new AnnotationMemberValue(((PhantomObject) node)
+						.convertToAnnotation(cp), cp));
+			}
+
+			if (node instanceof InternalObject) {
+				internalObjects.add(new AnnotationMemberValue(((InternalObject) node)
+						.convertToAnnotation(cp), cp));
+			}
+
+			ids.add(new StringMemberValue(node.getId(), cp));
 		}
-		return containsGlobalObject;
+
+		return convertListToArrayMember(ids, new StringMemberValue(cp), cp);
 	}
 
+	private static ArrayMemberValue convertListToArrayMember(List<MemberValue> values,
+			MemberValue arrayType, ConstPool cp) {
+		ArrayMemberValue value = new ArrayMemberValue(arrayType, cp);
+		value.setValue(values.toArray(new MemberValue[values.size()]));
+		return value;
+	}
+
+	private ArrayMemberValue convertFieldEdges(ConstPool cp) {
+		List<MemberValue> values = new ArrayList<>();
+		for (FieldEdge fieldEdge : fieldEdges) {
+			values.add(new AnnotationMemberValue(fieldEdge.convertToAnnotation(cp), cp));
+		}
+
+		return convertListToArrayMember(values, new AnnotationMemberValue(cp), cp);
+	}
+
+	private ArrayMemberValue convertReferenceNodes(ConstPool cp) {
+		List<MemberValue> values = new ArrayList<>();
+		for (ReferenceNode referenceNode : referenceNodes) {
+			values.add(new AnnotationMemberValue(referenceNode.convertToAnnotation(cp), cp));
+		}
+
+		return convertListToArrayMember(values, new AnnotationMemberValue(cp), cp);
+	}
+
+	private ArrayMemberValue convertPointsToEdges(ConstPool cp) {
+		List<MemberValue> values = new ArrayList<>();
+		for (Pair<String, String> pointsToEdge : this.pointsToEdges) {
+			Map<String, MemberValue> vals = new HashMap<>();
+			vals.put("referenceNodeID", new StringMemberValue(pointsToEdge.getValue1(), cp));
+			vals.put("objectID", new StringMemberValue(pointsToEdge.getValue2(), cp));
+			values.add(new AnnotationMemberValue(AnnotationHelper.createAnnotation(vals,
+					PointsToEdgesAnnotation.class.getName(), cp), cp));
+		}
+		return convertListToArrayMember(values, new AnnotationMemberValue(cp), cp);
+	}
 }
