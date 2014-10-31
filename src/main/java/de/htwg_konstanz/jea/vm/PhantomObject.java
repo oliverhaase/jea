@@ -15,11 +15,12 @@ import javax.annotation.CheckReturnValue;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import de.htwg_konstanz.jea.annotation.AnnotationCreator;
 import de.htwg_konstanz.jea.annotation.AnnotationHelper;
 import de.htwg_konstanz.jea.annotation.PhantomObjectAnnotation;
 
 @EqualsAndHashCode(callSuper = true)
-public final class PhantomObject extends ObjectNode {
+public final class PhantomObject extends ObjectNode implements AnnotationCreator {
 	@Getter
 	private final int index;
 	@Getter
@@ -117,6 +118,7 @@ public final class PhantomObject extends ObjectNode {
 	 * 
 	 * @return
 	 */
+	@Override
 	public Annotation convertToAnnotation(ConstPool cp) {
 		// special treatment for null-able fields
 		String id = convertNullToString(getId());

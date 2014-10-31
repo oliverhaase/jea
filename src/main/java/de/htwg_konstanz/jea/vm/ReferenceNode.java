@@ -11,20 +11,19 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import net.jcip.annotations.Immutable;
+import de.htwg_konstanz.jea.annotation.AnnotationCreator;
 import de.htwg_konstanz.jea.annotation.AnnotationHelper;
 import de.htwg_konstanz.jea.annotation.ReferenceNodeAnnotation;
 
 @Immutable
 @EqualsAndHashCode
-public class ReferenceNode implements NonObjectNode, Slot {
+public class ReferenceNode implements NonObjectNode, Slot, AnnotationCreator {
 	public static enum Category {
 		ARG, LOCAL, GLOBAL, RETURN
 	};
 
-	private final static ReferenceNode GLOBAL_REF = new ReferenceNode(-1,
-			Category.GLOBAL);
-	private final static ReferenceNode RETURN_REF = new ReferenceNode(-1,
-			Category.RETURN);
+	private final static ReferenceNode GLOBAL_REF = new ReferenceNode(-1, Category.GLOBAL);
+	private final static ReferenceNode RETURN_REF = new ReferenceNode(-1, Category.RETURN);
 
 	@Getter
 	private final String id;
@@ -52,8 +51,7 @@ public class ReferenceNode implements NonObjectNode, Slot {
 	 *            the ReferenceNodeAnnotation
 	 * @return the ReferenceNode representation
 	 */
-	public static ReferenceNode newInstanceByAnnotation(
-			@NonNull ReferenceNodeAnnotation a) {
+	public static ReferenceNode newInstanceByAnnotation(@NonNull ReferenceNodeAnnotation a) {
 		return new ReferenceNode(a.id());
 	}
 
@@ -79,10 +77,11 @@ public class ReferenceNode implements NonObjectNode, Slot {
 	 * 
 	 * @return
 	 */
+	@Override
 	public Annotation convertToAnnotation(ConstPool cp) {
 		Map<String, MemberValue> values = new HashMap<>();
 		values.put("id", new StringMemberValue(id, cp));
-		return AnnotationHelper.createAnnotation(values,
-				ReferenceNodeAnnotation.class.getName(), cp);
+		return AnnotationHelper.createAnnotation(values, ReferenceNodeAnnotation.class.getName(),
+				cp);
 	}
 }

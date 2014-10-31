@@ -22,6 +22,7 @@ import javax.annotation.CheckReturnValue;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import de.htwg_konstanz.jea.annotation.AnnotationCreator;
 import de.htwg_konstanz.jea.annotation.AnnotationHelper;
 import de.htwg_konstanz.jea.annotation.FieldEdgeAnnotation;
 import de.htwg_konstanz.jea.annotation.InternalObjectAnnotation;
@@ -33,7 +34,7 @@ import de.htwg_konstanz.jea.vm.Node.EscapeState;
 import de.htwg_konstanz.jea.vm.ReferenceNode.Category;
 
 @EqualsAndHashCode
-public final class Heap {
+public final class Heap implements AnnotationCreator {
 	private final static Heap ALIEN_GRAPH = new Heap();
 
 	@Getter
@@ -609,6 +610,7 @@ public final class Heap {
 	 * 
 	 * @return
 	 */
+	@Override
 	public Annotation convertToAnnotation(ConstPool cp) {
 
 		Map<String, MemberValue> values = new HashMap<>();
@@ -702,11 +704,7 @@ public final class Heap {
 	private ArrayMemberValue convertPointsToEdges(ConstPool cp) {
 		List<MemberValue> values = new ArrayList<>();
 		for (PointToEdge pointsToEdge : this.pointsToEdges) {
-			Map<String, MemberValue> vals = new HashMap<>();
-			vals.put("referenceNodeID", new StringMemberValue(pointsToEdge.getReferenceId(), cp));
-			vals.put("objectID", new StringMemberValue(pointsToEdge.getObjectId(), cp));
-			values.add(new AnnotationMemberValue(AnnotationHelper.createAnnotation(vals,
-					PointsToEdgesAnnotation.class.getName(), cp), cp));
+			values.add(new AnnotationMemberValue(pointsToEdge.convertToAnnotation(cp), cp));
 		}
 		return convertListToArrayMember(values, new AnnotationMemberValue(cp), cp);
 	}

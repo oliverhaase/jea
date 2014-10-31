@@ -10,11 +10,12 @@ import javassist.bytecode.annotation.StringMemberValue;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import de.htwg_konstanz.jea.annotation.AnnotationCreator;
 import de.htwg_konstanz.jea.annotation.AnnotationHelper;
 import de.htwg_konstanz.jea.annotation.FieldEdgeAnnotation;
 
 @EqualsAndHashCode
-public class FieldEdge {
+public class FieldEdge implements AnnotationCreator {
 	@Getter
 	private final String originId;
 	@Getter
@@ -39,8 +40,7 @@ public class FieldEdge {
 	 *            the FieldEdgeAnnotation
 	 * @return the FieldEdge representation
 	 */
-	public static FieldEdge newInstanceByAnnotation(
-			@NonNull FieldEdgeAnnotation a) {
+	public static FieldEdge newInstanceByAnnotation(@NonNull FieldEdgeAnnotation a) {
 		return new FieldEdge(a.originId(), a.fieldName(), a.destinationId());
 	}
 
@@ -56,14 +56,14 @@ public class FieldEdge {
 	 * 
 	 * @return
 	 */
+	@Override
 	public Annotation convertToAnnotation(ConstPool cp) {
 		Map<String, MemberValue> values = new HashMap<>();
 		values.put("originId", new StringMemberValue(originId, cp));
 		values.put("fieldName", new StringMemberValue(fieldName, cp));
 		values.put("destinationId", new StringMemberValue(destinationId, cp));
 
-		return AnnotationHelper.createAnnotation(values,
-				FieldEdgeAnnotation.class.getName(), cp);
+		return AnnotationHelper.createAnnotation(values, FieldEdgeAnnotation.class.getName(), cp);
 	}
 
 }

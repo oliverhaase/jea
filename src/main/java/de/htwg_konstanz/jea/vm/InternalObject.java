@@ -13,19 +13,19 @@ import javax.annotation.CheckReturnValue;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import de.htwg_konstanz.jea.annotation.AnnotationCreator;
 import de.htwg_konstanz.jea.annotation.AnnotationHelper;
 import de.htwg_konstanz.jea.annotation.InternalObjectAnnotation;
 
 @EqualsAndHashCode(callSuper = true)
-public final class InternalObject extends ObjectNode {
-	private final static InternalObject NULL_OBJECT = new InternalObject(
-			"null", "javax.lang.model.type.NullType", EscapeState.NO_ESCAPE);
+public final class InternalObject extends ObjectNode implements AnnotationCreator {
+	private final static InternalObject NULL_OBJECT = new InternalObject("null",
+			"javax.lang.model.type.NullType", EscapeState.NO_ESCAPE);
 
 	@Getter
 	private final String type;
 
-	public InternalObject(@NonNull String id, @NonNull String type,
-			@NonNull EscapeState escapeState) {
+	public InternalObject(@NonNull String id, @NonNull String type, @NonNull EscapeState escapeState) {
 		super(id, escapeState);
 		this.type = type;
 	}
@@ -41,10 +41,8 @@ public final class InternalObject extends ObjectNode {
 	 *            the InternalObjectAnnotation
 	 * @return the InternalObject representation
 	 */
-	public static InternalObject newInstanceByAnnotation(
-			@NonNull InternalObjectAnnotation a) {
-		return new InternalObject(a.id(), a.type(), EscapeState.getFromString(a
-				.escapeState()));
+	public static InternalObject newInstanceByAnnotation(@NonNull InternalObjectAnnotation a) {
+		return new InternalObject(a.id(), a.type(), EscapeState.getFromString(a.escapeState()));
 	}
 
 	@Override
@@ -58,8 +56,7 @@ public final class InternalObject extends ObjectNode {
 	@CheckReturnValue
 	public InternalObject resetEscapeState() {
 		if (EscapeState.NO_ESCAPE.moreConfinedThan(this.getEscapeState()))
-			return new InternalObject(this.getId(), this.type,
-					EscapeState.NO_ESCAPE);
+			return new InternalObject(this.getId(), this.type, EscapeState.NO_ESCAPE);
 		return this;
 	}
 
@@ -80,15 +77,15 @@ public final class InternalObject extends ObjectNode {
 	 * 
 	 * @return
 	 */
+	@Override
 	public Annotation convertToAnnotation(ConstPool cp) {
 		Map<String, MemberValue> values = new HashMap<>();
 		values.put("id", new StringMemberValue(getId(), cp));
-		values.put("escapeState", new StringMemberValue(getEscapeState()
-				.toString(), cp));
+		values.put("escapeState", new StringMemberValue(getEscapeState().toString(), cp));
 		values.put("type", new StringMemberValue(type, cp));
 
-		return AnnotationHelper.createAnnotation(values,
-				InternalObjectAnnotation.class.getName(), cp);
+		return AnnotationHelper.createAnnotation(values, InternalObjectAnnotation.class.getName(),
+				cp);
 	}
 
 }
