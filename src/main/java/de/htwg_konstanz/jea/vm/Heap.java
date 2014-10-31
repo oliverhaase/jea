@@ -563,15 +563,19 @@ public final class Heap implements AnnotationCreator {
 	 * 
 	 * @param summary
 	 *            the Heap representing the MethodSummary
+	 * @param position
+	 *            position of the instruction, used to create individual ids
 	 * @return the resulting Heap
 	 */
 	@CheckReturnValue
-	Heap transferInternalObjectsFrom(Heap summary) {
+	Heap transferInternalObjectsFrom(Heap summary, int position) {
 		Heap result = new Heap(this);
 
 		for (ObjectNode object : summary.getArgEscapeObjects())
 			if (object instanceof InternalObject)
-				result.getObjectNodes().add(((InternalObject) object).resetEscapeState());
+				result.getObjectNodes().add(
+						new InternalObject(object.getId() + "|" + position,
+								((InternalObject) object).getType(), EscapeState.NO_ESCAPE));
 
 		return result;
 	}
