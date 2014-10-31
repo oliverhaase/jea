@@ -18,7 +18,11 @@ import de.htwg_konstanz.jea.annotation.AnnotationHelper;
 import de.htwg_konstanz.jea.annotation.InternalObjectAnnotation;
 
 @EqualsAndHashCode(callSuper = true)
+<<<<<<< Upstream, based on origin/master
 public final class InternalObject extends ObjectNode implements AnnotationCreator {
+=======
+public final class InternalObject extends ObjectNode {
+>>>>>>> 574c160 removed package-String from ObjectNodes->InternalObjects.toString()
 	private final static InternalObject NULL_OBJECT = new InternalObject("null",
 			"javax.lang.model.type.NullType", EscapeState.NO_ESCAPE);
 
@@ -62,7 +66,9 @@ public final class InternalObject extends ObjectNode implements AnnotationCreato
 
 	@Override
 	public String toString() {
-		return this.getId() + getEscapeState().toString();
+		String[] splitedId = this.getId().split("\\.");
+		return splitedId.length >= 2 ? splitedId[splitedId.length - 2] + "."
+				+ splitedId[splitedId.length - 1] : getId() + getEscapeState().toString();
 	}
 
 	@Override

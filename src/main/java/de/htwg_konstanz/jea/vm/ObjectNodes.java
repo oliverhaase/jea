@@ -103,7 +103,7 @@ public class ObjectNodes implements Iterable<ObjectNode> {
 
 	@Override
 	public String toString() {
-		return nodes.toString();
+		return nodes.values().toString();
 	}
 
 	public Set<String> getAllObjectIds() {
