@@ -106,4 +106,8 @@ public class ObjectNodes implements Iterable<ObjectNode> {
 		return nodes.toString();
 	}
 
+	public Set<String> getAllObjectIds() {
+		return nodes.keySet();
+	}
+
 }
