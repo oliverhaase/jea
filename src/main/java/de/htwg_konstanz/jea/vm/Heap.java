@@ -1,10 +1,10 @@
 package de.htwg_konstanz.jea.vm;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -612,100 +612,79 @@ public final class Heap implements AnnotationCreator {
 	 */
 	@Override
 	public Annotation convertToAnnotation(ConstPool cp) {
+		Collection<InternalObject> internalObjects = new HashSet<>();
+		Collection<PhantomObject> phantomObjects = new HashSet<>();
+		seperateNodes(objectNodes, internalObjects, phantomObjects);
+		seperateNodes(escapedObjects, internalObjects, phantomObjects);
+		seperateNodes(localObjects, internalObjects, phantomObjects);
 
 		Map<String, MemberValue> values = new HashMap<>();
+		values.put("internalObjects", convertToAnnotationArrayMemberValue(internalObjects, cp));
+		values.put("phantomObjects", convertToAnnotationArrayMemberValue(phantomObjects, cp));
 
-		List<MemberValue> internalObjects = new ArrayList<>();
-		List<MemberValue> phantomObjects = new ArrayList<>();
+		values.put("argEscapedObjectIDs",
+				convertToStringArrayMemberValue(objectNodes.getAllObjectIds(), cp));
 
-		values.put(
-				"argEscapedObjectIDs",
-				seperateObjectNodesByTypeAndGetIds(objectNodes, internalObjects, phantomObjects, cp));
-		values.put(
-				"globallyEscapedObjectIDs",
-				seperateObjectNodesByTypeAndGetIds(escapedObjects, internalObjects, phantomObjects,
-						cp));
-		values.put(
-				"localObjectIDs",
-				seperateObjectNodesByTypeAndGetIds(localObjects, internalObjects, phantomObjects,
-						cp));
+		values.put("globallyEscapedObjectIDs",
+				convertToStringArrayMemberValue(escapedObjects.getAllObjectIds(), cp));
 
-		values.put("internalObjects",
-				convertListToArrayMember(internalObjects, new AnnotationMemberValue(cp), cp));
-		values.put("phantomObjects",
-				convertListToArrayMember(phantomObjects, new AnnotationMemberValue(cp), cp));
+		values.put("localObjectIDs",
+				convertToStringArrayMemberValue(localObjects.getAllObjectIds(), cp));
 
-		values.put("fieldEdges", convertFieldEdges(cp));
+		values.put("fieldEdges", convertToAnnotationArrayMemberValue(fieldEdges, cp));
 
-		values.put("referenceNodes", convertReferenceNodes(cp));
+		values.put("referenceNodes", convertToAnnotationArrayMemberValue(referenceNodes, cp));
 
-		values.put("pointsToEdges", convertPointsToEdges(cp));
+		values.put("pointsToEdges", convertToAnnotationArrayMemberValue(pointsToEdges, cp));
 
 		// create and return annotation
 		return AnnotationHelper.createAnnotation(values, MethodSummaryAnnotation.class.getName(),
 				cp);
 	}
 
-	private static ArrayMemberValue seperateObjectNodesByTypeAndGetIds(ObjectNodes source,
-			List<MemberValue> internalObjects, List<MemberValue> phantomPbjects, ConstPool cp) {
-		List<MemberValue> ids = new ArrayList<>();
-
+	private static void seperateNodes(ObjectNodes source, Collection<InternalObject> internal,
+			Collection<PhantomObject> phantom) {
 		for (ObjectNode node : source) {
-			// null object is singelton, safe to compare references
+			// null object is singleton, safe to compare references
 			if (node == InternalObject.getNullObject()) {
 				throw new AssertionError("ObjectNodes contains null object!");
 			}
 
 			if (node instanceof EmptyReturnObjectSet) {
-				throw new AssertionError("ObjectNodes contains null object!");
+				throw new AssertionError("ObjectNodes contains EmptyReturnObjectSet!");
 			}
 
 			if (node instanceof PhantomObject) {
-				phantomPbjects.add(new AnnotationMemberValue(((PhantomObject) node)
-						.convertToAnnotation(cp), cp));
+				phantom.add((PhantomObject) node);
 			}
 
 			if (node instanceof InternalObject) {
-				internalObjects.add(new AnnotationMemberValue(((InternalObject) node)
-						.convertToAnnotation(cp), cp));
+				internal.add((InternalObject) node);
 			}
-
-			ids.add(new StringMemberValue(node.getId(), cp));
 		}
-
-		return convertListToArrayMember(ids, new StringMemberValue(cp), cp);
 	}
 
-	private static ArrayMemberValue convertListToArrayMember(List<MemberValue> values,
-			MemberValue arrayType, ConstPool cp) {
-		ArrayMemberValue value = new ArrayMemberValue(arrayType, cp);
-		value.setValue(values.toArray(new MemberValue[values.size()]));
-		return value;
-	}
-
-	private ArrayMemberValue convertFieldEdges(ConstPool cp) {
-		List<MemberValue> values = new ArrayList<>();
-		for (FieldEdge fieldEdge : fieldEdges) {
-			values.add(new AnnotationMemberValue(fieldEdge.convertToAnnotation(cp), cp));
+	private static ArrayMemberValue convertToAnnotationArrayMemberValue(
+			Collection<? extends AnnotationCreator> source, ConstPool cp) {
+		Collection<MemberValue> values = new ArrayList<>();
+		for (AnnotationCreator entry : source) {
+			values.add(new AnnotationMemberValue(entry.convertToAnnotation(cp), cp));
 		}
 
-		return convertListToArrayMember(values, new AnnotationMemberValue(cp), cp);
+		ArrayMemberValue returnValue = new ArrayMemberValue(new AnnotationMemberValue(cp), cp);
+		returnValue.setValue(values.toArray(new MemberValue[values.size()]));
+		return returnValue;
 	}
 
-	private ArrayMemberValue convertReferenceNodes(ConstPool cp) {
-		List<MemberValue> values = new ArrayList<>();
-		for (ReferenceNode referenceNode : referenceNodes) {
-			values.add(new AnnotationMemberValue(referenceNode.convertToAnnotation(cp), cp));
+	private static ArrayMemberValue convertToStringArrayMemberValue(Collection<String> source,
+			ConstPool cp) {
+		Collection<MemberValue> values = new ArrayList<>();
+		for (String entry : source) {
+			values.add(new StringMemberValue(entry, cp));
 		}
 
-		return convertListToArrayMember(values, new AnnotationMemberValue(cp), cp);
-	}
-
-	private ArrayMemberValue convertPointsToEdges(ConstPool cp) {
-		List<MemberValue> values = new ArrayList<>();
-		for (PointToEdge pointsToEdge : this.pointsToEdges) {
-			values.add(new AnnotationMemberValue(pointsToEdge.convertToAnnotation(cp), cp));
-		}
-		return convertListToArrayMember(values, new AnnotationMemberValue(cp), cp);
+		ArrayMemberValue returnValue = new ArrayMemberValue(new StringMemberValue(cp), cp);
+		returnValue.setValue(values.toArray(new MemberValue[values.size()]));
+		return returnValue;
 	}
 }
