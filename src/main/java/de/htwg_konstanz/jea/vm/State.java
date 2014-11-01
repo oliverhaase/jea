@@ -53,10 +53,15 @@ public final class State {
 	 *            consumes (to locate the corresponding argument on this states
 	 *            OpStack)
 	 * @param summary
+	 *            the Heap to map from
 	 * @param position
+	 *            the position of the instruction in the current method to
+	 *            create a unique ids
 	 * 
 	 * @return a Set of ObjectNode representing the {@code objectNode} in this
-	 *         states Heap
+	 *         states Heap. If the Set is empty, there is no matching object,
+	 *         which means that the paramter or the field of a parameter was
+	 *         null
 	 */
 	private Set<ObjectNode> mapsToObjects(Heap resultHeap, OpStack resultOpStack,
 			ObjectNode objectNode, int consumeStack, Heap summary, int position) {
