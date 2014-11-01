@@ -18,11 +18,7 @@ import de.htwg_konstanz.jea.annotation.AnnotationHelper;
 import de.htwg_konstanz.jea.annotation.InternalObjectAnnotation;
 
 @EqualsAndHashCode(callSuper = true)
-<<<<<<< Upstream, based on origin/master
 public final class InternalObject extends ObjectNode implements AnnotationCreator {
-=======
-public final class InternalObject extends ObjectNode {
->>>>>>> 574c160 removed package-String from ObjectNodes->InternalObjects.toString()
 	private final static InternalObject NULL_OBJECT = new InternalObject("null",
 			"javax.lang.model.type.NullType", EscapeState.NO_ESCAPE);
 

@@ -40,6 +40,65 @@ public class Executable {
 		Program program = TestHelper.analyze(classes, classToTest);
 	}
 
+	private static class TestApplyMethodSummary {
+
+		private void summary(SimpleClass arg1, int i) {
+			if (i < 0)
+				arg1.field = new SimpleClass();
+			else
+				arg1.field = new SimpleClass();
+		}
+
+		private void test() {
+
+			SimpleClass local = new SimpleClass();
+
+			summary(local, 5);
+
+			summary(local, 5);
+
+		}
+
+	}
+
+	private static class TestApplyMethodSummary2 {
+
+		private void summary(SimpleClass arg1, int i) {
+			if (i < 0)
+				arg1.field = new SimpleClass();
+			else
+				arg1.field = new SimpleClass();
+		}
+
+		private void test() {
+
+			SimpleClass local = new SimpleClass();
+
+			summary(null, 5);
+
+		}
+
+	}
+
+	private static class TestApplyMethodSummary3 {
+
+		private void summary(SimpleClass arg1, int i) {
+			if (i < 0)
+				arg1.field.field = new SimpleClass();
+			else
+				arg1.field.field = new SimpleClass();
+		}
+
+		private void test() {
+
+			SimpleClass local = new SimpleClass();
+
+			summary(null, 5);
+
+		}
+
+	}
+
 	private static class NullFieldIf {
 		private void test(int i) {
 			SimpleClass sc;
