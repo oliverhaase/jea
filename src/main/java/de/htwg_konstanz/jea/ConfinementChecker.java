@@ -14,6 +14,8 @@ import de.htwg_konstanz.jea.gen.Program;
 public class ConfinementChecker {
 
 	public static void main(String[] args) throws ClassNotFoundException {
+		long startTime = System.nanoTime();
+
 		String[] classes = { "de.htwg_konstanz.jea.AstConverter",
 				"de.htwg_konstanz.jea.AstConverterVisitor",
 				"de.htwg_konstanz.jea.ConfinementChecker", "de.htwg_konstanz.jea.CreationChecker",
@@ -36,18 +38,20 @@ public class ConfinementChecker {
 
 		program.print();
 
-		System.out.println("confined types: ");
+		long estimatedTime = System.nanoTime() - startTime;
+
+		System.out.println("confined types: (" + program.confinedClasses().size() + ")");
 		for (String confinedClass : program.confinedClasses())
 			System.out.println("- " + confinedClass);
 
 		System.out.println();
 
-		System.out.println("escaping types: ");
+		System.out.println("escaping types: (" + program.escapingClasses().size() + ")");
 		for (String confinedClass : program.escapingClasses())
 			System.out.println("- " + confinedClass);
 
 		System.out.println();
-		System.out.println("done.");
+		System.out.println("done.(" + (estimatedTime / 1000000000) + "s)");
 
 	}
 
