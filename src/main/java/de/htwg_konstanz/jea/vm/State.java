@@ -52,11 +52,14 @@ public final class State {
 	 *            how much elements the method containing the {@code objectNode}
 	 *            consumes (to locate the corresponding argument on this states
 	 *            OpStack)
+	 * @param summary
+	 * @param position
 	 * 
 	 * @return a Set of ObjectNode representing the {@code objectNode} in this
 	 *         states Heap
 	 */
-	private Set<ObjectNode> mapsToObjects(ObjectNode objectNode, int consumeStack) {
+	private Set<ObjectNode> mapsToObjects(Heap resultHeap, OpStack resultOpStack,
+			ObjectNode objectNode, int consumeStack, Heap summary, int position) {
 		Set<ObjectNode> result = new HashSet<>();
 
 		// objectNode is global object
@@ -69,7 +72,8 @@ public final class State {
 		// objectNode is internal object
 
 		if (objectNode instanceof InternalObject) {
-			result.add(objectNode);
+			result.add(resultHeap.getObjectNodes().getObjectNode(
+					objectNode.getId() + "|" + position));
 			return result;
 		}
 
@@ -78,30 +82,28 @@ public final class State {
 
 		PhantomObject phantom = (PhantomObject) objectNode;
 
+		// objectNode is TopParameter
 		if (!phantom.isSubPhantom()) {
-			for (ObjectNode mappingObj : heap.dereference((ReferenceNode) opStack
+			for (ObjectNode mappingObj : resultHeap.dereference((ReferenceNode) resultOpStack
 					.getArgumentAtIndex(phantom.getIndex(), consumeStack))) {
 				result.add(mappingObj);
 			}
 			return result;
 		}
 
-		// objectNode is Child of Global Parameter
-
-		if (heap.getObjectNodes().getObjectNode(phantom.getParent()).isGlobal()) {
-			result.add(GlobalObject.getInstance());
+		// objectNode is Child of Parameter
+		for (ObjectNode parent : mapsToObjects(resultHeap, resultOpStack, summary.getObjectNodes()
+				.getObjectNode(phantom.getParent()), consumeStack, summary, position)) {
+			for (ObjectNode field : resultHeap.getFieldOf(parent, phantom.getFieldName())) {
+				result.add(field);
+			}
 			return result;
 		}
 
-		// objectNode is Child of Parameter
-
-		for (ObjectNode parent : mapsToObjects(
-				heap.getObjectNodes().getObjectNode(phantom.getParent()), consumeStack)) {
-			for (ObjectNode field : heap.getFieldOf(parent, phantom.getFieldName())) {
-				result.add(field);
-			}
+		// objectNode is Child of Global Parameter
+		if (resultHeap.getObjectNodes().getObjectNode(phantom.getParent()).isGlobal()) {
+			result.add(GlobalObject.getInstance());
 		}
-
 		return result;
 	}
 
@@ -156,10 +158,15 @@ public final class State {
 	 * @param consumeStack
 	 *            how many parameters the method of {@code summary} has. To
 	 *            locate the corresponding objects on the Stack
+	 * @param position
+	 *            the position of the instruction in the current method to
+	 *            create a unique ids
+	 * @param stack
 	 * @return the resulting Heap
 	 */
 	@CheckReturnValue
-	private Heap transferFieldEdges(Heap heap, Heap summary, int consumeStack) {
+	private Heap transferFieldEdges(Heap heap, OpStack stack, Heap summary, int consumeStack,
+			int position) {
 		Heap result = new Heap(heap);
 
 		for (FieldEdge edge : summary.getFieldEdges()) {
@@ -168,8 +175,10 @@ public final class State {
 			ObjectNode destinationOfEdge = summary.getArgEscapeObjects().getObjectNode(
 					edge.getDestinationId());
 
-			for (ObjectNode origin : mapsToObjects(originOfEdge, consumeStack))
-				for (ObjectNode destination : mapsToObjects(destinationOfEdge, consumeStack))
+			for (ObjectNode origin : mapsToObjects(heap, stack, originOfEdge, consumeStack,
+					summary, position))
+				for (ObjectNode destination : mapsToObjects(heap, stack, destinationOfEdge,
+						consumeStack, summary, position))
 					result = result.addField(origin, edge.getFieldName(), destination);
 		}
 
@@ -192,7 +201,7 @@ public final class State {
 	 *            whether the return value is a reference or a basic Type
 	 * @param position
 	 *            the position of the instruction in the current method to
-	 *            create a unique id for the return object
+	 *            create a unique ids
 	 * @return the resulting State
 	 */
 	@CheckReturnValue
@@ -204,8 +213,8 @@ public final class State {
 
 		resultHeap = publishEscapedArgs(resultHeap, summary, consumeStack);
 
-		resultHeap = resultHeap.transferInternalObjectsFrom(summary);
-		resultHeap = transferFieldEdges(resultHeap, summary, consumeStack);
+		resultHeap = resultHeap.transferInternalObjectsFrom(summary, position);
+		resultHeap = transferFieldEdges(resultHeap, resultOpStack, summary, consumeStack, position);
 
 		resultOpStack = resultOpStack.pop(consumeStack);
 
