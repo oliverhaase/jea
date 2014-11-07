@@ -14,7 +14,7 @@ import de.htwg_konstanz.jea.test.classes.SimpleClass;
 import de.htwg_konstanz.jea.test.classes.StaticClass;
 
 @SuppressWarnings("unused")
-public class ConfinementTests {
+public class ConfinementTest {
 
 	@Test
 	public void testEscapeStatic() {

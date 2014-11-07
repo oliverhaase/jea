@@ -15,16 +15,16 @@ import de.htwg_konstanz.jea.test.classes.SubClass;
 
 @SuppressWarnings("unused")
 @RunWith(Parameterized.class)
-public class Executable {
+public class ExecutableTest {
 	private String classToTest;
 
-	public Executable(String classToTest) {
+	public ExecutableTest(String classToTest) {
 		this.classToTest = classToTest;
 	}
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> localClasses() {
-		Class<?>[] declaredClasses = Executable.class.getDeclaredClasses();
+		Class<?>[] declaredClasses = ExecutableTest.class.getDeclaredClasses();
 		Collection<Object[]> params = new ArrayList<Object[]>();
 
 		for (Class<?> clazz : declaredClasses) {

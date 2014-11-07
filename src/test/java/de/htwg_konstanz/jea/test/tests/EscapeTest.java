@@ -20,16 +20,16 @@ import de.htwg_konstanz.jea.test.classes.StaticClass;
 
 @SuppressWarnings("unused")
 @RunWith(Parameterized.class)
-public class Escape {
+public class EscapeTest {
 	private String classToTest;
 
-	public Escape(String classToTest) {
+	public EscapeTest(String classToTest) {
 		this.classToTest = classToTest;
 	}
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> localClasses() {
-		Class<?>[] declaredClasses = Escape.class.getDeclaredClasses();
+		Class<?>[] declaredClasses = EscapeTest.class.getDeclaredClasses();
 		Collection<Object[]> params = new ArrayList<Object[]>();
 
 		for (Class<?> clazz : declaredClasses) {

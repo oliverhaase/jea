@@ -11,7 +11,7 @@ import de.htwg_konstanz.jea.gen.ByteCodeClass;
 import de.htwg_konstanz.jea.gen.Method;
 import de.htwg_konstanz.jea.gen.Program;
 
-public class DynamicOrderTest2 {
+public class DynamicOrder2Test {
 
 	private final static int GOTO = 1;
 	private final static int IINC = 2;
@@ -36,7 +36,7 @@ public class DynamicOrderTest2 {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		program = new ProgramBuilder("de.htwg_konstanz.jea.spec.DynamicOrderTest2$TestClass")
+		program = new ProgramBuilder("de.htwg_konstanz.jea.spec.DynamicOrder2Test$TestClass")
 				.build();
 
 		testClass = program.getByteCodeClass(0);

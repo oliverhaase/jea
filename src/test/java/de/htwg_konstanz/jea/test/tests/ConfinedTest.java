@@ -18,16 +18,16 @@ import de.htwg_konstanz.jea.test.classes.StaticClass;
 
 @SuppressWarnings("unused")
 @RunWith(Parameterized.class)
-public class Confined {
+public class ConfinedTest {
 	private String classToTest;
 
-	public Confined(String classToTest) {
+	public ConfinedTest(String classToTest) {
 		this.classToTest = classToTest;
 	}
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> localClasses() {
-		Class<?>[] declaredClasses = Confined.class.getDeclaredClasses();
+		Class<?>[] declaredClasses = ConfinedTest.class.getDeclaredClasses();
 		Collection<Object[]> params = new ArrayList<Object[]>();
 
 		for (Class<?> clazz : declaredClasses) {
