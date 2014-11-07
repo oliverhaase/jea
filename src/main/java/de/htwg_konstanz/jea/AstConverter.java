@@ -39,8 +39,7 @@ public class AstConverter {
 		for (org.apache.bcel.classfile.Method bcelMethod : bcelClass.getMethods()) {
 			Method method = new Method();
 
-			method.setIsStatic(bcelMethod.isStatic());
-			if (!method.getIsStatic())
+			if (!bcelMethod.isStatic())
 				method.addArgument(new Argument(ObjectType.getInstance(bcelClass.getClassName())));
 
 			method.setIsAbstract(bcelMethod.isAbstract());

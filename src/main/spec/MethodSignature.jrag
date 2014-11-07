@@ -5,11 +5,8 @@ aspect MethodSignature {
 		Set<Integer> indexes = new HashSet<Integer>();
 		int index = 0;	
 		
-		if ( !getIsStatic() ) 
-			indexes.add(index++);
-			
-		for ( org.apache.bcel.generic.Type argType : getArgTypes() ) {
-			if ( argType instanceof org.apache.bcel.generic.ReferenceType ) 
+		for ( Argument argument : getArguments() ) {
+			if ( argument.getArgType() instanceof org.apache.bcel.generic.ReferenceType ) 
 				indexes.add(index);
 			index++;	
 		}	
