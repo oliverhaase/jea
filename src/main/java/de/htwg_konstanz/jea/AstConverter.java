@@ -4,7 +4,9 @@ import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.InstructionList;
+import org.apache.bcel.generic.ObjectType;
 
+import de.htwg_konstanz.jea.gen.Argument;
 import de.htwg_konstanz.jea.gen.ByteCodeClass;
 import de.htwg_konstanz.jea.gen.EntryPoint;
 import de.htwg_konstanz.jea.gen.ExitPoint;
@@ -38,11 +40,18 @@ public class AstConverter {
 			Method method = new Method();
 
 			method.setIsStatic(bcelMethod.isStatic());
+			if (!method.getIsStatic())
+				method.addArgument(new Argument(ObjectType.getInstance(bcelClass.getClassName())));
+
 			method.setIsAbstract(bcelMethod.isAbstract());
 			method.setIsNative(bcelMethod.isNative());
 			method.setMethodName(bcelMethod.getName());
 			method.setSignatureIndex(bcelMethod.getSignatureIndex());
 			method.setArgTypes(bcelMethod.getArgumentTypes());
+
+			for (org.apache.bcel.generic.Type argType : bcelMethod.getArgumentTypes())
+				method.addArgument(new Argument(argType));
+
 			method.setIsPrivate(bcelMethod.isPrivate());
 			method.setRetType(bcelMethod.getReturnType());
 			method.setIsFinal(bcelMethod.isFinal());

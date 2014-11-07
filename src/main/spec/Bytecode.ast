@@ -8,8 +8,9 @@ Field ::= <Name:String>;
 
 Method ::= <IsStatic:boolean> <IsAbstract:boolean> <IsNative:boolean> <IsPrivate:boolean> <IsFinal:boolean>
            <MethodName:String> <SignatureIndex:int> <ArgTypes:org.apache.bcel.generic.Type[]>
-           <RetType:org.apache.bcel.generic.Type> <MaxLocals:int> Instruction*;
+           <RetType:org.apache.bcel.generic.Type> <MaxLocals:int> Argument* Instruction*;
 
+Argument ::= <ArgType:org.apache.bcel.generic.Type>;
 
 abstract Instruction ::= <Label:String> <Position:int> <ConsumeStack:int> <ProduceStack:int>;
 
