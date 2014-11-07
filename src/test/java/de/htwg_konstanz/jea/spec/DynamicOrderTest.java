@@ -13,7 +13,7 @@ import de.htwg_konstanz.jea.gen.GotoInstruction;
 import de.htwg_konstanz.jea.gen.Method;
 import de.htwg_konstanz.jea.gen.Program;
 
-public class DynamicOrder1Test {
+public class DynamicOrderTest {
 
 	private final static int ILOAD_1 = 1;
 	private final static int IFLE = 2;
@@ -35,7 +35,7 @@ public class DynamicOrder1Test {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		program = new ProgramBuilder("de.htwg_konstanz.jea.spec.DynamicOrder1Test$TestClass")
+		program = new ProgramBuilder("de.htwg_konstanz.jea.spec.DynamicOrderTest$TestClass")
 				.build();
 
 		testClass = program.getByteCodeClass(0);
