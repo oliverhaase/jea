@@ -2,6 +2,7 @@ package de.htwg_konstanz.jea;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -18,10 +19,39 @@ import org.reflections.util.FilterBuilder;
 
 public class ClassPathFinder {
 
-	private static Reflections reflections = new Reflections(
-			new ConfigurationBuilder().setUrls(ClasspathHelper.forJavaClassPath()));
+	private static ClassPathFinder instance;
 
-	public static Set<String> getSubTypsOf(String type) {
+	private Set<URL> urls;
+	private Reflections reflections;
+
+	private ClassPathFinder() {
+		urls = ClasspathHelper.forJavaClassPath();
+
+		addPlattformClasses();
+
+		reflections = new Reflections(new ConfigurationBuilder().setUrls(urls));
+	}
+
+	public static ClassPathFinder getInstance() {
+		if (instance == null) {
+			instance = new ClassPathFinder();
+		}
+		return instance;
+	}
+
+	private void addPlattformClasses() {
+		File file = new File(System.getProperty("java.home").replaceAll("\\\\", "/") + "/lib/");
+		List<String> jars = getJarsInDir(file);
+		try {
+			for (String string : jars) {
+				urls.add(new URL("file:\\\\\\" + string));
+			}
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public Set<String> getSubTypsOf(String type) {
 		Set<?> types = null;
 		try {
 			types = reflections.getSubTypesOf(Class.forName(type));
@@ -36,6 +66,23 @@ public class ClassPathFinder {
 			classes.add(c.getName());
 		}
 
+		return classes;
+	}
+
+	private static List<String> findClasses(File directory, String packageName) {
+		List<String> classes = new ArrayList<String>();
+
+		if (!directory.exists())
+			return classes;
+
+		File[] files = directory.listFiles();
+		for (File file : files) {
+			String fileName = file.getName();
+			if (file.isDirectory())
+				classes.addAll(findClasses(file, packageName + "." + fileName));
+			else if (fileName.endsWith(".class"))
+				classes.add(packageName + '.' + fileName.substring(0, fileName.length() - 6));
+		}
 		return classes;
 	}
 
@@ -64,21 +111,21 @@ public class ClassPathFinder {
 		return classes.toArray(new String[0]);
 	}
 
-	private static List<String> findClasses(File directory, String packageName) {
-		List<String> classes = new ArrayList<String>();
+	private static List<String> getJarsInDir(File directory) {
+		List<String> jars = new ArrayList<String>();
 
 		if (!directory.exists())
-			return classes;
+			return jars;
 
 		File[] files = directory.listFiles();
 		for (File file : files) {
-			String fileName = file.getName();
+			String fileName = file.getAbsolutePath();
 			if (file.isDirectory())
-				classes.addAll(findClasses(file, packageName + "." + fileName));
-			else if (fileName.endsWith(".class"))
-				classes.add(packageName + '.' + fileName.substring(0, fileName.length() - 6));
+				jars.addAll(getJarsInDir(file));
+			else if (fileName.endsWith(".jar"))
+				jars.add(fileName);
 		}
-		return classes;
+		return jars;
 	}
 
 	public static String[] getClassesByReflection(String packageName) {
