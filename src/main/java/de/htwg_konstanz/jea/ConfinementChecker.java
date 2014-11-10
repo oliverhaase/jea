@@ -1,13 +1,6 @@
 package de.htwg_konstanz.jea;
 
-import java.util.Set;
-
-import org.reflections.Reflections;
-import org.reflections.scanners.ResourcesScanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
-import org.reflections.util.FilterBuilder;
+import java.util.Map;
 
 import de.htwg_konstanz.jea.gen.Program;
 
@@ -27,14 +20,17 @@ public class ConfinementChecker {
 				"de.htwg_konstanz.jea.vm.GlobalObject", "de.htwg_konstanz.jea.vm.InternalObject",
 				"de.htwg_konstanz.jea.vm.LocalVars", "de.htwg_konstanz.jea.vm.Node",
 				"de.htwg_konstanz.jea.vm.NonObjectNode", "de.htwg_konstanz.jea.vm.ObjectNode",
-				"de.htwg_konstanz.jea.vm.OpStack", "de.htwg_konstanz.jea.vm.Pair",
-				"de.htwg_konstanz.jea.vm.PhantomObject", "de.htwg_konstanz.jea.vm.ReferenceNode",
-				"de.htwg_konstanz.jea.vm.Slot", "de.htwg_konstanz.jea.vm.Triple" };
+				"de.htwg_konstanz.jea.vm.OpStack", "de.htwg_konstanz.jea.vm.PhantomObject",
+				"de.htwg_konstanz.jea.vm.ReferenceNode", "de.htwg_konstanz.jea.vm.Slot",
+				"de.htwg_konstanz.jea.vm.Triple" };
 
-		String[] allClasses = getClasses("de.htwg_konstanz.jea");
+		String[] allClasses = ClassPathFinder.getClassesByReflection("com");
+		// String[] allClasses = getClasses("").toArray(new String[0]);
 		Program program = new ProgramBuilder(allClasses).build();
 
-		// Program program = new ProgramBuilder(classes).build();
+		for (String string : allClasses) {
+			System.out.println(ClassPathFinder.getInstance().getSubTypsOf(string));
+		}
 
 		program.print();
 
@@ -53,25 +49,5 @@ public class ConfinementChecker {
 		System.out.println();
 		System.out.println("done.(" + (estimatedTime / 1000000000) + "s)");
 
-	}
-
-	private static String[] getClasses(String packageName) {
-		ClassLoader[] classLoaders = { ClasspathHelper.contextClassLoader(),
-				ClasspathHelper.staticClassLoader() };
-
-		Reflections reflections = new Reflections(new ConfigurationBuilder()
-				.setScanners(new SubTypesScanner(false), new ResourcesScanner())
-				.setUrls(ClasspathHelper.forClassLoader(classLoaders))
-				.filterInputsBy(new FilterBuilder().include(FilterBuilder.prefix(packageName))));
-
-		Set<Class<?>> classes = reflections.getSubTypesOf(Object.class);
-
-		int i = 0;
-		String[] classNames = new String[classes.size()];
-		for (Class<?> cls : classes) {
-			classNames[i++] = cls.getName();
-		}
-
-		return classNames;
 	}
 }
