@@ -194,7 +194,8 @@ public final class State {
 	 * Applies the MetohdSummary {@code summary} to this state, so the effect of
 	 * the method to the heap and the stack are applied to this state. Publishes
 	 * the arguments that escape in the method. Adds the objects that are linked
-	 * to the arguments. Adds the fields of these objects.
+	 * to the arguments. Adds the fields of these objects. Adds the local and
+	 * escaped objects to the corresponding set in this heap.
 	 * 
 	 * @param summary
 	 *            the Heap which represents the side effects of the method
@@ -230,6 +231,9 @@ public final class State {
 			resultOpStack = resultOpStack.push(resultRef);
 		} else
 			resultOpStack = resultOpStack.push(DontCareSlot.values()[produceStack], produceStack);
+
+		 resultHeap.getEscapedObjects().addAll(summary.getEscapedObjects());
+		 resultHeap.getLocalObjects().addAll(summary.getLocalObjects());
 
 		return new State(localVars, resultOpStack, resultHeap);
 
