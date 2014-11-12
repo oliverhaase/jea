@@ -172,7 +172,7 @@ aspect State {
 		Set<State> result = new HashSet<State>();
 
 		for ( State frameIn : statesIn() ) 
-			for ( Method targetMethod : resolveTargetMethod() ) 
+			for ( Method targetMethod : resolveTargetMethod(frameIn) ) 
 				result.add(frameIn.applyMethodSummary(
 					targetMethod.methodSummary(), 
 					getConsumeStack(), 
