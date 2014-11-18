@@ -5,7 +5,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -49,14 +48,7 @@ public class EscapeTest {
 
 	private static class EscapeToAlienMethod {
 		private void test() {
-			new PublicClass().escape(new SimpleClass());
-		}
-	}
-
-	private static class EscapeToGlobalObject {
-		private void test() {
-			SimpleClass simpleClass = new PublicClass().getSimpleClass();
-			simpleClass.field = new SimpleClass();
+			new PublicClass().escapeToStatic(new SimpleClass());
 		}
 	}
 

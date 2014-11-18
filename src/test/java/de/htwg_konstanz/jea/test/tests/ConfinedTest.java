@@ -5,7 +5,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -13,8 +12,8 @@ import org.junit.runners.Parameterized.Parameters;
 
 import de.htwg_konstanz.jea.gen.Program;
 import de.htwg_konstanz.jea.test.TestHelper;
+import de.htwg_konstanz.jea.test.classes.PublicClass;
 import de.htwg_konstanz.jea.test.classes.SimpleClass;
-import de.htwg_konstanz.jea.test.classes.StaticClass;
 
 @SuppressWarnings("unused")
 @RunWith(Parameterized.class)
@@ -184,6 +183,19 @@ public class ConfinedTest {
 			RecursiveReturnReference r = new RecursiveReturnReference();
 			r.recursive(new SimpleClass());
 			r.test();
+		}
+	}
+
+	private static class EscapeToAlienMethod {
+		private void test() {
+			new PublicClass().escape(new SimpleClass());
+		}
+	}
+
+	private static class EscapeToGlobalObject {
+		private void test() {
+			SimpleClass simpleClass = new PublicClass().getSimpleClass();
+			simpleClass.field = new SimpleClass();
 		}
 	}
 }

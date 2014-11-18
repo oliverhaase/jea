@@ -6,6 +6,10 @@ public class PublicClass {
 
 	}
 
+	public void escapeToStatic(SimpleClass sc) {
+		StaticClass.s = sc;
+	}
+
 	public SimpleClass getSimpleClass() {
 		return new SimpleClass();
 	}

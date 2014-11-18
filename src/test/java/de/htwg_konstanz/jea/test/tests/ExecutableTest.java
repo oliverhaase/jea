@@ -10,6 +10,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import de.htwg_konstanz.jea.gen.Program;
 import de.htwg_konstanz.jea.test.TestHelper;
+import de.htwg_konstanz.jea.test.classes.AbstractClass;
 import de.htwg_konstanz.jea.test.classes.SimpleClass;
 import de.htwg_konstanz.jea.test.classes.SubClass;
 
@@ -196,6 +197,13 @@ public class ExecutableTest {
 		private void test() {
 			SubClass subClass = new SubClass();
 			SubClass.test();
+		}
+	}
+
+	private static class AbstracrClassTest {
+
+		public AbstracrClassTest() {
+			AbstractClass.instance.foo();
 		}
 	}
 }
