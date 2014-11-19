@@ -497,8 +497,13 @@ public final class Heap implements AnnotationCreator {
 				break;
 			}
 		}
-		if (hasNoOtherEdges)
-			referenceNodes.remove(reference);
+		if (hasNoOtherEdges) {
+			ReferenceNode node = null;
+			for (ReferenceNode ref : referenceNodes)
+				if (ref.getId().equals(reference))
+					node = ref;
+			referenceNodes.remove(node);
+		}
 	}
 
 	/**
