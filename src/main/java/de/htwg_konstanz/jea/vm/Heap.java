@@ -318,17 +318,19 @@ public final class Heap implements AnnotationCreator {
 		Set<FieldEdge> edgesToBeRemoved = new HashSet<>();
 		Set<FieldEdge> edgesToBeAdded = new HashSet<>();
 
+		EmptyReturnObjectSet returnSet = EmptyReturnObjectSet.getInstance();
+
 		for (FieldEdge edge : fieldEdges) {
-			if (edge.getOriginId().equals(EmptyReturnObjectSet.getInstance().getId())) {
+			if (edge.getOriginId().equals(returnSet.getId())) {
 				for (ObjectNode resultObject : getResultValues())
-					if (!edge.getDestinationId().equals(EmptyReturnObjectSet.getInstance().getId()))
+					if (!edge.getDestinationId().equals(returnSet.getId()))
 						edgesToBeAdded.add(new FieldEdge(resultObject.getId(), edge.getFieldName(),
 								edge.getDestinationId()));
 				edgesToBeRemoved.add(edge);
 			}
-			if (edge.getDestinationId().equals(EmptyReturnObjectSet.getInstance().getId())) {
+			if (edge.getDestinationId().equals(returnSet.getId())) {
 				for (ObjectNode resultObject : getResultValues())
-					if (!edge.getOriginId().equals(EmptyReturnObjectSet.getInstance().getId()))
+					if (!edge.getOriginId().equals(returnSet.getId()))
 						edgesToBeAdded.add(new FieldEdge(edge.getOriginId(), edge.getFieldName(),
 								resultObject.getId()));
 				edgesToBeRemoved.add(edge);
@@ -338,11 +340,14 @@ public final class Heap implements AnnotationCreator {
 		fieldEdges.removeAll(edgesToBeRemoved);
 		fieldEdges.addAll(edgesToBeAdded);
 
-		for (ObjectNode resultObject : getResultValues()) {
-			replacePointsToEdge(EmptyReturnObjectSet.getInstance(), resultObject);
+		if (getResultValues().isEmpty()) {
+			removePointsToEdge(returnSet);
+		} else {
+			for (ObjectNode resultObject : getResultValues())
+				replacePointsToEdge(returnSet, resultObject);
 		}
 
-		objectNodes.remove(EmptyReturnObjectSet.getInstance());
+		objectNodes.remove(returnSet);
 	}
 
 	/**
