@@ -384,11 +384,27 @@ public final class Heap implements AnnotationCreator {
 
 		while (!workingList.isEmpty()) {
 			ObjectNode current = workingList.pop();
+			
+			checkSubObjectsOf(current); // TODO remove
 
 			for (ObjectNode subObject : objectNodes.getSubObjectsOf(current, fieldEdges)) {
 				ObjectNode increasedObj = objectNodes.increaseEscapeState(subObject, escapeState);
 				if (increasedObj != null)
 					workingList.push(increasedObj);
+			}
+		}
+	}
+
+	private void checkSubObjectsOf(ObjectNode object) { // TODO remove
+		ObjectNodes subObjects = objectNodes.getSubObjectsOf(object, fieldEdges);
+		if (object instanceof PhantomObject) {
+			for (ObjectNode objectNode : objectNodes) {
+				if (objectNode instanceof PhantomObject) {
+					PhantomObject p = (PhantomObject) objectNode;
+					if (p.isSubPhantom() && p.getParent().equals(object.getId()))
+						if (!subObjects.existsObject(p.getId()))
+							throw new AssertionError("SubObjectError");
+				}
 			}
 		}
 	}
@@ -519,6 +535,8 @@ public final class Heap implements AnnotationCreator {
 	public Heap doFinalStuff() {
 		Heap result = new Heap(this);
 
+		checkHeap();
+
 		result.resolveEmptyReturnObjectSet();
 
 		for (ObjectNode resultObject : result.getResultValues()) {
@@ -534,7 +552,28 @@ public final class Heap implements AnnotationCreator {
 
 		result.removeLocalGraph();
 
+		checkHeap();
+		if (result.objectNodes.existsObject(EmptyReturnObjectSet.getInstance().getId()))
+			throw new AssertionError("EmptyReturnObjectSet Error");
+
 		return result;
+	}
+
+	public void checkHeap() { // TODO remove
+		for (ObjectNode object : objectNodes) {
+
+			ObjectNodes subObjects = objectNodes.getSubObjectsOf(object, fieldEdges);
+			if (object instanceof PhantomObject) {
+				for (ObjectNode objectNode : objectNodes) {
+					if (objectNode instanceof PhantomObject) {
+						PhantomObject p = (PhantomObject) objectNode;
+						if (p.isSubPhantom() && p.getParent().equals(object.getId()))
+							if (!subObjects.existsObject(p.getId()))
+								throw new AssertionError("SubObjectError");
+					}
+				}
+			}
+		}
 	}
 
 	public ObjectNodes getArgEscapeObjects() {
