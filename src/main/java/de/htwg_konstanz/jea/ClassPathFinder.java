@@ -56,6 +56,10 @@ public class ClassPathFinder {
 		}
 	}
 
+	/**
+	 * Get all subtypes of {@code type} in the current Classpath including
+	 * itself.
+	 */
 	public Set<String> getSubTypsOf(String type) {
 		Set<?> types = null;
 		try {
@@ -65,6 +69,7 @@ public class ClassPathFinder {
 		}
 
 		HashSet<String> classes = new HashSet<String>();
+		classes.add(type);
 
 		for (Object object : types) {
 			Class<?> c = (Class<?>) object;
