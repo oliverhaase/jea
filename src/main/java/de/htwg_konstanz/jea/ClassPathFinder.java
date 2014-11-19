@@ -25,7 +25,7 @@ public class ClassPathFinder {
 	private Reflections reflections;
 
 	private ClassPathFinder() {
-		urls = ClasspathHelper.forJavaClassPath();
+		urls = ClasspathHelper.forClassLoader();// JavaClassPath();
 
 		addPlattformClasses();
 
@@ -41,7 +41,12 @@ public class ClassPathFinder {
 
 	private void addPlattformClasses() {
 		File file = new File(System.getProperty("java.home").replaceAll("\\\\", "/") + "/lib/");
-		List<String> jars = getJarsInDir(file);
+		// List<String> jars = getJarsInDir(file);
+		String[] jars = { "C:\\Program Files\\Java\\jre7\\lib\\charsets.jar",
+				"C:\\Program Files\\Java\\jre7\\lib\\jce.jar",
+				"C:\\Program Files\\Java\\jre7\\lib\\jfr.jar",
+				"C:\\Program Files\\Java\\jre7\\lib\\resources.jar",
+				"C:\\Program Files\\Java\\jre7\\lib\\rt.jar" };
 		try {
 			for (String string : jars) {
 				urls.add(new URL("file:\\\\\\" + string));
