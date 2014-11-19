@@ -580,30 +580,6 @@ public final class Heap implements AnnotationCreator {
 		return result;
 	}
 
-	/**
-	 * Links the resultValues from {@code summary} to the {@code resultRef} and
-	 * adds the {@code resultRef} and the result Objects to {@code this}.
-	 * 
-	 * @param summary
-	 *            the Heap representing the MethodSummary
-	 * @param resultRef
-	 *            the Reference to link the results to
-	 * @return the resulting Heap
-	 */
-	@CheckReturnValue
-	Heap transferResultFrom(Heap summary, ReferenceNode resultRef) {
-		Heap result = new Heap(this);
-
-		if (summary.isAlien())
-			result = result.addReferenceAndTarget(resultRef, GlobalObject.getInstance());
-		else
-			for (ObjectNode resultValue : summary.getResultValues()) {
-				result = result.addReferenceAndTarget(resultRef, resultValue);
-			}
-
-		return result;
-	}
-
 	public Set<ObjectNode> getFieldOf(ObjectNode object, String field) {
 		return objectNodes.getFieldOf(object, fieldEdges, field);
 	}

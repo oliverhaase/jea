@@ -106,7 +106,7 @@ public final class State {
 		}
 
 		// objectNode is Child of Global Parameter
-		if (resultHeap.getObjectNodes().getObjectNode(phantom.getParent()).isGlobal()) {
+		if (summary.getObjectNodes().getObjectNode(phantom.getParent()).isGlobal()) {
 			result.add(GlobalObject.getInstance());
 		}
 		return result;
@@ -191,6 +191,37 @@ public final class State {
 	}
 
 	/**
+	 * Links the resultValues from {@code summary} to the {@code resultRef} and
+	 * adds the {@code resultRef} and the result Objects to {@code heap}.
+	 * 
+	 * @param summary
+	 *            the Heap representing the MethodSummary
+	 * @param resultRef
+	 *            the Reference to link the results to
+	 * @param position
+	 * @param consumeStack
+	 * @param resultOpStack
+	 * @return the resulting Heap
+	 */
+	@CheckReturnValue
+	private Heap transferResult(Heap heap, Heap summary, ReferenceNode resultRef,
+			OpStack resultOpStack, int consumeStack, int position) {
+		Heap result = new Heap(heap);
+
+		if (summary.isAlien())
+			result = result.addReferenceAndTarget(resultRef, GlobalObject.getInstance());
+		else
+			for (ObjectNode resultValue : summary.getResultValues()) {
+				for (ObjectNode object : mapsToObjects(result, resultOpStack, resultValue,
+						consumeStack, summary, position)) {
+					result = result.addReferenceAndTarget(resultRef, object);
+				}
+			}
+
+		return result;
+	}
+
+	/**
 	 * Applies the MetohdSummary {@code summary} to this state, so the effect of
 	 * the method to the heap and the stack are applied to this state. Publishes
 	 * the arguments that escape in the method. Adds the objects that are linked
@@ -227,7 +258,8 @@ public final class State {
 		if (returnType instanceof org.apache.bcel.generic.ReferenceType) {
 			ReferenceNode resultRef = new ReferenceNode(position, Category.LOCAL);
 
-			resultHeap = resultHeap.transferResultFrom(summary, resultRef);
+			resultHeap = transferResult(resultHeap, summary, resultRef, opStack, consumeStack,
+					position);
 			resultOpStack = resultOpStack.push(resultRef);
 		} else
 			resultOpStack = resultOpStack.push(DontCareSlot.values()[produceStack], produceStack);
