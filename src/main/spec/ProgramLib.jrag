@@ -2,13 +2,12 @@
 
 aspect ProgramLib {
 	syn nta ByteCodeClass Program.lib(String className) {
-		try {
-			JavaClass clazz = Repository.lookupClass(className);
-			return new AstConverter(clazz).convert();
-		}
-		catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
-		}	
+        try {
+            JavaClass clazz = Repository.lookupClass(className);
+            return new AstConverter(clazz).convert();
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
 	}
 		
 	syn ByteCodeClass Program.getClass(String className) {

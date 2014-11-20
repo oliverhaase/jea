@@ -49,7 +49,9 @@ aspect CallGraph {
 
         if (dynamicTypeIsUnkown) {
             for (String type : ClassPathFinder.getInstance().getSubTypsOf(getLoadClass())) {
-                classes.add(method().clazz().program().getClass(type));
+                ByteCodeClass clazz = method().clazz().program().getClass(type);
+                if (clazz != null)
+                    classes.add(clazz);
             }
         }
 
