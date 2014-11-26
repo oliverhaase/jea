@@ -79,6 +79,7 @@ public final class Heap implements AnnotationCreator {
 			addPointsToEdge(ReferenceNode.getReturnRef(), EmptyReturnObjectSet.getInstance());
 		}
 
+		checkHeap();
 	}
 
 	/**
@@ -156,12 +157,14 @@ public final class Heap implements AnnotationCreator {
 	 */
 	@CheckReturnValue
 	public Heap publish(ReferenceNode ref) {
+		checkHeap();
 		Heap result = new Heap(this);
 
 		for (ObjectNode object : dereference(ref)) {
 			result.objectNodes.increaseEscapeState(object, EscapeState.GLOBAL_ESCAPE);
 		}
 
+		result.checkHeap();
 		return result;
 	}
 
@@ -174,6 +177,7 @@ public final class Heap implements AnnotationCreator {
 	 */
 	@CheckReturnValue
 	public Heap addField(ObjectNode obj, String fieldName, ObjectNode value) {
+		checkHeap();
 		// if (obj.isGlobal())
 		// return this;
 		Heap result = new Heap(this);
@@ -191,6 +195,8 @@ public final class Heap implements AnnotationCreator {
 			result.objectNodes.add(value);
 
 		result.fieldEdges.add(new FieldEdge(obj.getId(), fieldName, value.getId()));
+
+		result.checkHeap();
 		return result;
 	}
 
@@ -198,9 +204,11 @@ public final class Heap implements AnnotationCreator {
 	 * Adds the reference and the object to the Heap and links them.
 	 */
 	private void addPointsToEdge(ReferenceNode ref, ObjectNode obj) {
+		checkHeap();
 		referenceNodes.add(ref);
 		objectNodes.add(obj);
 		pointsToEdges.add(new PointToEdge(ref.getId(), obj.getId()));
+		checkHeap();
 	}
 
 	/**
@@ -235,6 +243,7 @@ public final class Heap implements AnnotationCreator {
 	 */
 	@CheckReturnValue
 	public Heap setReturnRef(ReferenceNode ref) {
+		checkHeap();
 		Heap result = new Heap(this);
 		for (Iterator<PointToEdge> it = result.pointsToEdges.iterator(); it.hasNext();) {
 			PointToEdge pointsToEdge = it.next();
@@ -247,6 +256,7 @@ public final class Heap implements AnnotationCreator {
 		for (ObjectNode obj : dereference(ref))
 			result.pointsToEdges.add(new PointToEdge(ReferenceNode.getReturnRef().getId(), obj
 					.getId()));
+		result.checkHeap();
 		return result;
 	}
 
@@ -260,6 +270,8 @@ public final class Heap implements AnnotationCreator {
 	 */
 	@CheckReturnValue
 	public Heap merge(Heap other) {
+		checkHeap();
+		other.checkHeap();
 		Heap result = new Heap();
 
 		for (ObjectNode oneObject : this.objectNodes) {
@@ -286,6 +298,7 @@ public final class Heap implements AnnotationCreator {
 		result.pointsToEdges.addAll(this.pointsToEdges);
 		result.pointsToEdges.addAll(other.pointsToEdges);
 
+		result.checkHeap();
 		return result;
 	}
 
@@ -315,6 +328,7 @@ public final class Heap implements AnnotationCreator {
 	 * Replaces the links to the EmptyReturnObject with the ResultValues. //TODO
 	 */
 	private void resolveEmptyReturnObjectSet() {
+		checkHeap();
 		Set<FieldEdge> edgesToBeRemoved = new HashSet<>();
 		Set<FieldEdge> edgesToBeAdded = new HashSet<>();
 
@@ -348,6 +362,7 @@ public final class Heap implements AnnotationCreator {
 		}
 
 		objectNodes.remove(returnSet);
+		checkHeap();
 	}
 
 	/**
@@ -355,6 +370,7 @@ public final class Heap implements AnnotationCreator {
 	 * from the Heap.
 	 */
 	protected void removeNullObject() {
+		checkHeap();
 		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator.hasNext();)
 			if (objIterator.next().equals(InternalObject.getNullObject()))
 				objIterator.remove();
@@ -366,6 +382,7 @@ public final class Heap implements AnnotationCreator {
 		}
 
 		removePointsToEdge(InternalObject.getNullObject());
+		checkHeap();
 	}
 
 	/**
@@ -377,6 +394,7 @@ public final class Heap implements AnnotationCreator {
 	 *            updated
 	 */
 	private void propagateEscapeState(EscapeState escapeState) {
+		checkHeap();
 		Stack<ObjectNode> workingList = new Stack<>();
 		for (ObjectNode objectNode : objectNodes)
 			if (objectNode.getEscapeState() == escapeState)
@@ -384,7 +402,7 @@ public final class Heap implements AnnotationCreator {
 
 		while (!workingList.isEmpty()) {
 			ObjectNode current = workingList.pop();
-			
+
 			checkSubObjectsOf(current); // TODO remove
 
 			for (ObjectNode subObject : objectNodes.getSubObjectsOf(current, fieldEdges)) {
@@ -393,20 +411,7 @@ public final class Heap implements AnnotationCreator {
 					workingList.push(increasedObj);
 			}
 		}
-	}
-
-	private void checkSubObjectsOf(ObjectNode object) { // TODO remove
-		ObjectNodes subObjects = objectNodes.getSubObjectsOf(object, fieldEdges);
-		if (object instanceof PhantomObject) {
-			for (ObjectNode objectNode : objectNodes) {
-				if (objectNode instanceof PhantomObject) {
-					PhantomObject p = (PhantomObject) objectNode;
-					if (p.isSubPhantom() && p.getParent().equals(object.getId()))
-						if (!subObjects.existsObject(p.getId()))
-							throw new AssertionError("SubObjectError");
-				}
-			}
-		}
+		checkHeap();
 	}
 
 	/**
@@ -416,6 +421,7 @@ public final class Heap implements AnnotationCreator {
 	 * FieldEdges starting from these ObjectNodes. Replaces all pointsToEdges.
 	 */
 	private void collapseGlobalGraph() {
+		checkHeap();
 		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator.hasNext();) {
 			ObjectNode current = objIterator.next();
 
@@ -445,19 +451,7 @@ public final class Heap implements AnnotationCreator {
 				objIterator.remove();
 			}
 		}
-	}
-
-	private void replacePointsToEdge(ObjectNode oldObject, ObjectNode newObject) {
-		Set<PointToEdge> edgesToAdd = new HashSet<>();
-		for (Iterator<PointToEdge> edgeIterator = pointsToEdges.iterator(); edgeIterator.hasNext();) {
-			PointToEdge edge = edgeIterator.next();
-
-			if (edge.getObjectId().equals(oldObject.getId())) {
-				edgesToAdd.add(new PointToEdge(edge.getReferenceId(), newObject.getId()));
-				edgeIterator.remove();
-			}
-		}
-		pointsToEdges.addAll(edgesToAdd);
+		checkHeap();
 	}
 
 	/**
@@ -467,6 +461,7 @@ public final class Heap implements AnnotationCreator {
 	 * are no other pointsToEdges from the ReferenceNode it will be removed too.
 	 */
 	private void removeLocalGraph() {
+		checkHeap();
 		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator.hasNext();) {
 			ObjectNode current = objIterator.next();
 
@@ -482,6 +477,22 @@ public final class Heap implements AnnotationCreator {
 				objIterator.remove();
 			}
 		}
+		checkHeap();
+	}
+
+	private void replacePointsToEdge(ObjectNode oldObject, ObjectNode newObject) {
+		checkHeap();
+		Set<PointToEdge> edgesToAdd = new HashSet<>();
+		for (Iterator<PointToEdge> edgeIterator = pointsToEdges.iterator(); edgeIterator.hasNext();) {
+			PointToEdge edge = edgeIterator.next();
+
+			if (edge.getObjectId().equals(oldObject.getId())) {
+				edgesToAdd.add(new PointToEdge(edge.getReferenceId(), newObject.getId()));
+				edgeIterator.remove();
+			}
+		}
+		pointsToEdges.addAll(edgesToAdd);
+		checkHeap();
 	}
 
 	/**
@@ -533,9 +544,8 @@ public final class Heap implements AnnotationCreator {
 	 */
 	@CheckReturnValue
 	public Heap doFinalStuff() {
-		Heap result = new Heap(this);
-
 		checkHeap();
+		Heap result = new Heap(this);
 
 		result.resolveEmptyReturnObjectSet();
 
@@ -552,28 +562,11 @@ public final class Heap implements AnnotationCreator {
 
 		result.removeLocalGraph();
 
-		checkHeap();
 		if (result.objectNodes.existsObject(EmptyReturnObjectSet.getInstance().getId()))
 			throw new AssertionError("EmptyReturnObjectSet Error");
 
+		result.checkHeap();
 		return result;
-	}
-
-	public void checkHeap() { // TODO remove
-		for (ObjectNode object : objectNodes) {
-
-			ObjectNodes subObjects = objectNodes.getSubObjectsOf(object, fieldEdges);
-			if (object instanceof PhantomObject) {
-				for (ObjectNode objectNode : objectNodes) {
-					if (objectNode instanceof PhantomObject) {
-						PhantomObject p = (PhantomObject) objectNode;
-						if (p.isSubPhantom() && p.getParent().equals(object.getId()))
-							if (!subObjects.existsObject(p.getId()))
-								throw new AssertionError("SubObjectError");
-					}
-				}
-			}
-		}
 	}
 
 	public ObjectNodes getArgEscapeObjects() {
@@ -631,6 +624,69 @@ public final class Heap implements AnnotationCreator {
 
 	public Set<ObjectNode> getFieldOf(ObjectNode object, String field) {
 		return objectNodes.getFieldOf(object, fieldEdges, field);
+	}
+
+	public void checkHeap() {
+		checkPointsToEdge();
+		checkFieldEdge();
+		checkSubObjectsOfPhantoms();
+	}
+
+	private void checkPointsToEdge() {
+		for (PointToEdge pointToEdge : pointsToEdges) {
+			if (getReferenceNode(pointToEdge.getReferenceId()) == null)
+				throw new AssertionError("checkPointsToEdge-ReferenceNode");
+			if (!pointToEdge.getObjectId().equals("null")
+					&& !objectNodes.existsObject(pointToEdge.getObjectId()))
+				throw new AssertionError("checkPointsToEdge-ObjectNode");
+		}
+	}
+
+	private void checkFieldEdge() {
+		for (FieldEdge fieldEdge : fieldEdges) {
+			if (!objectNodes.existsObject(fieldEdge.getOriginId()))
+				throw new AssertionError("checkFieldEdge-getOriginId");
+			if (!objectNodes.existsObject(fieldEdge.getDestinationId()))
+				throw new AssertionError("checkFieldEdge-getDestinationId");
+		}
+	}
+
+	private void checkSubObjectsOfPhantoms() {
+		for (ObjectNode object : objectNodes) {
+			ObjectNodes subObjects = objectNodes.getSubObjectsOf(object, fieldEdges);
+			if (object instanceof PhantomObject) {
+				for (ObjectNode objectNode : objectNodes) {
+					if (objectNode instanceof PhantomObject) {
+						PhantomObject p = (PhantomObject) objectNode;
+						if (p.isSubPhantom() && p.getParent().equals(object.getId()))
+							if (!subObjects.existsObject(p.getId()))
+								throw new AssertionError("SubObjectError");
+					}
+				}
+			}
+		}
+	}
+
+	private ReferenceNode getReferenceNode(String refId) {
+		for (ReferenceNode referenceNode : referenceNodes) {
+			if (referenceNode.getId().equals(refId))
+				return referenceNode;
+		}
+		return null;
+	}
+
+	private void checkSubObjectsOf(ObjectNode object) {
+		ObjectNodes subObjects = objectNodes.getSubObjectsOf(object, fieldEdges);
+		if (object instanceof PhantomObject) {
+			for (ObjectNode objectNode : objectNodes) {
+				if (objectNode instanceof PhantomObject) {
+					PhantomObject p = (PhantomObject) objectNode;
+					if (p.isSubPhantom() && p.getParent().equals(object.getId()))
+						if (!subObjects.existsObject(p.getId()))
+							throw new AssertionError("SubObjectError");
+				}
+			}
+		}
 	}
 
 	/**
