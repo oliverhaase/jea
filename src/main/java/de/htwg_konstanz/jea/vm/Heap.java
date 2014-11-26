@@ -254,8 +254,7 @@ public final class Heap implements AnnotationCreator {
 		}
 
 		for (ObjectNode obj : dereference(ref))
-			result.pointsToEdges.add(new PointToEdge(ReferenceNode.getReturnRef().getId(), obj
-					.getId()));
+			result.addPointsToEdge(ReferenceNode.getReturnRef(), obj);
 		result.checkHeap();
 		return result;
 	}
