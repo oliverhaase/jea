@@ -244,6 +244,8 @@ public final class State {
 	@CheckReturnValue
 	public State applyMethodSummary(Heap summary, int consumeStack, int produceStack,
 			org.apache.bcel.generic.Type returnType, int position) {
+		heap.checkHeap();
+		summary.checkMethodSummary();
 
 		OpStack resultOpStack = opStack;
 		Heap resultHeap = heap;
@@ -264,8 +266,8 @@ public final class State {
 		} else
 			resultOpStack = resultOpStack.push(DontCareSlot.values()[produceStack], produceStack);
 
-		 resultHeap.getEscapedObjects().addAll(summary.getEscapedObjects());
-		 resultHeap.getLocalObjects().addAll(summary.getLocalObjects());
+		resultHeap.getEscapedObjects().addAll(summary.getEscapedObjects());
+		resultHeap.getLocalObjects().addAll(summary.getLocalObjects());
 
 		return new State(localVars, resultOpStack, resultHeap);
 

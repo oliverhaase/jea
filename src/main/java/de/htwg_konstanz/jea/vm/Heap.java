@@ -481,7 +481,6 @@ public final class Heap implements AnnotationCreator {
 	}
 
 	private void replacePointsToEdge(ObjectNode oldObject, ObjectNode newObject) {
-		checkHeap();
 		Set<PointToEdge> edgesToAdd = new HashSet<>();
 		for (Iterator<PointToEdge> edgeIterator = pointsToEdges.iterator(); edgeIterator.hasNext();) {
 			PointToEdge edge = edgeIterator.next();
@@ -492,7 +491,6 @@ public final class Heap implements AnnotationCreator {
 			}
 		}
 		pointsToEdges.addAll(edgesToAdd);
-		checkHeap();
 	}
 
 	/**
@@ -566,6 +564,7 @@ public final class Heap implements AnnotationCreator {
 			throw new AssertionError("EmptyReturnObjectSet Error");
 
 		result.checkHeap();
+		result.checkMethodSummary();
 		return result;
 	}
 
@@ -626,6 +625,31 @@ public final class Heap implements AnnotationCreator {
 		return objectNodes.getFieldOf(object, fieldEdges, field);
 	}
 
+	public void checkMethodSummary() {
+		if (objectNodes.existsObject(EmptyReturnObjectSet.getInstance().getId()))
+			throw new AssertionError("checkMethodSummary-EmptyReturnObjectSet");
+
+		String nullId = InternalObject.getNullObject().getId();
+		if (objectNodes.existsObject(nullId))
+			throw new AssertionError("checkMethodSummary-NullObject");
+		for (FieldEdge fieldEdge : fieldEdges)
+			if (fieldEdge.getOriginId().equals(nullId)
+					|| fieldEdge.getDestinationId().equals(nullId))
+				throw new AssertionError("checkMethodSummary-NullObject");
+		for (PointToEdge edge : pointsToEdges)
+			if (edge.getObjectId().equals(nullId))
+				throw new AssertionError("checkMethodSummary-NullObject");
+
+		for (ObjectNode objectNode : objectNodes)
+			if (objectNode.isGlobal() && !objectNode.equals(GlobalObject.getInstance()))
+				throw new AssertionError("checkMethodSummary-GLOBAL_ESCAPE");
+
+		for (ObjectNode objectNode : objectNodes)
+			if (objectNode.getEscapeState().equals(Node.EscapeState.NO_ESCAPE))
+				throw new AssertionError("checkMethodSummary-NO_ESCAPE");
+
+	}
+
 	public void checkHeap() {
 		checkPointsToEdge();
 		checkFieldEdge();
@@ -636,7 +660,7 @@ public final class Heap implements AnnotationCreator {
 		for (PointToEdge pointToEdge : pointsToEdges) {
 			if (getReferenceNode(pointToEdge.getReferenceId()) == null)
 				throw new AssertionError("checkPointsToEdge-ReferenceNode");
-			if (!pointToEdge.getObjectId().equals("null")
+			if (!pointToEdge.getObjectId().equals(InternalObject.getNullObject().getId())
 					&& !objectNodes.existsObject(pointToEdge.getObjectId()))
 				throw new AssertionError("checkPointsToEdge-ObjectNode");
 		}
