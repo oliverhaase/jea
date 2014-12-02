@@ -244,8 +244,8 @@ public final class State {
 	@CheckReturnValue
 	public State applyMethodSummary(Heap summary, int consumeStack, int produceStack,
 			org.apache.bcel.generic.Type returnType, int position) {
-		heap.checkHeap();
-		summary.checkMethodSummary();
+		assert heap.checkHeap();
+		assert summary.checkMethodSummary();
 
 		OpStack resultOpStack = opStack;
 		Heap resultHeap = heap;

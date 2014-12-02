@@ -79,7 +79,7 @@ public final class Heap implements AnnotationCreator {
 			addPointsToEdge(ReferenceNode.getReturnRef(), EmptyReturnObjectSet.getInstance());
 		}
 
-		checkHeap();
+		assert checkHeap();
 	}
 
 	/**
@@ -156,14 +156,14 @@ public final class Heap implements AnnotationCreator {
 	 */
 	@CheckReturnValue
 	public Heap publish(ReferenceNode ref) {
-		checkHeap();
+		assert checkHeap();
 		Heap result = new Heap(this);
 
 		for (ObjectNode object : dereference(ref)) {
 			result.objectNodes.increaseEscapeState(object, EscapeState.GLOBAL_ESCAPE);
 		}
 
-		result.checkHeap();
+		assert result.checkHeap();
 		return result;
 	}
 
@@ -176,7 +176,7 @@ public final class Heap implements AnnotationCreator {
 	 */
 	@CheckReturnValue
 	public Heap addField(ObjectNode obj, String fieldName, ObjectNode value) {
-		checkHeap();
+		assert checkHeap();
 		// if (obj.isGlobal())
 		// return this;
 		Heap result = new Heap(this);
@@ -195,7 +195,7 @@ public final class Heap implements AnnotationCreator {
 
 		result.fieldEdges.add(new FieldEdge(obj.getId(), fieldName, value.getId()));
 
-		result.checkHeap();
+		assert result.checkHeap();
 		return result;
 	}
 
@@ -203,11 +203,11 @@ public final class Heap implements AnnotationCreator {
 	 * Adds the reference and the object to the Heap and links them.
 	 */
 	private void addPointsToEdge(ReferenceNode ref, ObjectNode obj) {
-		checkHeap();
+		assert checkHeap();
 		referenceNodes.add(ref);
 		objectNodes.add(obj);
 		pointsToEdges.add(new PointToEdge(ref.getId(), obj.getId()));
-		checkHeap();
+		assert checkHeap();
 	}
 
 	/**
@@ -242,7 +242,7 @@ public final class Heap implements AnnotationCreator {
 	 */
 	@CheckReturnValue
 	public Heap setReturnRef(ReferenceNode ref) {
-		checkHeap();
+		assert checkHeap();
 		Heap result = new Heap(this);
 		for (Iterator<PointToEdge> it = result.pointsToEdges.iterator(); it.hasNext();) {
 			PointToEdge pointsToEdge = it.next();
@@ -254,7 +254,7 @@ public final class Heap implements AnnotationCreator {
 
 		for (ObjectNode obj : dereference(ref))
 			result.addPointsToEdge(ReferenceNode.getReturnRef(), obj);
-		result.checkHeap();
+		assert result.checkHeap();
 		return result;
 	}
 
@@ -268,8 +268,8 @@ public final class Heap implements AnnotationCreator {
 	 */
 	@CheckReturnValue
 	public Heap merge(Heap other) {
-		checkHeap();
-		other.checkHeap();
+		assert checkHeap();
+		assert other.checkHeap();
 		Heap result = new Heap();
 
 		for (ObjectNode oneObject : this.objectNodes) {
@@ -296,7 +296,7 @@ public final class Heap implements AnnotationCreator {
 		result.pointsToEdges.addAll(this.pointsToEdges);
 		result.pointsToEdges.addAll(other.pointsToEdges);
 
-		result.checkHeap();
+		assert result.checkHeap();
 		return result;
 	}
 
@@ -326,7 +326,7 @@ public final class Heap implements AnnotationCreator {
 	 * Replaces the links to the EmptyReturnObject with the ResultValues. //TODO
 	 */
 	private void resolveEmptyReturnObjectSet() {
-		checkHeap();
+		assert checkHeap();
 		Set<FieldEdge> edgesToBeRemoved = new HashSet<>();
 		Set<FieldEdge> edgesToBeAdded = new HashSet<>();
 
@@ -360,7 +360,7 @@ public final class Heap implements AnnotationCreator {
 		}
 
 		objectNodes.remove(returnSet);
-		checkHeap();
+		assert checkHeap();
 	}
 
 	/**
@@ -368,7 +368,7 @@ public final class Heap implements AnnotationCreator {
 	 * from the Heap.
 	 */
 	protected void removeNullObject() {
-		checkHeap();
+		assert checkHeap();
 		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator.hasNext();)
 			if (objIterator.next().equals(InternalObject.getNullObject()))
 				objIterator.remove();
@@ -380,7 +380,7 @@ public final class Heap implements AnnotationCreator {
 		}
 
 		removePointsToEdge(InternalObject.getNullObject());
-		checkHeap();
+		assert checkHeap();
 	}
 
 	/**
@@ -392,7 +392,7 @@ public final class Heap implements AnnotationCreator {
 	 *            updated
 	 */
 	private void propagateEscapeState(EscapeState escapeState) {
-		checkHeap();
+		assert checkHeap();
 		Stack<ObjectNode> workingList = new Stack<>();
 		for (ObjectNode objectNode : objectNodes)
 			if (objectNode.getEscapeState() == escapeState)
@@ -409,7 +409,7 @@ public final class Heap implements AnnotationCreator {
 					workingList.push(increasedObj);
 			}
 		}
-		checkHeap();
+		assert checkHeap();
 	}
 
 	/**
@@ -419,7 +419,7 @@ public final class Heap implements AnnotationCreator {
 	 * FieldEdges starting from these ObjectNodes. Replaces all pointsToEdges.
 	 */
 	private void collapseGlobalGraph() {
-		checkHeap();
+		assert checkHeap();
 		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator.hasNext();) {
 			ObjectNode current = objIterator.next();
 
@@ -449,7 +449,7 @@ public final class Heap implements AnnotationCreator {
 				objIterator.remove();
 			}
 		}
-		checkHeap();
+		assert checkHeap();
 	}
 
 	/**
@@ -459,7 +459,7 @@ public final class Heap implements AnnotationCreator {
 	 * are no other pointsToEdges from the ReferenceNode it will be removed too.
 	 */
 	private void removeLocalGraph() {
-		checkHeap();
+		assert checkHeap();
 		for (Iterator<ObjectNode> objIterator = objectNodes.iterator(); objIterator.hasNext();) {
 			ObjectNode current = objIterator.next();
 
@@ -475,7 +475,7 @@ public final class Heap implements AnnotationCreator {
 				objIterator.remove();
 			}
 		}
-		checkHeap();
+		assert checkHeap();
 	}
 
 	private void replacePointsToEdge(ObjectNode oldObject, ObjectNode newObject) {
@@ -540,7 +540,7 @@ public final class Heap implements AnnotationCreator {
 	 */
 	@CheckReturnValue
 	public Heap doFinalStuff() {
-		checkHeap();
+		assert checkHeap();
 		Heap result = new Heap(this);
 
 		result.resolveEmptyReturnObjectSet();
@@ -561,8 +561,8 @@ public final class Heap implements AnnotationCreator {
 		if (result.objectNodes.existsObject(EmptyReturnObjectSet.getInstance().getId()))
 			throw new AssertionError("EmptyReturnObjectSet Error");
 
-		result.checkHeap();
-		result.checkMethodSummary();
+		assert result.checkHeap();
+		assert result.checkMethodSummary();
 		return result;
 	}
 
@@ -623,7 +623,7 @@ public final class Heap implements AnnotationCreator {
 		return objectNodes.getFieldOf(object, fieldEdges, field);
 	}
 
-	public void checkMethodSummary() {
+	public boolean checkMethodSummary() {
 		if (objectNodes.existsObject(EmptyReturnObjectSet.getInstance().getId()))
 			throw new AssertionError("checkMethodSummary-EmptyReturnObjectSet");
 
@@ -646,12 +646,14 @@ public final class Heap implements AnnotationCreator {
 			if (objectNode.getEscapeState().equals(Node.EscapeState.NO_ESCAPE))
 				throw new AssertionError("checkMethodSummary-NO_ESCAPE");
 
+		return true;
 	}
 
-	public void checkHeap() {
+	public boolean checkHeap() {
 		checkPointsToEdge();
 		checkFieldEdge();
 		checkSubObjectsOfPhantoms();
+		return true;
 	}
 
 	private void checkPointsToEdge() {
