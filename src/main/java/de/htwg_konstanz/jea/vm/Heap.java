@@ -127,8 +127,7 @@ public final class Heap implements AnnotationCreator {
 			heap.referenceNodes.add(ReferenceNode.newInstanceByAnnotation(referenceNode));
 		}
 		for (PointsToEdgesAnnotation pointsToEdge : a.pointsToEdges()) {
-			heap.pointsToEdges.add(new PointToEdge(pointsToEdge.referenceNodeID(), pointsToEdge
-					.objectID()));
+			heap.pointsToEdges.add(PointToEdge.getInstanceByAnnotation(pointsToEdge));
 		}
 		return heap;
 	}

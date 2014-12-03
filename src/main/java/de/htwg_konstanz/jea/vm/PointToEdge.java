@@ -21,6 +21,10 @@ public class PointToEdge implements AnnotationCreator {
 	@Getter
 	private final String objectId;
 
+	public static PointToEdge getInstanceByAnnotation(PointsToEdgesAnnotation a) {
+		return new PointToEdge(a.referenceNodeID(), a.objectID());
+	}
+
 	public PointToEdge(@NonNull String referenceId, @NonNull String objectId) {
 		this.referenceId = referenceId;
 		this.objectId = objectId;
