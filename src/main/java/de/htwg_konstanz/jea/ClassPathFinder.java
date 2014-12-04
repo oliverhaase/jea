@@ -50,33 +50,31 @@ public class ClassPathFinder {
 	}
 
 	/**
-	 * Get all subtypes of {@code type} in the current Classpath including
-	 * itself.
+	 * Get all subtypes of {@code type} in the current Classpath.
 	 */
 	public Set<String> getSubTypsOf(String type) {
 		Set<String> types = reflections.getStore().getSubTypesOf(type); // getSubTypesOf(Class.forName(type));
-		types.add(type);
 		return types;
 	}
 
 	public static String[] getClassesByPath(String packageName) {
-	
+
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-	
+
 		String path = packageName.replace('.', '/');
-	
+
 		Enumeration<URL> resources = null;
 		try {
 			resources = classLoader.getResources(path);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	
+
 		List<File> dirs = new ArrayList<File>();
-	
+
 		while (resources.hasMoreElements())
 			dirs.add(new File(resources.nextElement().getFile()));
-	
+
 		ArrayList<String> classes = new ArrayList<String>();
 		for (File directory : dirs) {
 			classes.addAll(findClasses(directory, packageName));
