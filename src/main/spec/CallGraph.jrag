@@ -22,57 +22,106 @@ aspect CallGraph {
 		return null;
 	}
 	
-	syn ByteCodeClass ByteCodeClass.resolveTargetClass(String methodName, org.apache.bcel.generic.Type[] argTypes) {
-        if (lookup(methodName, argTypes) != null)
-            return this;
-        else {
-            if (this.getName().equals(getSuperClass())) // this == java.lang.Object
-                return null;
-            return program().getClass(getSuperClass()).resolveTargetClass(methodName, argTypes);
+	syn Method ByteCodeClass.resolveTargetClass(String methodName, org.apache.bcel.generic.Type[] argTypes) {
+        Method method = lookup(methodName, argTypes);
+        if (method != null)
+            return method;
+        if (getName().equals("java.lang.Object"))
+            return null;  // recursion end for check if method is final (resolveTargetMethod)
+
+        // search in Surrounding Class
+        if (getName().lastIndexOf("$") != -1) {
+            ByteCodeClass outerClass = program().getClass(
+                    getName().substring(0, getName().lastIndexOf("$")));
+            while (outerClass != null && !outerClass.getName().equals("java.lang.Object")) {
+                Method outermethod = outerClass.lookup(methodName, argTypes);
+                if (method != null)
+                    return outermethod;
+                outerClass = program().getClass(outerClass.getSuperClass());
+            }
         }
+
+        return program().getClass(getSuperClass()).resolveTargetClass(methodName, argTypes);
     }
 	
 	syn Set<Method> InvokeInstruction.resolveTargetMethod(State frame) {
-        Set<ByteCodeClass> classes = new HashSet<ByteCodeClass>();
+        Set<Method> methods = getTargetClassOfType(frame);
+
+        if (methods.isEmpty()) {
+            methods.addAll(getTargetClassOfStaticType());
+        }
+
+        return methods;
+    }
+
+    /**
+     * If all objects are internal, return their Types. If at least one is
+     * Unknown return empty Set
+     */
+    private Set<Method> InvokeInstruction.getTargetClassOfType(State frame) {
         Set<Method> methods = new HashSet<Method>();
-        boolean dynamicTypeIsUnkown = false;
 
         for (ObjectNode targetObject : frame.getHeap().dereference(
                 (ReferenceNode) frame.getOpStack().getArgumentAtIndex(0, getConsumeStack()))) {
             if (targetObject instanceof InternalObject) {
-                classes.add(method().clazz().program()
-                        .getClass(((InternalObject) targetObject).getType()));
+                methods.add(method().clazz().program()
+                        .getClass(((InternalObject) targetObject).getType())
+                        .resolveTargetClass(getMethodName(), getArgTypes()));
             } else {
-                dynamicTypeIsUnkown = true;
+                return new HashSet<Method>();
             }
         }
+        return methods;
+    }
 
-        if (dynamicTypeIsUnkown) {
-            for (String type : ClassPathFinder.getInstance().getSubTypsOf(getLoadClass())) {
-                ByteCodeClass clazz = method().clazz().program().getClass(type);
-                if (clazz != null)
-                    classes.add(clazz);
+    /**
+     * Get all possible Implementations of an Static Type in the current
+     * ClassPath.
+     */
+    private Set<Method> InvokeInstruction.getTargetClassOfStaticType() {
+        Set<Method> methods = new HashSet<Method>();
+
+        // is class final ? -> invokeSpecial on targetClass
+        ByteCodeClass clazz = method().clazz().program().getClass(getLoadClass());
+        if (clazz.getIsFinal()) {
+            methods.add(clazz.resolveTargetClass(getMethodName(), getArgTypes()));
+            return methods;
+        }
+
+        // is method final ? -> invokeSpecial on the targetClass
+        Method targetMethod = clazz.resolveTargetClass(getMethodName(), getArgTypes());
+        if (targetMethod != null) {
+            if (targetMethod.getIsFinal()) {
+                methods.add(targetMethod);
+                return methods;
             }
+        } // else: method is in Interface -> can't be final -> getSubTypes
+
+        // methods of Object ? -> all Subtypes are too much -> use
+        // implementation of Object
+        if (getMethodName().equals("toString") || getMethodName().equals("hashCode")
+                || getMethodName().equals("equals")) {
+            ByteCodeClass targetClass = method().clazz().program().getClass("java.lang.Object");
+            methods.add(targetClass.resolveTargetClass(getMethodName(), getArgTypes()));
+            return methods;
         }
 
-        for (ByteCodeClass clazz : classes) {
-            ByteCodeClass target = clazz.resolveTargetClass(getMethodName(), getArgTypes());
-            if (target != null)
-                methods.add(target.lookup(getMethodName(), getArgTypes()));
+        // get all Implementations of the Dynamic Type
+        for (String type : ClassPathFinder.getInstance().getSubTypsOf(getLoadClass())) {
+            ByteCodeClass subClazz = method().clazz().program().getClass(type);
+            if (subClazz != null)
+                methods.add(subClazz.resolveTargetClass(getMethodName(), getArgTypes()));
         }
-
         return methods;
     }
 	
 	syn Set<Method> InvokeSpecial.resolveTargetMethod(State frame) =		
 		Collections.singleton(method().clazz().program().getClass(getLoadClass())
-    		.resolveTargetClass(getMethodName(), getArgTypes())
-			.lookup(getMethodName(), getArgTypes()));
+    		.resolveTargetClass(getMethodName(), getArgTypes()));
     		
 	syn Set<Method> InvokeStatic.resolveTargetMethod(State frame) =		
 		Collections.singleton(method().clazz().program().getClass(getLoadClass())
-    		.resolveTargetClass(getMethodName(), getArgTypes())
-			.lookup(getMethodName(), getArgTypes()));
+    		.resolveTargetClass(getMethodName(), getArgTypes()));
 	
 			
 }
