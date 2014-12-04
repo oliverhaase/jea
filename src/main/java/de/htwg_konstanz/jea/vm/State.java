@@ -67,6 +67,11 @@ public final class State {
 			ObjectNode objectNode, int consumeStack, Heap summary, int position) {
 		Set<ObjectNode> result = new HashSet<>();
 
+		if (objectNode instanceof EmptyReturnObjectSet) {
+			result.add(objectNode);
+			return result;
+		}
+
 		// objectNode is global object
 
 		if (objectNode.equals(GlobalObject.getInstance())) {
@@ -245,7 +250,6 @@ public final class State {
 	public State applyMethodSummary(Heap summary, int consumeStack, int produceStack,
 			org.apache.bcel.generic.Type returnType, int position) {
 		assert heap.checkHeap();
-		assert summary.checkMethodSummary();
 
 		OpStack resultOpStack = opStack;
 		Heap resultHeap = heap;
