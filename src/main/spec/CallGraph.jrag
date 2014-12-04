@@ -22,7 +22,11 @@ aspect CallGraph {
 		return null;
 	}
 	
-	syn Method ByteCodeClass.resolveTargetClass(String methodName, org.apache.bcel.generic.Type[] argTypes) {
+	/**
+	 * Search for the definition of {@code methodName} in this class, all SuperClasses and Surrounding classes.
+	 * If the method isn't found, null is returned.
+	 */ 
+	syn Method ByteCodeClass.resolveDefinitionOfMethod(String methodName, org.apache.bcel.generic.Type[] argTypes) {
         Method method = lookup(methodName, argTypes);
         if (method != null)
             return method;
@@ -41,7 +45,7 @@ aspect CallGraph {
             }
         }
 
-        return program().getClass(getSuperClass()).resolveTargetClass(methodName, argTypes);
+        return program().getClass(getSuperClass()).resolveDefinitionOfMethod(methodName, argTypes);
     }
 	
 	syn Set<Method> InvokeInstruction.resolveTargetMethod(State frame) {
@@ -66,7 +70,7 @@ aspect CallGraph {
             if (targetObject instanceof InternalObject) {
                 methods.add(method().clazz().program()
                         .getClass(((InternalObject) targetObject).getType())
-                        .resolveTargetClass(getMethodName(), getArgTypes()));
+                        .resolveDefinitionOfMethod(getMethodName(), getArgTypes()));
             } else {
                 return new HashSet<Method>();
             }
@@ -84,12 +88,12 @@ aspect CallGraph {
         // is class final ? -> invokeSpecial on targetClass
         ByteCodeClass clazz = method().clazz().program().getClass(getLoadClass());
         if (clazz.getIsFinal()) {
-            methods.add(clazz.resolveTargetClass(getMethodName(), getArgTypes()));
+            methods.add(clazz.resolveDefinitionOfMethod(getMethodName(), getArgTypes()));
             return methods;
         }
 
         // is method final ? -> invokeSpecial on the targetClass
-        Method targetMethod = clazz.resolveTargetClass(getMethodName(), getArgTypes());
+        Method targetMethod = clazz.resolveDefinitionOfMethod(getMethodName(), getArgTypes());
         if (targetMethod != null) {
             if (targetMethod.getIsFinal()) {
                 methods.add(targetMethod);
@@ -102,26 +106,29 @@ aspect CallGraph {
         if (getMethodName().equals("toString") || getMethodName().equals("hashCode")
                 || getMethodName().equals("equals")) {
             ByteCodeClass targetClass = method().clazz().program().getClass("java.lang.Object");
-            methods.add(targetClass.resolveTargetClass(getMethodName(), getArgTypes()));
+            methods.add(targetClass.resolveDefinitionOfMethod(getMethodName(), getArgTypes()));
             return methods;
         }
 
         // get all Implementations of the Dynamic Type
         for (String type : ClassPathFinder.getInstance().getSubTypsOf(getLoadClass())) {
             ByteCodeClass subClazz = method().clazz().program().getClass(type);
-            if (subClazz != null)
-                methods.add(subClazz.resolveTargetClass(getMethodName(), getArgTypes()));
+            if (subClazz != null) { // clazz not in current ClassPath
+                Method method = subClazz.resolveDefinitionOfMethod(getMethodName(), getArgTypes());
+                if (method != null) // method not found (clazz is interface)
+                    methods.add(method);
+            }
         }
         return methods;
     }
 	
 	syn Set<Method> InvokeSpecial.resolveTargetMethod(State frame) =		
 		Collections.singleton(method().clazz().program().getClass(getLoadClass())
-    		.resolveTargetClass(getMethodName(), getArgTypes()));
+    		.resolveDefinitionOfMethod(getMethodName(), getArgTypes()));
     		
 	syn Set<Method> InvokeStatic.resolveTargetMethod(State frame) =		
 		Collections.singleton(method().clazz().program().getClass(getLoadClass())
-    		.resolveTargetClass(getMethodName(), getArgTypes()));
+    		.resolveDefinitionOfMethod(getMethodName(), getArgTypes()));
 	
 			
 }
