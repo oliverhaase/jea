@@ -1,6 +1,6 @@
 package de.htwg_konstanz.jea;
 
-import java.util.Map;
+import java.util.Set;
 
 import de.htwg_konstanz.jea.gen.Program;
 
@@ -24,7 +24,9 @@ public class ConfinementChecker {
 				"de.htwg_konstanz.jea.vm.ReferenceNode", "de.htwg_konstanz.jea.vm.Slot",
 				"de.htwg_konstanz.jea.vm.Triple" };
 
-		String[] allClasses = ClassPathFinder.getClassesByReflection("com");
+		String[] allClasses = ClassPathFinder.getClassesByPath("de.htwg_konstanz");
+		Set<String> classesByReflection = ClassPathFinder.getInstance().getClassesByReflection(
+				"de.htwg_konstanz.jea");
 		// String[] allClasses = getClasses("").toArray(new String[0]);
 		Program program = new ProgramBuilder(allClasses).build();
 

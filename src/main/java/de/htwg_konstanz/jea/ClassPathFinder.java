@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -55,6 +56,16 @@ public class ClassPathFinder {
 	public Set<String> getSubTypsOf(String type) {
 		Set<String> types = reflections.getStore().getSubTypesOf(type); // getSubTypesOf(Class.forName(type));
 		return types;
+	}
+
+	public Set<String> getClassesByReflection(String packageName) {
+		Set<String> types = reflections.getStore().getSubTypesOf("java.lang.Object");
+		Set<String> result = new HashSet<String>();
+		for (String clazz : types) {
+			if (clazz.startsWith(packageName))
+				result.add(clazz);
+		}
+		return result;
 	}
 
 	public static String[] getClassesByPath(String packageName) {
