@@ -46,7 +46,7 @@ public class FieldEdge implements AnnotationCreator {
 
 	@Override
 	public String toString() {
-		return "(" + originId + "." + fieldName + " = " + destinationId + ")";
+		return "(<" + originId + ">.<" + fieldName + "> = <" + destinationId + ">)";
 	}
 
 	/**
